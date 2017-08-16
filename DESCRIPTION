@@ -1,6 +1,6 @@
-Package: GxEScanR
+Package: BinaryDosage
 Type: Package
-Title: Tools for analyzing Genome-Environment Wide Interaction Studies (GEWIS)
+Title: Tools for working with Binary Dosage files
 Version: 1.0
 Date: 2017-04-14
 Author: John Morrison

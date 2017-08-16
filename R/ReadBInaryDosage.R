@@ -1,6 +1,6 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom data.table fread setkey data.table
-#' @useDynLib GxEScanR
+#' @useDynLib BinaryDosage
 NULL
 
 #' Function to read in information about binary dosage file

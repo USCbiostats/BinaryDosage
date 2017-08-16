@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // VCF2BD
 int VCF2BD(const std::string& vcfFilename, const std::string& infoFilename, const std::string& outputFilename);
-RcppExport SEXP _GxEScanR_VCF2BD(SEXP vcfFilenameSEXP, SEXP infoFilenameSEXP, SEXP outputFilenameSEXP) {
+RcppExport SEXP _BinaryDosage_VCF2BD(SEXP vcfFilenameSEXP, SEXP infoFilenameSEXP, SEXP outputFilenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,7 @@ END_RCPP
 }
 // ReadBDInfo
 Rcpp::List ReadBDInfo(const std::string& binaryDosageFilename);
-RcppExport SEXP _GxEScanR_ReadBDInfo(SEXP binaryDosageFilenameSEXP) {
+RcppExport SEXP _BinaryDosage_ReadBDInfo(SEXP binaryDosageFilenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // ReadBDSNPs
 int ReadBDSNPs(std::string& filename, unsigned int numSubjects, unsigned int numSNPs, unsigned int dosageStart, Rcpp::IntegerVector& dataSize, Rcpp::IntegerVector& snps, Rcpp::NumericVector& dosageptr, Rcpp::NumericVector& p0ptr, Rcpp::NumericVector& p1ptr, Rcpp::NumericVector& p2ptr);
-RcppExport SEXP _GxEScanR_ReadBDSNPs(SEXP filenameSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP, SEXP dosageStartSEXP, SEXP dataSizeSEXP, SEXP snpsSEXP, SEXP dosageptrSEXP, SEXP p0ptrSEXP, SEXP p1ptrSEXP, SEXP p2ptrSEXP) {
+RcppExport SEXP _BinaryDosage_ReadBDSNPs(SEXP filenameSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP, SEXP dosageStartSEXP, SEXP dataSizeSEXP, SEXP snpsSEXP, SEXP dosageptrSEXP, SEXP p0ptrSEXP, SEXP p1ptrSEXP, SEXP p2ptrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,7 @@ END_RCPP
 }
 // FindPointer
 int FindPointer(Rcpp::NumericVector& x, Rcpp::NumericVector& y, unsigned int n);
-RcppExport SEXP _GxEScanR_FindPointer(SEXP xSEXP, SEXP ySEXP, SEXP nSEXP) {
+RcppExport SEXP _BinaryDosage_FindPointer(SEXP xSEXP, SEXP ySEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,7 +65,7 @@ END_RCPP
 }
 // PrintPointer
 int PrintPointer(Rcpp::NumericVector& y);
-RcppExport SEXP _GxEScanR_PrintPointer(SEXP ySEXP) {
+RcppExport SEXP _BinaryDosage_PrintPointer(SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -76,15 +76,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_GxEScanR_VCF2BD", (DL_FUNC) &_GxEScanR_VCF2BD, 3},
-    {"_GxEScanR_ReadBDInfo", (DL_FUNC) &_GxEScanR_ReadBDInfo, 1},
-    {"_GxEScanR_ReadBDSNPs", (DL_FUNC) &_GxEScanR_ReadBDSNPs, 10},
-    {"_GxEScanR_FindPointer", (DL_FUNC) &_GxEScanR_FindPointer, 3},
-    {"_GxEScanR_PrintPointer", (DL_FUNC) &_GxEScanR_PrintPointer, 1},
+    {"_BinaryDosage_VCF2BD", (DL_FUNC) &_BinaryDosage_VCF2BD, 3},
+    {"_BinaryDosage_ReadBDInfo", (DL_FUNC) &_BinaryDosage_ReadBDInfo, 1},
+    {"_BinaryDosage_ReadBDSNPs", (DL_FUNC) &_BinaryDosage_ReadBDSNPs, 10},
+    {"_BinaryDosage_FindPointer", (DL_FUNC) &_BinaryDosage_FindPointer, 3},
+    {"_BinaryDosage_PrintPointer", (DL_FUNC) &_BinaryDosage_PrintPointer, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_GxEScanR(DllInfo *dll) {
+RcppExport void R_init_BinaryDosage(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

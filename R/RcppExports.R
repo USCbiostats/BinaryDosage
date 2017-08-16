@@ -17,7 +17,7 @@
 #' 1 Failure
 #' @export
 VCF2BD <- function(vcfFilename, infoFilename, outputFilename) {
-    .Call('_GxEScanR_VCF2BD', PACKAGE = 'GxEScanR', vcfFilename, infoFilename, outputFilename)
+    .Call('_BinaryDosage_VCF2BD', PACKAGE = 'BinaryDosage', vcfFilename, infoFilename, outputFilename)
 }
 
 #' Function to convert a VCF file to a binary dosage file for GxEScan
@@ -32,7 +32,7 @@ VCF2BD <- function(vcfFilename, infoFilename, outputFilename) {
 #' 1 Failure
 #' @export
 ReadBDInfo <- function(binaryDosageFilename) {
-    .Call('_GxEScanR_ReadBDInfo', PACKAGE = 'GxEScanR', binaryDosageFilename)
+    .Call('_BinaryDosage_ReadBDInfo', PACKAGE = 'BinaryDosage', binaryDosageFilename)
 }
 
 #' Function read binary dosage file SNPs into a data.table
@@ -64,7 +64,7 @@ ReadBDInfo <- function(binaryDosageFilename) {
 #' 1 failure
 #' @export
 ReadBDSNPs <- function(filename, numSubjects, numSNPs, dosageStart, dataSize, snps, dosageptr, p0ptr, p1ptr, p2ptr) {
-    .Call('_GxEScanR_ReadBDSNPs', PACKAGE = 'GxEScanR', filename, numSubjects, numSNPs, dosageStart, dataSize, snps, dosageptr, p0ptr, p1ptr, p2ptr)
+    .Call('_BinaryDosage_ReadBDSNPs', PACKAGE = 'BinaryDosage', filename, numSubjects, numSNPs, dosageStart, dataSize, snps, dosageptr, p0ptr, p1ptr, p2ptr)
 }
 
 #' Function to find the pointer to a column in a data.table
@@ -82,7 +82,7 @@ ReadBDSNPs <- function(filename, numSubjects, numSNPs, dosageStart, dataSize, sn
 #' 1 failure
 #' @export
 FindPointer <- function(x, y, n) {
-    .Call('_GxEScanR_FindPointer', PACKAGE = 'GxEScanR', x, y, n)
+    .Call('_BinaryDosage_FindPointer', PACKAGE = 'BinaryDosage', x, y, n)
 }
 
 #' Function to print pointers from an array
@@ -96,6 +96,6 @@ FindPointer <- function(x, y, n) {
 #' 1 failure
 #' @export
 PrintPointer <- function(y) {
-    .Call('_GxEScanR_PrintPointer', PACKAGE = 'GxEScanR', y)
+    .Call('_BinaryDosage_PrintPointer', PACKAGE = 'BinaryDosage', y)
 }
 
