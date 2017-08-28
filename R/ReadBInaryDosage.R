@@ -178,5 +178,6 @@ SNPApply <- function(binaryDosageInfo, function2apply, outputValues, extraData =
     function2apply(fileSubjects, snpFreq, SNPStatus$firstSNP:SNPStatus$lastSNP, firstDose, lastDose,
                    firstp0, lastp0, firstp1, lastp1, firstp2, lastp2, extraData)
   }
+
   return (0)
 }
