@@ -157,14 +157,26 @@ ReadMoreBinarySNPData <- function(binaryFileInfo, readInfo) {
 SNPApply <- function(binaryDosageInfo, function2apply, outputValues, extraData = NULL, snps2use, maxSNPs) {
   fileSubjects <- CreateSubjectDataTable(binaryDosageInfo)
   SNPStatus <- ReadBinarySNPData(binaryDosageInfo, fileSubjects, snps2use, maxSNPs = maxSNPs)
-  firstCol <- which(names(fileSubjects) %in% "Dose_1")
-  lastCol <- which(names(fileSubjects) %in% paste("Dose", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
-  function2apply(fileSubjects, outputValues, SNPStatus$firstSNP:SNPStatus$lastSNP, firstCol, lastCol, extraData)
+  firstDose <- which(names(fileSubjects) %in% "Dose_1")
+  lastDose <- which(names(fileSubjects) %in% paste("Dose", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+  firstp0 <- which(names(fileSubjects) %in% "p0_1")
+  lastp0 <- which(names(fileSubjects) %in% paste("p0", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+  firstp1 <- which(names(fileSubjects) %in% "p1_1")
+  lastp1 <- which(names(fileSubjects) %in% paste("p1", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+  firstp2 <- which(names(fileSubjects) %in% "p2_1")
+  lastp2 <- which(names(fileSubjects) %in% paste("p2", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+  function2apply(fileSubjects, outputValues, SNPStatus$firstSNP:SNPStatus$lastSNP, firstDose, lastDose,
+                 firstp0, lastp0, firstp1, lastp1, firstp2, lastp2, extraData)
   while (SNPStatus$moreSNPs) {
     SNPStatus <- ReadMoreBinarySNPData(binaryDosageInfo, SNPStatus)
-    if (SNPStatus$lastSNP - SNPStatus$firstSNP + 1 != maxSNPs)
-      lastCol <- which(names(fileSubjects) %in% paste("Dose", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
-    function2apply(fileSubjects, snpFreq, SNPStatus$firstSNP:SNPStatus$lastSNP, firstCol, lastCol, extraData)
+    if (SNPStatus$lastSNP - SNPStatus$firstSNP + 1 != maxSNPs) {
+      lastDose <- which(names(fileSubjects) %in% paste("Dose", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+      lastp0 <- which(names(fileSubjects) %in% paste("p0", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+      lastp1 <- which(names(fileSubjects) %in% paste("p1", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+      lastp2 <- which(names(fileSubjects) %in% paste("p2", as.character(SNPStatus$lastSNP - SNPStatus$firstSNP + 1), sep = "_"))
+    }
+    function2apply(fileSubjects, snpFreq, SNPStatus$firstSNP:SNPStatus$lastSNP, firstDose, lastDose,
+                   firstp0, lastp0, firstp1, lastp1, firstp2, lastp2, extraData)
   }
   return (0)
 }
