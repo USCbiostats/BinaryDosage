@@ -19,6 +19,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// VCF2Impute2BD
+int VCF2Impute2BD(const std::string& vcfFilename, const std::string& infoFilename, const std::string sampleFilename, const std::string& outputFilename);
+RcppExport SEXP _BinaryDosage_VCF2Impute2BD(SEXP vcfFilenameSEXP, SEXP infoFilenameSEXP, SEXP sampleFilenameSEXP, SEXP outputFilenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type vcfFilename(vcfFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type infoFilename(infoFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type sampleFilename(sampleFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type outputFilename(outputFilenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(VCF2Impute2BD(vcfFilename, infoFilename, sampleFilename, outputFilename));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ReadBDInfo
 Rcpp::List ReadBDInfo(const std::string& binaryDosageFilename);
 RcppExport SEXP _BinaryDosage_ReadBDInfo(SEXP binaryDosageFilenameSEXP) {
@@ -77,6 +91,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_VCF2BD", (DL_FUNC) &_BinaryDosage_VCF2BD, 3},
+    {"_BinaryDosage_VCF2Impute2BD", (DL_FUNC) &_BinaryDosage_VCF2Impute2BD, 4},
     {"_BinaryDosage_ReadBDInfo", (DL_FUNC) &_BinaryDosage_ReadBDInfo, 1},
     {"_BinaryDosage_ReadBDSNPs", (DL_FUNC) &_BinaryDosage_ReadBDSNPs, 10},
     {"_BinaryDosage_FindPointer", (DL_FUNC) &_BinaryDosage_FindPointer, 3},

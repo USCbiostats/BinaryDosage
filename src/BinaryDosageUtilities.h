@@ -1,55 +1,6 @@
 #ifndef BINARYDOSAGEUTILITIES_H
 #define BINARYDOSAGEuTILITIES_H 1
 
-class CWriteBinaryDosageFromVCF {
-protected:
-  static const char m_magicWord[8];
-  unsigned int m_numSubjects;
-  unsigned int m_numSNPs;
-  unsigned int m_numGroups;
-  unsigned int m_subjectOptions;
-  unsigned int m_SNPOptions;
-  unsigned int m_subjectStart;
-  unsigned int m_SNPStart;
-  unsigned int m_dosageStart;
-
-  std::vector<std::string> m_SNPName;
-  std::vector<std::string> m_chromosome;
-  std::vector<unsigned int> m_location;
-  std::vector<std::string> m_refAllele;
-  std::vector<std::string> m_altAllele;
-  std::vector<double> m_altFreq;
-  std::vector<double> m_maf;
-  std::vector<double> m_avgCall;
-  std::vector<double> m_rSquared;
-  unsigned int m_SNPNameSize;
-  unsigned int m_chromosomeSize;
-  unsigned int m_refAlleleSize;
-  unsigned int m_altAlleleSize;
-
-  std::vector<std::string> m_subjectID;
-  std::vector<std::string> m_familyID;
-  unsigned int m_subjectIDSize;
-  unsigned int m_familyIDSize;
-
-  std::ifstream m_infile;
-  std::ofstream m_outfile;
-
-  int ReadInfoFile(const std::string &infoFilename);
-  int GetChromosomesAndLocations();
-  int ReadSubjectInfo();
-  void WriteHeader();
-  void WriteSubjects();
-  void WriteSNPInfo();
-  int WriteDosages();
-public:
-  CWriteBinaryDosageFromVCF();
-  ~CWriteBinaryDosageFromVCF();
-
-  int WriteBinaryDosageFile(const std::string &vcfFilename, const std::string &infoFilename, const std::string &outputFilename);
-};
-#endif
-
 class CReadBinaryDosage {
 protected:
   static const char m_magicWord42[8];
@@ -121,3 +72,4 @@ public:
   const std::vector<double> &RSquared() { return m_rSquared; }
   const std::vector<unsigned int> &SNPDataSize() { return m_SNPDataSize; }
 };
+#endif

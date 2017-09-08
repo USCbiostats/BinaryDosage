@@ -20,6 +20,28 @@ VCF2BD <- function(vcfFilename, infoFilename, outputFilename) {
     .Call('_BinaryDosage_VCF2BD', PACKAGE = 'BinaryDosage', vcfFilename, infoFilename, outputFilename)
 }
 
+#' Function to convert an Impute 2 dosage file to a binary dosage file for GxEScan
+#'
+#' Function to convert a VCF file to a binary dosage file for GxEScan.
+#' The Impute 2 dosage file has to be created from a VCF file using VCF tools
+#' The binary formatted file is smaller that the VCF file and reads in much quicker.
+#'
+#' @param vcfFilename
+#' Name of VCF file
+#' @param infoFilename
+#' Name of information file
+#' @param smapleFilename
+#' Name of sample file - file with subject IDs
+#' @param outputFilename
+#' Name of the binary dosage file
+#' @return
+#' 0 Success
+#' 1 Failure
+#' @export
+VCF2Impute2BD <- function(vcfFilename, infoFilename, sampleFilename, outputFilename) {
+    .Call('_BinaryDosage_VCF2Impute2BD', PACKAGE = 'BinaryDosage', vcfFilename, infoFilename, sampleFilename, outputFilename)
+}
+
 #' Function to convert a VCF file to a binary dosage file for GxEScan
 #'
 #' Function to convert a VCF file to a binary dosage file for GxEScan.
