@@ -16,8 +16,8 @@
 #' 0 Success
 #' 1 Failure
 #' @export
-VCF2BD <- function(vcfFilename, infoFilename, outputFilename) {
-    .Call('_BinaryDosage_VCF2BD', PACKAGE = 'BinaryDosage', vcfFilename, infoFilename, outputFilename)
+VCF2BD_C <- function(vcfFilename, infoFilename, outputFilename) {
+    .Call('_BinaryDosage_VCF2BD_C', PACKAGE = 'BinaryDosage', vcfFilename, infoFilename, outputFilename)
 }
 
 #' Function to convert an Impute 2 dosage file to a binary dosage file for GxEScan

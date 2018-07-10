@@ -240,7 +240,7 @@ int CReadBinaryDosage::ReadFileInfo(const std::string &binaryDosageFilename) {
 //' 1 Failure
 //' @export
 // [[Rcpp::export]]
-int VCF2BD(const std::string &vcfFilename, const std::string &infoFilename, const std::string &outputFilename) {
+int VCF2BD_C(const std::string &vcfFilename, const std::string &infoFilename, const std::string &outputFilename) {
   CWriteBinaryDosageFromVCF wvcf;
 
   return wvcf.WriteBinaryDosageFile(vcfFilename, infoFilename, outputFilename);
