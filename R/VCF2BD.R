@@ -17,5 +17,8 @@
 #' 1 - failure
 #' @export
 VCF2BD <- function(VCFFilename, outputFilename, infoFilename = "", calculateMAF = TRUE) {
+  if (infoFilename == "") {
+    return (VCF53toBD_C(VCFFilename, outputFilename))
+  }
   return (VCF2BD_C(VCFFilename, infoFilename, outputFilename))
 }

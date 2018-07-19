@@ -8,6 +8,7 @@
 #include <string>
 #include "BinaryDosageUtilities.h"
 #include "BinaryDosageWrite.h"
+#include "VCFtoBinaryDosage.h"
 
 const char CReadBinaryDosage::m_magicWord42[8] = { 'b', 'o', 's', 'e', 0x0, 0x4, 0x0, 0x2};
 
@@ -246,6 +247,26 @@ int VCF2BD_C(const std::string &vcfFilename, const std::string &infoFilename, co
   return wvcf.WriteBinaryDosageFile(vcfFilename, infoFilename, outputFilename);
 }
 
+//' Function to convert a VCF file from HRC to a binary dosage file for GxEScan without an info file
+//'
+//' Function to convert a VCF file from HRC to a binary dosage file for GxEScan without an info file.
+//' The binary formatted file is smaller that the VCF file and reads in much quicker.
+//'
+//' @param vcfFilename
+//' Name of VCF file
+//' @param outputFilename
+//' Name of the binary dosage file
+//' @return
+//' 0 Success
+//' 1 Failure
+//' @export
+// [[Rcpp::export]]
+int VCF53toBD_C(const std::string &vcfFilename, const std::string &bdFilename) {
+  CVCFtoBinaryDosage42 vcfbd42;
+
+  vcfbd42.Convert(vcfFilename, bdFilename);
+  return 0;
+}
 //' Function to convert an Impute 2 dosage file to a binary dosage file for GxEScan
 //'
 //' Function to convert a VCF file to a binary dosage file for GxEScan.
