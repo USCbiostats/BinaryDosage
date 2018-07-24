@@ -4,9 +4,21 @@
 #include <Rcpp.h>
 #include "VCFtoBinaryDosage.h"
 
+CVCFtoBinaryDosage42::CVCFtoBinaryDosage42() {
+  m_bd = NULL;
+  m_vcfFile = NULL;
+}
+
+CVCFtoBinaryDosage42::~CVCFtoBinaryDosage42() {
+  if (m_bd)
+    delete [] m_bd;
+  if (m_vcfFile)
+    delete m_vcfFile;
+}
+
 void CVCFtoBinaryDosage42::OpenTempFiles() {
   std::string outFilename;
-  
+
   outFilename = m_bdFilename + std::string(".tmp.chromosome");
   m_chromosomeFile.open(outFilename.c_str());
   outFilename = m_bdFilename + std::string(".tmp.bp");
@@ -34,13 +46,14 @@ void CVCFtoBinaryDosage42::CloseTempFiles() {
 }
 
 void CVCFtoBinaryDosage42::WriteDosage(const std::vector<double> &d, const std::vector<double> &p0,
-                                       const std::vector<double> &p1, const std::vector<double> &p2) {
+                                         const std::vector<double> &p1, const std::vector<double> &p2) {
   int numSub, numAdded;
   const double *dp, *pp0, *pp1, *pp2;
+  short sd, sp0, sp1, sp2;
   unsigned short *pbd, *pbdex;
   int i;
-  
-  numSub = d.size();  
+
+  numSub = d.size();
   dp = &d[0];
   pp0 = &p0[0];
   pp1 = &p1[0];
@@ -48,22 +61,34 @@ void CVCFtoBinaryDosage42::WriteDosage(const std::vector<double> &d, const std::
   pbd = m_bd;
   pbdex = pbd + numSub;
   numAdded = 0;
-  
+
   for (i = 0; i < numSub; ++i, ++dp, ++pp0, ++pp1, ++pp2, ++pbd) {
-    *pbd = 10000 * (*dp + 1e-6);
-    if (fabs(*dp - (*pp1 + *pp2 + *pp2)) > 1e-6 || fabs(1. - (*pp0 + *pp1 + *pp2)) > 1e-6) {
+    sd = 10000 * *dp;
+    if (fabs(*dp - sd*10000.) > fabs(*dp - (sd + 1)*10000.))
+      ++sd;
+    sp0 = 10000 * *pp0;
+    if (fabs(*pp0 - sp0*10000.) > fabs(*pp0 - (sp0 + 1)*10000.))
+      ++sp0;
+    sp1 = 10000 * *pp1;
+    if (fabs(*pp1 - sp1*10000.) > fabs(*pp1 - (sp1 + 1)*10000.))
+      ++sp1;
+    sp2 = 10000 * *pp2;
+    if (fabs(*pp2 - sp2*10000.) > fabs(*pp2 - (sp2 + 1)*10000.))
+      ++sp2;
+    *pbd = sd;
+    if (sp1 + sp2 + sp2 != sd || sp0 + sp1 + sp2 != 10000) {
       *pbd |= 0x8000;
-      *pbdex = 10000 * (*pp1 + 1e-6);
+      *pbdex = sp1;
       *pbdex |= 0x8000;
       ++pbdex;
-      *pbdex = 10000 * (*pp0 + 1e-6);
+      *pbdex = sp0;
       ++pbdex;
-      *pbdex = 10000 * (*pp2 + 1e-6);
+      *pbdex = sp2;
       ++pbdex;
       numAdded += 3;
-    } else if (fabs(*pp0) > 1e-6 && fabs(*pp2) > 1e-6) {
+    } else if (sp0 != 0 && sp2 != 0) {
       *pbd |= 0x8000;
-      *pbdex = 10000 * (*pp1 + 1e-6);
+      *pbdex = sp1;
       ++pbdex;
       numAdded += 1;
     }
@@ -78,7 +103,7 @@ void CVCFtoBinaryDosage42::WriteHeader() {
   const char header[8] = { 'b', 'o', 's', 'e', 0x0, 0x4, 0x0, 0x2};
   const int zero = 0;
   const int numGroups = 1;
-  
+
   m_binaryDosageFile.write(header, 8);
   m_binaryDosageFile.write((char *)&m_numSub, sizeof(int));
   m_binaryDosageFile.write((char *)&m_numSNPs, sizeof(int));
@@ -88,13 +113,13 @@ void CVCFtoBinaryDosage42::WriteHeader() {
   m_binaryDosageFile.write((char *)&zero, sizeof(int));
   m_binaryDosageFile.write((char *)&zero, sizeof(int));
   m_binaryDosageFile.write((char *)&zero, sizeof(int));
-  
+
 }
 
 void CVCFtoBinaryDosage42::WriteGroups() {
   std::streampos startSubjects;
   int startSub;
-  
+
   m_binaryDosageFile.write((char *)&m_numSub, sizeof(int));
   startSubjects = m_binaryDosageFile.tellp();
   startSub = startSubjects;
@@ -110,7 +135,7 @@ void CVCFtoBinaryDosage42::WriteSubjects(const std::vector<std::string> &subID) 
   int startSNP2;
   std::ostringstream oss;
   int subSize;
-  
+
   startSub = m_binaryDosageFile.tellp();
   m_binaryDosageFile.write((char *)&zero, sizeof(int));
   m_binaryDosageFile.write((char *)&zero, sizeof(int));
@@ -142,7 +167,7 @@ void CVCFtoBinaryDosage42::WriteSNPInfo(const int snpOptions, const std::string 
   double *dval = NULL;
   std::streampos startSNP, startDosage, fileSize;
   int startDosage2;
-  
+
   startSNP = m_binaryDosageFile.tellp();
   m_binaryDosageFile.write((char *)&nameSize, sizeof(int));
   m_binaryDosageFile.write((char *)&chromosomeSize, sizeof(int));
@@ -246,7 +271,7 @@ void CVCFtoBinaryDosage42::WriteSNPInfo(const int snpOptions, const std::string 
     delete [] bp;
   if (dval)
     delete [] dval;
-  
+
   startDosage = m_binaryDosageFile.tellp();
   m_binaryDosageFile.seekp(startSNP);
   m_binaryDosageFile.write((char *)&nameSize, sizeof(int));
@@ -266,7 +291,7 @@ void CVCFtoBinaryDosage42::WriteGeneticValues() {
   int i;
   std::ifstream infile;
   std::string filename;
-  
+
   filename = m_bdFilename + std::string(".tmp.bd");
   infile.open(filename.c_str(), std::ios_base::in | std::ios_base::binary);
   for (i = 0; i < m_numSNPs; ++i) {
@@ -278,47 +303,60 @@ void CVCFtoBinaryDosage42::WriteGeneticValues() {
   infile.close();
 }
 
+int CVCFtoBinaryDosage42::OpenVCF(const std::string &vcfFilename) {
+  if (m_vcfFile)
+    delete m_vcfFile;
+  m_vcfFile = NULL;
+  if (m_bd)
+    delete [] m_bd;
+  m_bd = NULL;
+
+  m_vcfFile = new CReadVCF_Generic(vcfFilename);
+
+  return 0;
+}
+
 int CVCFtoBinaryDosage42::Convert(const std::string &vcfFilename, const std::string &bdFilename) {
-  CReadVCF_HRC vcfbase(vcfFilename);
   bool oneChromosome;
   std::string singleChromosome;
   double altFreq;
 
-  m_bdFilename = bdFilename;  
-  if (vcfbase.ReadSubjects()) {
+  m_bdFilename = bdFilename;
+  OpenVCF(vcfFilename);
+  if (m_vcfFile->ReadSubjects()) {
     Rcpp::Rcerr << "VCF read error" << std::endl;
     return 1;
   }
-  
-  m_numSub = vcfbase.NumSubjects();
+
+  m_numSub = m_vcfFile->NumSubjects();
   m_bd = new unsigned short[4 * m_numSub];
-  
-  if (vcfbase.GetFirstSNP())
+
+  if (m_vcfFile->GetFirstSNP())
     return 1;
   oneChromosome = true;
   singleChromosome = "";
   OpenTempFiles();
   do {
     if (singleChromosome == "")
-      singleChromosome = vcfbase.Chromosome()[0];
-    else if (singleChromosome != vcfbase.Chromosome()[0])
+      singleChromosome = m_vcfFile->Chromosome()[0];
+    else if (singleChromosome != m_vcfFile->Chromosome()[0])
       oneChromosome = false;
-    m_chromosomeFile << vcfbase.Chromosome()[0] << '\t';
-    m_bpFile.write((char *)&vcfbase.Location()[0], sizeof(int));
-    m_snpIDFile << vcfbase.SNPID()[0] << '\t';
-    m_refFile << vcfbase.ReferenceAllele()[0] << '\t';
-    m_altFile << vcfbase.AlternateAllele()[0] << '\t';
-    altFreq = vcfbase.AlternateAlleleFrequency();
+    m_chromosomeFile << m_vcfFile->Chromosome()[0] << '\t';
+    m_bpFile.write((char *)&m_vcfFile->Location()[0], sizeof(int));
+    m_snpIDFile << m_vcfFile->SNPID()[0] << '\t';
+    m_refFile << m_vcfFile->ReferenceAllele()[0] << '\t';
+    m_altFile << m_vcfFile->AlternateAllele()[0] << '\t';
+    altFreq = m_vcfFile->AlternateAlleleFrequency();
     m_altFreqFile.write((char *)&altFreq, sizeof(double));
-    WriteDosage(vcfbase.Dosage(), vcfbase.P0(), vcfbase.P1(), vcfbase.P2());
-  } while (!vcfbase.GetNextSNP());
-  m_numSNPs = vcfbase.NumSNPs();
+    WriteDosage(m_vcfFile->Dosage(), m_vcfFile->P0(), m_vcfFile->P1(), m_vcfFile->P2());
+  } while (!m_vcfFile->GetNextSNP());
+  m_numSNPs = m_vcfFile->NumSNPs();
   CloseTempFiles();
 
   m_binaryDosageFile.open(m_bdFilename.c_str(), std::ios_base::out | std::ios_base::binary);
   WriteHeader();
   WriteGroups();
-  WriteSubjects(vcfbase.SubjectID());
+  WriteSubjects(m_vcfFile->SubjectID());
   if (oneChromosome)
     WriteSNPInfo(0x00fc, singleChromosome);
   else
@@ -327,6 +365,60 @@ int CVCFtoBinaryDosage42::Convert(const std::string &vcfFilename, const std::str
   m_binaryDosageFile.close();
   OpenTempFiles();
   CloseTempFiles();
-  
+
   return 0;
+}
+
+int CVCF53toBinaryDosage42::OpenVCF(const std::string &vcfFilename) {
+  if (m_vcfFile)
+    delete m_vcfFile;
+  m_vcfFile = NULL;
+  if (m_bd)
+    delete [] m_bd;
+  m_bd = NULL;
+
+  m_vcfFile = new CReadVCF_HRC(vcfFilename);
+
+  return 0;
+}
+
+void CVCF53toBinaryDosage42::WriteDosage(const std::vector<double> &d, const std::vector<double> &p0,
+                                         const std::vector<double> &p1, const std::vector<double> &p2) {
+  int numSub, numAdded;
+  const double *dp, *pp0, *pp1, *pp2;
+  unsigned short *pbd, *pbdex;
+  int i;
+
+  numSub = d.size();
+  dp = &d[0];
+  pp0 = &p0[0];
+  pp1 = &p1[0];
+  pp2 = &p2[0];
+  pbd = m_bd;
+  pbdex = pbd + numSub;
+  numAdded = 0;
+
+  for (i = 0; i < numSub; ++i, ++dp, ++pp0, ++pp1, ++pp2, ++pbd) {
+    *pbd = 10000 * (*dp + 1e-6);
+    if (fabs(*dp - (*pp1 + *pp2 + *pp2)) > 1e-6 || fabs(1. - (*pp0 + *pp1 + *pp2)) > 1e-6) {
+      *pbd |= 0x8000;
+      *pbdex = 10000 * (*pp1 + 1e-6);
+      *pbdex |= 0x8000;
+      ++pbdex;
+      *pbdex = 10000 * (*pp0 + 1e-6);
+      ++pbdex;
+      *pbdex = 10000 * (*pp2 + 1e-6);
+      ++pbdex;
+      numAdded += 3;
+    } else if (fabs(*pp0) > 1e-6 && fabs(*pp2) > 1e-6) {
+      *pbd |= 0x8000;
+      *pbdex = 10000 * (*pp1 + 1e-6);
+      ++pbdex;
+      numAdded += 1;
+    }
+  }
+  numAdded += numSub;
+  numAdded *= sizeof(unsigned short);
+  m_doseFile.write((char *)&numAdded, sizeof(int));
+  m_doseFile.write((char *)m_bd, numAdded);
 }
