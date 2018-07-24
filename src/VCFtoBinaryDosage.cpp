@@ -64,16 +64,18 @@ void CVCFtoBinaryDosage42::WriteDosage(const std::vector<double> &d, const std::
 
   for (i = 0; i < numSub; ++i, ++dp, ++pp0, ++pp1, ++pp2, ++pbd) {
     sd = 10000 * *dp;
-    if (fabs(*dp - sd*10000.) > fabs(*dp - (sd + 1)*10000.))
+//    if (i < 5 || i == numSub - 1)
+//      Rcpp::Rcout << fabs(*dp - sd/10000.) << '\t' << fabs(*dp - (sd + 1)/10000.) << '\t';
+    if (fabs(*dp - sd/10000.) > fabs(*dp - (sd + 1)/10000.))
       ++sd;
     sp0 = 10000 * *pp0;
-    if (fabs(*pp0 - sp0*10000.) > fabs(*pp0 - (sp0 + 1)*10000.))
+    if (fabs(*pp0 - sp0/10000.) > fabs(*pp0 - (sp0 + 1)/10000.))
       ++sp0;
     sp1 = 10000 * *pp1;
-    if (fabs(*pp1 - sp1*10000.) > fabs(*pp1 - (sp1 + 1)*10000.))
+    if (fabs(*pp1 - sp1/10000.) > fabs(*pp1 - (sp1 + 1)/10000.))
       ++sp1;
     sp2 = 10000 * *pp2;
-    if (fabs(*pp2 - sp2*10000.) > fabs(*pp2 - (sp2 + 1)*10000.))
+    if (fabs(*pp2 - sp2/10000.) > fabs(*pp2 - (sp2 + 1)/10000.))
       ++sp2;
     *pbd = sd;
     if (sp1 + sp2 + sp2 != sd || sp0 + sp1 + sp2 != 10000) {
@@ -92,7 +94,10 @@ void CVCFtoBinaryDosage42::WriteDosage(const std::vector<double> &d, const std::
       ++pbdex;
       numAdded += 1;
     }
+//    if (i < 5 || i == numSub - 1)
+//      Rcpp::Rcout << *dp << '\t' << sd/10000. << '\t' << sp0/10000. << '\t' << sp1/10000. << '\t' << sp2/10000. << std::endl;
   }
+//  Rcpp::Rcout << std::endl;
   numAdded += numSub;
   numAdded *= sizeof(unsigned short);
   m_doseFile.write((char *)&numAdded, sizeof(int));
