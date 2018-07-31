@@ -155,3 +155,45 @@ PrintPointer <- function(y) {
     .Call('_BinaryDosage_PrintPointer', PACKAGE = 'BinaryDosage', y)
 }
 
+#' Function to test opening an array of binary dosage files
+#'
+#' Function to test opening an array of binary dosage files
+#'
+#' @param bdList
+#' List of binary dosage info lists
+#' @param mergeFilename
+#' Name of file to merge data into
+#' @param snpLoc
+#' Locations of snps in the various binary dosage files
+#' @return
+#' 0 Success
+#' 1 failure
+#' @export
+OpenBDFiles <- function(bdList, mergeFilename, snpLoc) {
+    .Call('_BinaryDosage_OpenBDFiles', PACKAGE = 'BinaryDosage', bdList, mergeFilename, snpLoc)
+}
+
+#' Function to test getting dosage values
+#'
+#' Function to test getting dosage values
+#'
+#' @param bdInfo
+#' Binary dosage info list
+#' @return
+#' List of dosages
+#' @export
+GetDosages <- function(bdInfo, snpNumber) {
+    .Call('_BinaryDosage_GetDosages', PACKAGE = 'BinaryDosage', bdInfo, snpNumber)
+}
+
+#' Function to test writing of binary dosage files
+#'
+#' Function to test writing of binary dosage files
+#' @return
+#' 0 success
+#' 1 failure
+#' @export
+TestWriteBinaryDosage <- function() {
+    .Call('_BinaryDosage_TestWriteBinaryDosage', PACKAGE = 'BinaryDosage')
+}
+

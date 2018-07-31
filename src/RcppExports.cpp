@@ -112,6 +112,41 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// OpenBDFiles
+int OpenBDFiles(const Rcpp::List& bdList, const std::string& mergeFilename, const Rcpp::NumericMatrix& snpLoc);
+RcppExport SEXP _BinaryDosage_OpenBDFiles(SEXP bdListSEXP, SEXP mergeFilenameSEXP, SEXP snpLocSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bdList(bdListSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type mergeFilename(mergeFilenameSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type snpLoc(snpLocSEXP);
+    rcpp_result_gen = Rcpp::wrap(OpenBDFiles(bdList, mergeFilename, snpLoc));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetDosages
+Rcpp::NumericVector GetDosages(const Rcpp::List& bdInfo, int snpNumber);
+RcppExport SEXP _BinaryDosage_GetDosages(SEXP bdInfoSEXP, SEXP snpNumberSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bdInfo(bdInfoSEXP);
+    Rcpp::traits::input_parameter< int >::type snpNumber(snpNumberSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetDosages(bdInfo, snpNumber));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TestWriteBinaryDosage
+int TestWriteBinaryDosage();
+RcppExport SEXP _BinaryDosage_TestWriteBinaryDosage() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(TestWriteBinaryDosage());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_VCF2BD_C", (DL_FUNC) &_BinaryDosage_VCF2BD_C, 3},
@@ -122,6 +157,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBDSNPs", (DL_FUNC) &_BinaryDosage_ReadBDSNPs, 10},
     {"_BinaryDosage_FindPointer", (DL_FUNC) &_BinaryDosage_FindPointer, 3},
     {"_BinaryDosage_PrintPointer", (DL_FUNC) &_BinaryDosage_PrintPointer, 1},
+    {"_BinaryDosage_OpenBDFiles", (DL_FUNC) &_BinaryDosage_OpenBDFiles, 3},
+    {"_BinaryDosage_GetDosages", (DL_FUNC) &_BinaryDosage_GetDosages, 2},
+    {"_BinaryDosage_TestWriteBinaryDosage", (DL_FUNC) &_BinaryDosage_TestWriteBinaryDosage, 0},
     {NULL, NULL, 0}
 };
 
