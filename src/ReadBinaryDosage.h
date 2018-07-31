@@ -49,9 +49,8 @@ protected:
 public:
   virtual ~CReadMultifileBinaryDosage();
 
-  virtual int ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
-  virtual int ReadSNP(const std::string &chromosome, const std::string &snpID, const int bp,
-                       const std::string &refAllele, const std::string &altAllele);
+  virtual int ReadSubjects();
+  virtual int ReadSNP();
 };
 
 class CReadBinaryDosage11 : public CReadMultifileBinaryDosage {
