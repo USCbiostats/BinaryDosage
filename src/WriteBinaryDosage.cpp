@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -89,8 +90,10 @@ int CWriteMultifileBinaryDosage::WriteSubjects(const std::vector<std::string> &F
   return 0;
 }
 
-int CWriteMultifileBinaryDosage::WriteSNP(const std::string &chromosome, const std::string &snpID, int location,
-                                          const std::string &refAllele, const std::string &altAllele) {
+int CWriteMultifileBinaryDosage::AddSNP(const std::string &chromosome, const std::string &snpID, int location,
+                                          const std::string &refAllele, const std::string &altAllele,
+                                          const std::vector<double> &altFreq, const std::vector<double> &maf,
+                                          const std::vector<double> &avgCall, const std::vector<double> &rSq) {
   if (!m_mapFile.good())
     return 1;
   m_mapFile << chromosome << '\t' << snpID << "\t0\t" << location << '\t' << refAllele << '\t' << altAllele << std::endl;
@@ -226,6 +229,49 @@ CWriteBinaryDosage4x::CWriteBinaryDosage4x(const std::string &filename) : CWrite
 
   outFilename = m_filename + std::string(".bdose");
   m_outfile.open(outFilename.c_str(), std::ios_base::out | std::ios_base::binary);
+  m_numGroups = 0;
+  m_startSubjects = 0;
+  m_startSNPs = 0;
+  m_startDosages = 0;
+}
+
+int CWriteBinaryDosage4x::AddToStringVector(std::vector<std::string> &addToVector, const std::string &stringToAdd) {
+  if (stringToAdd == "") {
+    if (addToVector.size() != 0)
+      return 1;
+    return 0;
+  }
+  addToVector.push_back(stringToAdd);
+  return 0;
+}
+
+int CWriteBinaryDosage4x::AddToDoubleVector(std::vector<std::vector<double> > &addToVector,
+                                            const std::vector<double> &vectorToAdd) {
+  if (vectorToAdd.size() == 0) {
+    if (addToVector.size() != 0)
+      return 1;
+    return 0;
+  }
+  if (vectorToAdd.size() != (unsigned int)m_numGroups)
+    return 1;
+  addToVector.push_back(vectorToAdd);
+  return 0;
+}
+
+int CWriteBinaryDosage4x::WriteString(const std::vector<std::string> &stringToWrite) {
+  std::vector<std::string>::const_iterator stringIt;
+  std::ostringstream oss;
+  const char zero = 0x0;
+
+  oss.str("");
+  for (stringIt = stringToWrite.begin(); stringIt != stringToWrite.end(); ++stringIt)
+    oss << *stringIt << '\t';
+  m_outfile.write(oss.str().c_str(), oss.str().length() - 1);
+  m_outfile.write((char *)&zero, 1);
+
+  if (!m_outfile.good())
+    return 1;
+  return 0;
 }
 
 int CWriteBinaryDosage4x::WriteHeader() {
@@ -239,19 +285,17 @@ int CWriteBinaryDosage4x::WriteHeader() {
 }
 
 int CWriteBinaryDosage4x::WriteGroups(const std::vector<int> &groupSize) {
-  int numGroups;
   std::streampos startSubPos;
-  int startSubjects;
 
-  numGroups = groupSize.size();
+  m_numGroups = groupSize.size();
   m_outfile.seekp((int)Header4pos::numGroups);
-  m_outfile.write((char *)&numGroups, sizeof(int));
+  m_outfile.write((char *)&m_numGroups, sizeof(int));
   m_outfile.seekp((int)Header4pos::startGroups);
-  m_outfile.write((char *)groupSize.data(), numGroups * sizeof(int));
+  m_outfile.write((char *)groupSize.data(), m_numGroups * sizeof(int));
   startSubPos = m_outfile.tellp();
-  startSubjects = startSubPos;
+  m_startSubjects = startSubPos;
   m_outfile.seekp((int)Header4pos::startSub);
-  m_outfile.write((char *)&startSubjects, sizeof(int));
+  m_outfile.write((char *)&m_startSubjects, sizeof(int));
   if (!m_outfile.good())
     return 1;
 
@@ -259,12 +303,148 @@ int CWriteBinaryDosage4x::WriteGroups(const std::vector<int> &groupSize) {
 }
 
 int CWriteBinaryDosage4x::WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
+  std::streampos endSub, endFam;
+  int numSub;
+  int subSize, famSize;
+  const int zero = 0;
 
+  numSub = IID.size();
+  m_outfile.seekp((int)Header4pos::numSub);
+  m_outfile.write((char *)&numSub, sizeof(int));
+
+  m_outfile.seekp(m_startSubjects);
+  m_outfile.write((char *)&zero, sizeof(int));
+  m_outfile.write((char *)&zero, sizeof(int));
+  WriteString(IID);
+
+  endSub = m_outfile.tellp();
+  subSize = (int)endSub - m_startSubjects - 2*sizeof(int);
+  m_outfile.seekp(m_startSubjects);
+  m_outfile.write((char *)&subSize, sizeof(int));
+
+  m_outfile.seekp(endSub);
+  if (FID.size() > 0) {
+    WriteString(FID);
+    endFam = m_outfile.tellp();
+    famSize = (int)endFam - (int)endSub;
+    m_outfile.seekp(m_startSubjects + sizeof(int));
+    m_outfile.write((char *)&famSize, sizeof(int));
+    m_outfile.seekp(endSub);
+  }
+
+  m_startSNPs = m_outfile.tellp();
   return 0;
 }
 
-int CWriteBinaryDosage4x::WriteSNP(const std::string &chromosome, const std::string &snpID, int location,
-                                   const std::string &refAllele, const std::string &altAllele) {
+int CWriteBinaryDosage4x::AddSNP(const std::string &chromosome, const std::string &snpID, int location,
+                                   const std::string &refAllele, const std::string &altAllele,
+                                   const std::vector<double> &altFreq, const std::vector<double> &maf,
+                                   const std::vector<double> &avgCall, const std::vector<double> &rSq) {
+  if (chromosome == "")
+    return 1;
+  m_chromosome.push_back(chromosome);
+  m_bp.push_back(location);
+
+  if (AddToStringVector(m_snpID, snpID))
+    return 1;
+  if (AddToStringVector(m_refAllele, refAllele))
+    return 1;
+  if (AddToStringVector(m_altAllele, altAllele))
+    return 1;
+  if (AddToDoubleVector(m_altFreq, altFreq))
+    return 1;
+  if (AddToDoubleVector(m_maf, maf))
+    return 1;
+  if (AddToDoubleVector(m_avgCall, avgCall))
+    return 1;
+  if (AddToDoubleVector(m_rSq, rSq))
+    return 1;
+  return 0;
+}
+
+int CWriteBinaryDosage4x::GetSNPOptions() {
+  // Chrosome and base pair location is now required
+  int snpOptions = 0x0014;
+  std::vector<std::string>::const_iterator stringIt;
+  std::string chromosome;
+  int reqSize;
+
+  if (m_snpID.size() != 0)
+    snpOptions |= 0x0002;
+
+  reqSize = m_chromosome.size();
+  if (reqSize == 0)
+    return 0;
+  stringIt = m_chromosome.begin();
+  chromosome = *stringIt;
+  ++stringIt;
+  for (;stringIt != m_chromosome.end(); ++stringIt) {
+    if (*stringIt != chromosome)
+      break;
+  }
+  if (stringIt == m_chromosome.end())
+    snpOptions |= 0x0008;
+
+  if (m_bp.size() != reqSize)
+    return 0;
+
+  if (m_refAllele.size() != 0) {
+    if (m_refAllele.size() != reqSize)
+      return 0;
+    if (m_altAllele.size() != reqSize)
+      return 0;
+    snpOptions |= 0x0060;
+  }
+
+  if (m_altFreq.size() != 0) {
+    if (m_altFreq.size() != reqSize)
+      return 0;
+    snpOptions |= 0x0080;
+  }
+
+  if (m_maf.size() != 0) {
+    if (m_maf.size() != reqSize)
+      return 0;
+    snpOptions |= 0x0100;
+  }
+
+  if (m_avgCall.size() != 0) {
+    if (m_avgCall.size() != reqSize)
+      return 0;
+    snpOptions |= 0x0200;
+  }
+
+  if (m_rSq.size() != 0) {
+    if (m_rSq.size() != reqSize)
+      return 0;
+    snpOptions |= 0x0400;
+  }
+  return snpOptions;
+}
+
+int CWriteBinaryDosage4x::WriteSNPs() {
+  const int zero = 0;
+  int snpOptions;
+  std::streampos startPos, endPos;
+  int stringSize;
+
+  snpOptions = GetSNPOptions();
+  if (snpOptions == 0)
+    return 1;
+  m_outfile.seekp(m_startSNPs);
+  m_outfile.write((char *)&zero, sizeof(int));
+  m_outfile.write((char *)&zero, sizeof(int));
+  m_outfile.write((char *)&zero, sizeof(int));
+  m_outfile.write((char *)&zero, sizeof(int));
+  startPos = m_outfile.tellp();
+  if (snpOptions | 0x0002) {
+    WriteString(m_snpID);
+    endPos = m_outfile.tellp();
+    stringSize = (int)(endPos - startPos);
+    m_outfile.seekp(m_startSNPs);
+    m_outfile.write((char *)&stringSize, sizeof(int));
+  }
+
   return 0;
 }
 
@@ -343,6 +523,7 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
   std::vector<std::string> fid, iid;
   std::vector<std::string> snpID, chromosome, refAllele, altAllele;
   std::vector<int> bp;
+  std::vector<double> altFreq, maf, avgCall, rSq;
 
   bdf->WriteHeader();
   groups.push_back(5);
@@ -351,7 +532,7 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
   bdf->WriteSubjects(fid, iid);
   CreateSNPs(snpID, chromosome, bp, refAllele, altAllele);
   for (int i = 0; i < 3; ++i)
-    bdf->WriteSNP(chromosome[i], snpID[i], bp[i], refAllele[i], altAllele[i]);
+    bdf->AddSNP(chromosome[i], snpID[i], bp[i], refAllele[i], altAllele[i], altFreq, maf, avgCall, rSq);
   return 0;
 }
 //' Function to test writing of binary dosage files

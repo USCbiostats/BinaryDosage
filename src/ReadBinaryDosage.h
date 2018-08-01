@@ -8,6 +8,7 @@ protected:
   char m_version[4];
   int m_mainVersion, m_subVersion;
   int m_numSubjects, m_numSNPs, m_numGroups;
+  int m_startSubjects, m_startSNPs, m_startDosages;
   int m_subjectOptions, m_snpOptions;
   std::vector<int> m_groupSize;
   std::vector<std::string> m_FID, m_IID;
@@ -15,13 +16,13 @@ protected:
   std::vector<int> m_bp;
   bool m_usesFamilyID;
 
-  int ReadVersion();
+  int ReadVersion(const char *version);
   CReadBinaryDosageX(const std::string &filename);
 public:
   virtual ~CReadBinaryDosageX();
 
   virtual int ReadHeader();
-  virtual int ReadGroups() { return 0; }
+  virtual int ReadGroups();
   virtual int ReadSubjects() = 0;
   virtual int ReadSNP() = 0;
 
@@ -38,6 +39,8 @@ public:
   const std::vector<int> &Location() const { return m_bp; }
   const std::vector<std::string> &ReferenceAllele() const { return m_refAllele; }
   const std::vector<std::string> &AlternateAllele() const { return m_altAllele; }
+
+  void WriteData(std::ostream &outfile);
 };
 
 class CReadMultifileBinaryDosage : public CReadBinaryDosageX {
@@ -91,7 +94,7 @@ public:
   virtual ~CReadBinaryDosage31() {}
 
   virtual int ReadHeader();
-  virtual int ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
+  virtual int ReadSubjects();
 };
 
 class CReadBinaryDosage32 : public CReadMultifileBinaryDosage {
@@ -100,7 +103,7 @@ public:
   virtual ~CReadBinaryDosage32() {}
 
   virtual int ReadHeader();
-  virtual int ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
+  virtual int ReadSubjects();
 };
 
 class CReadBinaryDosage4x : public CReadBinaryDosageX {
@@ -108,15 +111,16 @@ protected:
   std::vector<std::string> m_chromosome, m_snpID, m_refAllele, m_altAllele;
   std::vector<int> m_bp;
   std::vector<double> m_calculatedMAF;
+
+  int ReadString(std::vector<std::string> &stringToRead, const int sizetoRead);
   CReadBinaryDosage4x(const std::string &filename);
 public:
   virtual ~CReadBinaryDosage4x() {}
 
   virtual int ReadHeader();
-  virtual int ReadGroups(const std::vector<int> &groupSize);
-  virtual int ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
-  virtual int ReadSNP(const std::string &chromosome, const std::string &snpID, const int bp,
-                       const std::string &refAllele, const std::string &altAllele);
+  virtual int ReadGroups();
+  virtual int ReadSubjects();
+  virtual int ReadSNP();
 };
 
 class CReadBinaryDosage41 : public CReadBinaryDosage4x {

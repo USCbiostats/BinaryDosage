@@ -193,6 +193,17 @@ GetDosages <- function(bdInfo, snpNumber) {
 #' 0 success
 #' 1 failure
 #' @export
+TestReadBinaryDosage <- function() {
+    .Call('_BinaryDosage_TestReadBinaryDosage', PACKAGE = 'BinaryDosage')
+}
+
+#' Function to test writing of binary dosage files
+#'
+#' Function to test writing of binary dosage files
+#' @return
+#' 0 success
+#' 1 failure
+#' @export
 TestWriteBinaryDosage <- function() {
     .Call('_BinaryDosage_TestWriteBinaryDosage', PACKAGE = 'BinaryDosage')
 }

@@ -14,8 +14,11 @@ public:
   virtual int WriteHeader();
   virtual int WriteGroups(const std::vector<int> &groupSize) { return 0; }
   virtual int WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) = 0;
-  virtual int WriteSNP(const std::string &chromosome, const std::string &snpID, const int bp,
-                       const std::string &refAllele, const std::string &altAllele) = 0;
+  virtual int AddSNP(const std::string &chromosome, const std::string &snpID, const int bp,
+                       const std::string &refAllele, const std::string &altAllele,
+                       const std::vector<double> &altFreq, const std::vector<double> &maf,
+                       const std::vector<double> &avgCall, const std::vector<double> &rSq) = 0;
+  virtual int FinalizeSNPs() { return 0; }
 };
 
 class CWriteMultifileBinaryDosage : public CWriteBinaryDosage {
@@ -28,8 +31,10 @@ public:
   virtual ~CWriteMultifileBinaryDosage();
 
   virtual int WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
-  virtual int WriteSNP(const std::string &chromosome, const std::string &snpID, const int bp,
-                       const std::string &refAllele, const std::string &altAllele);
+  virtual int AddSNP(const std::string &chromosome, const std::string &snpID, const int bp,
+                       const std::string &refAllele, const std::string &altAllele,
+                       const std::vector<double> &altFreq, const std::vector<double> &maf,
+                       const std::vector<double> &avgCall, const std::vector<double> &rSq);
 };
 
 class CWriteBinaryDosage11 : public CWriteMultifileBinaryDosage {
@@ -87,6 +92,14 @@ protected:
   std::vector<std::string> m_chromosome, m_snpID, m_refAllele, m_altAllele;
   std::vector<int> m_bp;
   std::vector<double> m_calculatedMAF;
+  std::vector<std::vector<double> > m_altFreq, m_maf, m_avgCall, m_rSq;
+  int m_numGroups;
+  int m_startSubjects, m_startSNPs, m_startDosages;
+
+  int WriteString(const std::vector<std::string> &stringToWrite);
+  int AddToStringVector(std::vector<std::string> &addToVector, const std::string &stringToAdd);
+  int AddToDoubleVector(std::vector<std::vector<double> > &addToVector, const std::vector<double> &vectorToAdd);
+  int GetSNPOptions();
   CWriteBinaryDosage4x(const std::string &filename);
 public:
   virtual ~CWriteBinaryDosage4x() {}
@@ -94,8 +107,11 @@ public:
   virtual int WriteHeader();
   virtual int WriteGroups(const std::vector<int> &groupSize);
   virtual int WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
-  virtual int WriteSNP(const std::string &chromosome, const std::string &snpID, const int bp,
-                       const std::string &refAllele, const std::string &altAllele);
+  virtual int AddSNP(const std::string &chromosome, const std::string &snpID, const int bp,
+                       const std::string &refAllele, const std::string &altAllele,
+                       const std::vector<double> &altFreq, const std::vector<double> &maf,
+                       const std::vector<double> &avgCall, const std::vector<double> &rSq);
+  virtual int WriteSNPs();
 };
 
 class CWriteBinaryDosage41 : public CWriteBinaryDosage4x {

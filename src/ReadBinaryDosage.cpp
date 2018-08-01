@@ -34,6 +34,9 @@ CReadBinaryDosageX::CReadBinaryDosageX(const std::string &filename) {
   m_numSubjects = 0;
   m_numSNPs = 0;
   m_numGroups = 0;
+  m_startSubjects = 0;
+  m_startSNPs = 0;
+  m_startDosages = 0;
   m_subjectOptions = 0;
   m_snpOptions = 0;
   m_usesFamilyID = false;
@@ -43,9 +46,11 @@ CReadBinaryDosageX::~CReadBinaryDosageX() {
   m_infile.close();
 }
 
-int CReadBinaryDosageX::ReadVersion() {
+int CReadBinaryDosageX::ReadVersion(const char *version) {
   m_infile.read((char *)m_version, 4);
   if (!m_infile.good())
+    return 1;
+  if (std::memcmp(m_version, version, 4))
     return 1;
   return 0;
 }
@@ -59,11 +64,44 @@ int CReadBinaryDosageX::ReadHeader() {
   m_infile.read(header, 4);
   if (!m_infile.good())
     return 1;
-  if (memcmp(bdHeader, header, 4))
+  if (std::memcmp(bdHeader, header, 4))
     return 1;
   return 0;
 }
 
+int CReadBinaryDosageX::ReadGroups() {
+  m_numGroups = 1;
+  m_groupSize.resize(1);
+  m_groupSize[0] = m_numSubjects;
+  return 0;
+}
+
+void CReadBinaryDosageX::WriteData(std::ostream &outfile) {
+  outfile << "---------------------------------------------------------" << std::endl;
+  outfile << "Filename\t\t:\t" << m_filename << std::endl;
+  outfile << "Version\t\t\t:\t" << m_mainVersion << '.' << m_subVersion << std::endl;
+  outfile << "Number of subjects\t:\t" << m_numSubjects << std::endl;
+  outfile << "Subject options\t\t:\t" << std::hex << m_subjectOptions << std::dec << std::endl;
+  outfile << "Start subjects\t\t:\t" << m_startSubjects << std::endl;
+  outfile << "First subject\t\t:\t";
+  if (m_FID.size() > 0)
+    outfile << m_FID[0] << '\t';
+  if (m_IID.size() > 0)
+    outfile << m_IID[0];
+  outfile << std::endl;
+  outfile << "Last subject\t\t:\t";
+  if (m_FID.size() > 0)
+    outfile << m_FID[m_FID.size() - 1] << '\t';
+  if (m_IID.size() > 0)
+    outfile << m_IID[m_IID.size() - 1];
+  outfile << std::endl;
+  outfile << "Number of groups\t:\t" << m_numGroups << std::endl;
+  outfile << "Group sizes\t\t:";
+  for (int i = 0; i < m_numGroups; ++i)
+    outfile << '\t' << m_groupSize[i];
+  outfile << std::endl;
+  outfile << "---------------------------------------------------------" << std::endl;
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CReadMultifileBinaryDosage
@@ -71,14 +109,14 @@ int CReadBinaryDosageX::ReadHeader() {
 ///////////////////////////////////////////////////////////////////////////////
 
 CReadMultifileBinaryDosage::CReadMultifileBinaryDosage(const std::string &filename) : CReadBinaryDosageX(filename) {
-  std::string outputFilename;
+  std::string inputFilename;
 
-  outputFilename = m_filename + std::string(".fam");
-  m_famFile.open(outputFilename.c_str());
-  outputFilename = m_filename + std::string(".map");
-  m_mapFile.open(outputFilename.c_str());
-  outputFilename = m_filename + std::string(".bdose");
-  m_infile.open(outputFilename.c_str(), std::ios_base::in | std::ios_base::binary);
+  inputFilename = m_filename + std::string(".fam");
+  m_famFile.open(inputFilename.c_str());
+  inputFilename = m_filename + std::string(".map");
+  m_mapFile.open(inputFilename.c_str());
+  inputFilename = m_filename + std::string(".bdose");
+  m_infile.open(inputFilename.c_str(), std::ios_base::in | std::ios_base::binary);
 }
 
 CReadMultifileBinaryDosage::~CReadMultifileBinaryDosage() {
@@ -87,9 +125,9 @@ CReadMultifileBinaryDosage::~CReadMultifileBinaryDosage() {
 }
 
 int CReadMultifileBinaryDosage::ReadSubjects() {
-  std::vector<std::string>::const_iterator iid, fid;
   std::string junk, fam, sub;
   std::istringstream iss;
+  bool familyID;
   int numCol;
 
 
@@ -101,24 +139,66 @@ int CReadMultifileBinaryDosage::ReadSubjects() {
     return 1;
   numCol = 0;
   iss.str(junk);
-
-  if (FID.size() == 0) {
-    for (std::vector<std::string>::const_iterator iid = IID.begin(); iid != IID.end(); ++iid)
-      m_famFile << *iid << "\t0\t0\t9\t9" << std::endl;
-  } else {
-    for (iid = IID.begin(), fid = FID.begin(); iid != IID.end(); ++iid, ++fid)
-      m_famFile << *fid << '\t' << *iid << "\t0\t0\t9\t9" << std::endl;
+  iss >> fam;
+  while (!iss.fail()) {
+    ++numCol;
+    iss >> fam;
   }
+  switch(numCol) {
+  case 1:
+  case 5:
+    familyID = false;
+    break;
+  case 2:
+  case 6:
+    familyID = true;
+    break;
+  default:
+    return 1;
+  }
+  do {
+    iss.clear();
+    iss.str(junk);
+    if (familyID) {
+      iss >> fam;
+      m_FID.push_back(fam);
+    }
+    iss >> sub;
+    m_IID.push_back(sub);
+    getline(m_famFile, junk);
+  } while (!m_famFile.fail());
+  m_numSubjects = m_IID.size();
   return 0;
 }
 
-int CReadMultifileBinaryDosage::ReadSNP(const std::string &chromosome, const std::string &snpID, int location,
-                                          const std::string &refAllele, const std::string &altAllele) {
-  if (!m_mapFile.good())
+int CReadMultifileBinaryDosage::ReadSNP() {
+  std::string junk, chromosome, snpID, refAllele, altAllele;
+  int bp;
+  std::istringstream iss;
+
+
+  if (!m_mapFile.is_open())
     return 1;
-  m_mapFile << chromosome << '\t' << snpID << "\t0\t" << location << '\t' << refAllele << '\t' << altAllele << std::endl;
-  if (!m_mapFile.good())
+
+  std::getline(m_mapFile, junk);
+  if (m_famFile.fail())
     return 1;
+  iss.str(junk);
+  iss >> chromosome >> snpID >> bp >> bp >> refAllele >> altAllele;
+  if (iss.fail())
+    return 1;
+  do {
+    iss.clear();
+    iss.str(junk);
+    iss >> chromosome >> snpID >> bp >> bp >> refAllele >> altAllele;
+    m_chromosome.push_back(chromosome);
+    m_SNPID.push_back(snpID);
+    m_bp.push_back(bp);
+    m_refAllele.push_back(refAllele);
+    m_altAllele.push_back(altAllele);
+    getline(m_famFile, junk);
+  } while (!m_famFile.fail());
+  m_numSNPs = m_SNPID.size();
   return 0;
 }
 
@@ -128,12 +208,15 @@ int CReadMultifileBinaryDosage::ReadSNP(const std::string &chromosome, const std
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage11::CReadBinaryDosage11(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage11::CReadBinaryDosage11(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 1;
+  m_subVersion = 1;
+}
 
 int CReadBinaryDosage11::ReadHeader() {
   const char version[4] = { 0x00, 0x01, 0x00, 0x01};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
@@ -144,12 +227,15 @@ int CReadBinaryDosage11::ReadHeader() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage12::CReadBinaryDosage12(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage12::CReadBinaryDosage12(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 1;
+  m_subVersion = 2;
+}
 
 int CReadBinaryDosage12::ReadHeader() {
   const char version[4] = { 0x00, 0x01, 0x00, 0x02};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
@@ -160,12 +246,15 @@ int CReadBinaryDosage12::ReadHeader() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage21::CReadBinaryDosage21(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage21::CReadBinaryDosage21(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 2;
+  m_subVersion = 1;
+}
 
 int CReadBinaryDosage21::ReadHeader() {
   const char version[4] = { 0x00, 0x02, 0x00, 0x01};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
@@ -176,12 +265,15 @@ int CReadBinaryDosage21::ReadHeader() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage22::CReadBinaryDosage22(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage22::CReadBinaryDosage22(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 2;
+  m_subVersion = 2;
+}
 
 int CReadBinaryDosage22::ReadHeader() {
   const char version[4] = { 0x00, 0x02, 0x00, 0x02};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
@@ -192,24 +284,26 @@ int CReadBinaryDosage22::ReadHeader() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage31::CReadBinaryDosage31(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage31::CReadBinaryDosage31(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 3;
+  m_subVersion = 1;
+}
 
 int CReadBinaryDosage31::ReadHeader() {
   const char version[4] = { 0x00, 0x03, 0x00, 0x01};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
 
-int CReadBinaryDosage31::ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
-  int numSubjects;
-
-  numSubjects = IID.size();
-  m_infile.Read((char *)&numSubjects, sizeof(int));
+int CReadBinaryDosage31::ReadSubjects() {
+  m_infile.read((char *)&m_numSubjects, sizeof(int));
   if (!m_infile.good())
     return 1;
-  return CReadMultifileBinaryDosage::ReadSubjects(FID, IID);
+  m_IID.reserve(m_numSubjects);
+  m_FID.reserve(m_numSubjects);
+  return CReadMultifileBinaryDosage::ReadSubjects();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,24 +312,26 @@ int CReadBinaryDosage31::ReadSubjects(const std::vector<std::string> &FID, const
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage32::CReadBinaryDosage32(const std::string &filename) : CReadMultifileBinaryDosage(filename) {}
+CReadBinaryDosage32::CReadBinaryDosage32(const std::string &filename) : CReadMultifileBinaryDosage(filename) {
+  m_mainVersion = 3;
+  m_subVersion = 2;
+}
 
 int CReadBinaryDosage32::ReadHeader() {
   const char version[4] = { 0x00, 0x03, 0x00, 0x02};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   return ReadVersion(version);
 }
 
-int CReadBinaryDosage32::ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
-  int numSubjects;
-
-  numSubjects = IID.size();
-  m_infile.Read((char *)&numSubjects, sizeof(int));
+int CReadBinaryDosage32::ReadSubjects() {
+  m_infile.read((char *)&m_numSubjects, sizeof(int));
   if (!m_infile.good())
     return 1;
-  return CReadMultifileBinaryDosage::ReadSubjects(FID, IID);
+  m_IID.reserve(m_numSubjects);
+  m_FID.reserve(m_numSubjects);
+  return CReadMultifileBinaryDosage::ReadSubjects();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,50 +340,83 @@ int CReadBinaryDosage32::ReadSubjects(const std::vector<std::string> &FID, const
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage4x::CReadBinaryDosage4x(const std::string &filename) : CReadBinaryDosage(filename) {
+CReadBinaryDosage4x::CReadBinaryDosage4x(const std::string &filename) : CReadBinaryDosageX(filename) {
   std::string infilename;
 
   infilename = m_filename + std::string(".bdose");
-  m_infile.open(infilename.c_str(), std::ios_base::out | std::ios_base::binary);
+  m_infile.open(infilename.c_str(), std::ios_base::in | std::ios_base::binary);
+}
+
+int CReadBinaryDosage4x::ReadString(std::vector<std::string> &stringToRead, const int sizeToRead) {
+  std::vector<std::string>::iterator stringIt;
+  std::string x;
+  char *charString = NULL;
+  std::istringstream iss;
+
+  charString = new char[sizeToRead];
+  m_infile.read(charString, sizeToRead);
+  x = charString;
+  iss.str(x);
+  for (stringIt = stringToRead.begin(); stringIt != stringToRead.end(); ++stringIt) {
+    iss >> x;
+    *stringIt = x;
+  }
+  if (iss.fail())
+    return 1;
+
+  if (charString)
+    delete [] charString;
+  return 0;
 }
 
 int CReadBinaryDosage4x::ReadHeader() {
-  const int zero = 0;
-
-  for (int i = 0; i < 8; ++i)
-    m_infile.Read((char *)&zero, sizeof(int));
-  if (!m_infile.good())
+  m_infile.seekg((int)Header4pos::numSub);
+  m_infile.read((char *)&m_numSubjects, sizeof(int));
+  m_infile.read((char *)&m_numSNPs, sizeof(int));
+  m_infile.read((char *)&m_numGroups, sizeof(int));
+  m_infile.read((char *)&m_subjectOptions, sizeof(int));
+  m_infile.read((char *)&m_snpOptions, sizeof(int));
+  m_infile.read((char *)&m_startSubjects, sizeof(int));
+  m_infile.read((char *)&m_startSNPs, sizeof(int));
+  m_infile.read((char *)&m_startDosages, sizeof(int));
+  if (m_infile.fail())
     return 1;
   return 0;
 }
 
-int CReadBinaryDosage4x::ReadGroups(const std::vector<int> &groupSize) {
-  int numGroups;
-  std::streampos startSubPos;
-  int startSubjects;
-
-  numGroups = groupSize.size();
-  m_infile.seekp((int)Header4pos::numGroups);
-  m_infile.Read((char *)&numGroups, sizeof(int));
-  m_infile.seekp((int)Header4pos::startGroups);
-  m_infile.Read((char *)groupSize.data(), numGroups * sizeof(int));
-  startSubPos = m_infile.tellp();
-  startSubjects = startSubPos;
-  m_infile.seekp((int)Header4pos::startSub);
-  m_infile.Read((char *)&startSubjects, sizeof(int));
+int CReadBinaryDosage4x::ReadGroups() {
+  m_groupSize.resize(m_numGroups);
+  m_infile.seekg((int)Header4pos::startGroups);
+  m_infile.read((char *)m_groupSize.data(), m_numGroups * sizeof(int));
   if (!m_infile.good())
     return 1;
 
   return 0;
 }
 
-int CReadBinaryDosage4x::ReadSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
+int CReadBinaryDosage4x::ReadSubjects() {
+  int iidSize, fidSize;
+
+  m_infile.seekg(m_startSubjects);
+  m_infile.read((char *)&iidSize, sizeof(int));
+  m_infile.read((char *)&fidSize, sizeof(int));
+
+  m_IID.resize(m_numSubjects);
+  if (ReadString(m_IID, iidSize))
+    return 1;
+
+  if (fidSize > 0) {
+    m_FID.resize(m_numSubjects);
+    if (ReadString(m_FID, fidSize))
+      return 1;
+  } else {
+    m_FID.resize(0);
+  }
 
   return 0;
 }
 
-int CReadBinaryDosage4x::ReadSNP(const std::string &chromosome, const std::string &snpID, int location,
-                                   const std::string &refAllele, const std::string &altAllele) {
+int CReadBinaryDosage4x::ReadSNP() {
   return 0;
 }
 
@@ -297,12 +426,15 @@ int CReadBinaryDosage4x::ReadSNP(const std::string &chromosome, const std::strin
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage41::CReadBinaryDosage41(const std::string &filename) : CReadBinaryDosage4x(filename) {}
+CReadBinaryDosage41::CReadBinaryDosage41(const std::string &filename) : CReadBinaryDosage4x(filename) {
+  m_mainVersion = 4;
+  m_subVersion = 1;
+}
 
 int CReadBinaryDosage41::ReadHeader() {
   const char version[4] = { 0x00, 0x04, 0x00, 0x01};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   if (ReadVersion(version))
     return 1;
@@ -315,12 +447,15 @@ int CReadBinaryDosage41::ReadHeader() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CReadBinaryDosage42::CReadBinaryDosage42(const std::string &filename) : CReadBinaryDosage4x(filename) {}
+CReadBinaryDosage42::CReadBinaryDosage42(const std::string &filename) : CReadBinaryDosage4x(filename) {
+  m_mainVersion = 4;
+  m_subVersion = 2;
+}
 
 int CReadBinaryDosage42::ReadHeader() {
   const char version[4] = { 0x00, 0x04, 0x00, 0x02};
 
-  if (CReadBinaryDosage::ReadHeader())
+  if (CReadBinaryDosageX::ReadHeader())
     return 1;
   if (ReadVersion(version))
     return 1;
@@ -331,20 +466,12 @@ int CReadBinaryDosage42::ReadHeader() {
 //                            Test code
 ///////////////////////////////////////////////////////////////////////////////
 
-int TestReadBD(CReadBinaryDosage *bdf) {
-  std::vector<int> groups;
-  std::vector<std::string> fid, iid;
-  std::vector<std::string> snpID, chromosome, refAllele, altAllele;
-  std::vector<int> bp;
-
+int TestReadBD(CReadBinaryDosageX *bdf) {
   bdf->ReadHeader();
-  groups.push_back(5);
-  bdf->ReadGroups(groups);
-  CreateSubjectIDs(iid);
-  bdf->ReadSubjects(fid, iid);
-  CreateSNPs(snpID, chromosome, bp, refAllele, altAllele);
-  for (int i = 0; i < 3; ++i)
-    bdf->ReadSNP(chromosome[i], snpID[i], bp[i], refAllele[i], altAllele[i]);
+  bdf->ReadSubjects();
+  bdf->ReadSNP();
+  bdf->ReadGroups();
+  bdf->WriteData(Rcpp::Rcout);
   return 0;
 }
 //' Function to test writing of binary dosage files
