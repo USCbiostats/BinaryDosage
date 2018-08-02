@@ -14,6 +14,7 @@ protected:
   std::vector<std::string> m_FID, m_IID;
   std::vector<std::string> m_SNPID, m_chromosome, m_refAllele, m_altAllele;
   std::vector<int> m_bp;
+  std::vector<std::vector<double> > m_altFreq, m_maf, m_avgCall, m_rSq;
   bool m_usesFamilyID;
 
   int ReadVersion(const char *version);
@@ -24,7 +25,7 @@ public:
   virtual int ReadHeader();
   virtual int ReadGroups();
   virtual int ReadSubjects() = 0;
-  virtual int ReadSNP() = 0;
+  virtual int ReadSNPs() = 0;
 
   int Version() const { return m_mainVersion; }
   int SubVersion() const { return m_subVersion; }
@@ -53,7 +54,7 @@ public:
   virtual ~CReadMultifileBinaryDosage();
 
   virtual int ReadSubjects();
-  virtual int ReadSNP();
+  virtual int ReadSNPs();
 };
 
 class CReadBinaryDosage11 : public CReadMultifileBinaryDosage {
@@ -108,10 +109,6 @@ public:
 
 class CReadBinaryDosage4x : public CReadBinaryDosageX {
 protected:
-  std::vector<std::string> m_chromosome, m_snpID, m_refAllele, m_altAllele;
-  std::vector<int> m_bp;
-  std::vector<double> m_calculatedMAF;
-
   int ReadString(std::vector<std::string> &stringToRead, const int sizetoRead);
   CReadBinaryDosage4x(const std::string &filename);
 public:
@@ -120,7 +117,7 @@ public:
   virtual int ReadHeader();
   virtual int ReadGroups();
   virtual int ReadSubjects();
-  virtual int ReadSNP();
+  virtual int ReadSNPs();
 };
 
 class CReadBinaryDosage41 : public CReadBinaryDosage4x {

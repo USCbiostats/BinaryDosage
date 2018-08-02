@@ -18,7 +18,7 @@ public:
                        const std::string &refAllele, const std::string &altAllele,
                        const std::vector<double> &altFreq, const std::vector<double> &maf,
                        const std::vector<double> &avgCall, const std::vector<double> &rSq) = 0;
-  virtual int FinalizeSNPs() { return 0; }
+  virtual int WriteSNPs() { return 0; }
 };
 
 class CWriteMultifileBinaryDosage : public CWriteBinaryDosage {
@@ -100,6 +100,7 @@ protected:
   int AddToStringVector(std::vector<std::string> &addToVector, const std::string &stringToAdd);
   int AddToDoubleVector(std::vector<std::vector<double> > &addToVector, const std::vector<double> &vectorToAdd);
   int GetSNPOptions();
+  int WriteStringVectorToFile(const std::vector<std::string> &stringToWrite, int sizeLocation);
   CWriteBinaryDosage4x(const std::string &filename);
 public:
   virtual ~CWriteBinaryDosage4x() {}

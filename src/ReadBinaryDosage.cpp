@@ -77,6 +77,8 @@ int CReadBinaryDosageX::ReadGroups() {
 }
 
 void CReadBinaryDosageX::WriteData(std::ostream &outfile) {
+  std::vector<double>::iterator dit;
+
   outfile << "---------------------------------------------------------" << std::endl;
   outfile << "Filename\t\t:\t" << m_filename << std::endl;
   outfile << "Version\t\t\t:\t" << m_mainVersion << '.' << m_subVersion << std::endl;
@@ -100,6 +102,45 @@ void CReadBinaryDosageX::WriteData(std::ostream &outfile) {
   for (int i = 0; i < m_numGroups; ++i)
     outfile << '\t' << m_groupSize[i];
   outfile << std::endl;
+  outfile << "Number of SNPs\t\t:\t" << m_numSNPs << std::endl;
+  outfile << "Start of SNPs\t\t:\t" << m_startSNPs << std::endl;
+  outfile << "SNP options\t\t:\t" << std::hex << m_snpOptions << std::dec << std::endl;
+  outfile << "First SNP\t\t:";
+  if (m_SNPID.size() > 0)
+    outfile << '\t' << m_SNPID[0];
+  if (m_chromosome.size() > 0)
+    outfile << '\t' << m_chromosome[0];
+  if (m_bp.size() > 0)
+    outfile << '\t' << m_bp[0];
+  if (m_refAllele.size() > 0)
+    outfile << '\t' << m_refAllele[0];
+  if (m_altAllele.size() > 0)
+    outfile << '\t' << m_altAllele[0];
+  outfile << std::endl;
+  outfile << "Last SNP\t\t:";
+  if (m_SNPID.size() > 0)
+    outfile << '\t' << m_SNPID[m_SNPID.size() - 1];
+  if (m_chromosome.size() > 0)
+    outfile << '\t' << m_chromosome[m_chromosome.size() - 1];
+  if (m_bp.size() > 0)
+    outfile << '\t' << m_bp[m_bp.size() - 1];
+  if (m_refAllele.size() > 0)
+    outfile << '\t' << m_refAllele[m_refAllele.size() - 1];
+  if (m_altAllele.size() > 0)
+    outfile << '\t' << m_altAllele[m_altAllele.size() - 1];
+  outfile << std::endl;
+  outfile << "First altFreq\t\t:";
+  if (m_altFreq.size() != 0) {
+    for (dit = m_altFreq[0].begin(); dit != m_altFreq[0].end(); ++dit)
+      outfile << '\t' << *dit;
+    outfile << std::endl;
+  }
+  outfile << "Last altFreq\t\t:";
+  if (m_altFreq.size() != 0) {
+    for (dit = m_altFreq[m_numSNPs - 1].begin(); dit != m_altFreq[m_numSNPs - 1].end(); ++dit)
+      outfile << '\t' << *dit;
+    outfile << std::endl;
+  }
   outfile << "---------------------------------------------------------" << std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,7 +212,7 @@ int CReadMultifileBinaryDosage::ReadSubjects() {
   return 0;
 }
 
-int CReadMultifileBinaryDosage::ReadSNP() {
+int CReadMultifileBinaryDosage::ReadSNPs() {
   std::string junk, chromosome, snpID, refAllele, altAllele;
   int bp;
   std::istringstream iss;
@@ -181,7 +222,7 @@ int CReadMultifileBinaryDosage::ReadSNP() {
     return 1;
 
   std::getline(m_mapFile, junk);
-  if (m_famFile.fail())
+  if (m_mapFile.fail())
     return 1;
   iss.str(junk);
   iss >> chromosome >> snpID >> bp >> bp >> refAllele >> altAllele;
@@ -196,8 +237,8 @@ int CReadMultifileBinaryDosage::ReadSNP() {
     m_bp.push_back(bp);
     m_refAllele.push_back(refAllele);
     m_altAllele.push_back(altAllele);
-    getline(m_famFile, junk);
-  } while (!m_famFile.fail());
+    getline(m_mapFile, junk);
+  } while (!m_mapFile.fail());
   m_numSNPs = m_SNPID.size();
   return 0;
 }
@@ -361,11 +402,13 @@ int CReadBinaryDosage4x::ReadString(std::vector<std::string> &stringToRead, cons
     iss >> x;
     *stringIt = x;
   }
-  if (iss.fail())
-    return 1;
 
   if (charString)
     delete [] charString;
+
+  if (iss.fail())
+    return 1;
+
   return 0;
 }
 
@@ -416,7 +459,65 @@ int CReadBinaryDosage4x::ReadSubjects() {
   return 0;
 }
 
-int CReadBinaryDosage4x::ReadSNP() {
+int CReadBinaryDosage4x::ReadSNPs() {
+  int sizeID, sizeChr, sizeRef, sizeAlt;
+  std::vector<std::vector<double> >::iterator dvIt;
+
+  m_infile.seekg(m_startSNPs);
+  m_infile.read((char *)&sizeID, sizeof(int));
+  m_infile.read((char *)&sizeChr, sizeof(int));
+  m_infile.read((char *)&sizeRef, sizeof(int));
+  m_infile.read((char *)&sizeAlt, sizeof(int));
+
+  if (m_snpOptions | 0x0002) {
+    m_SNPID.resize(m_numSNPs);
+    ReadString(m_SNPID, sizeID);
+  }
+  if (m_snpOptions | 0x0004) {
+    if (m_snpOptions | 0x0008)
+      m_chromosome.resize(1);
+    else
+      m_chromosome.resize(m_numSNPs);
+    ReadString(m_chromosome, sizeChr);
+  }
+  m_bp.resize(m_numSNPs);
+  m_infile.read((char *)m_bp.data(), m_numSNPs * sizeof(double));
+  if (m_snpOptions | 0x0020) {
+    m_refAllele.resize(m_numSNPs);
+    ReadString(m_refAllele, sizeRef);
+  }
+  if (m_snpOptions | 0x0040) {
+    m_altAllele.resize(m_numSNPs);
+    ReadString(m_altAllele, sizeAlt);
+  }
+  if (m_snpOptions | 0x0080) {
+    m_altFreq.resize(m_numSNPs);
+    for (dvIt = m_altFreq.begin(); dvIt != m_altFreq.end(); ++dvIt) {
+      dvIt->resize(m_numGroups);
+      m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
+    }
+  }
+  if (m_snpOptions | 0x0100) {
+    m_maf.resize(m_numSNPs);
+    for (dvIt = m_maf.begin(); dvIt != m_maf.end(); ++dvIt) {
+      dvIt->resize(m_numGroups);
+      m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
+    }
+  }
+  if (m_snpOptions | 0x0200) {
+    m_avgCall.resize(m_numSNPs);
+    for (dvIt = m_avgCall.begin(); dvIt != m_avgCall.end(); ++dvIt) {
+      dvIt->resize(m_numGroups);
+      m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
+    }
+  }
+  if (m_snpOptions | 0x0400) {
+    m_rSq.resize(m_numSNPs);
+    for (dvIt = m_rSq.begin(); dvIt != m_rSq.end(); ++dvIt) {
+      dvIt->resize(m_numGroups);
+      m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
+    }
+  }
   return 0;
 }
 
@@ -469,8 +570,8 @@ int CReadBinaryDosage42::ReadHeader() {
 int TestReadBD(CReadBinaryDosageX *bdf) {
   bdf->ReadHeader();
   bdf->ReadSubjects();
-  bdf->ReadSNP();
   bdf->ReadGroups();
+  bdf->ReadSNPs();
   bdf->WriteData(Rcpp::Rcout);
   return 0;
 }
