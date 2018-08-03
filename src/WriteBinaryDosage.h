@@ -5,8 +5,14 @@ class CWriteBinaryDosage {
 protected:
   std::string m_filename;
   std::ofstream m_outfile;
+  std::vector<short> m_dataToWrite;
+
+  short ConvertToShort(const double x, const double scale);
 
   int WriteVersion(const char *version);
+  int AddDosagesOnly(const std::vector<std::vector<double> > &dosageValues, double scale);
+  int AddGeneticValues32(const std::vector<std::vector<double> > &dosageValues);
+
   CWriteBinaryDosage(const std::string &filename);
 public:
   virtual ~CWriteBinaryDosage();
@@ -19,6 +25,16 @@ public:
                        const std::vector<double> &altFreq, const std::vector<double> &maf,
                        const std::vector<double> &avgCall, const std::vector<double> &rSq) = 0;
   virtual int WriteSNPs() { return 0; }
+  virtual int WriteAllSNPs(const std::vector<std::string> &chromosome,
+                           const std::vector<std::string> &snpID,
+                           const std::vector<int> bp,
+                           const std::vector<std::string> &refAllele,
+                           const std::vector<std::string> &altAllele,
+                           const std::vector<std::vector<double> > &altFreq,
+                           const std::vector<std::vector<double> > &maf,
+                           const std::vector<std::vector<double> > &avgCall,
+                           const std::vector<std::vector<double> > &rSq) = 0;
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) = 0;
 };
 
 class CWriteMultifileBinaryDosage : public CWriteBinaryDosage {
@@ -27,6 +43,7 @@ protected:
   std::ofstream m_mapFile;
 
   CWriteMultifileBinaryDosage(const std::string &filename);
+  int AddGeneticValues1or2(const std::vector<std::vector<double> > &geneticValues, double scale);
 public:
   virtual ~CWriteMultifileBinaryDosage();
 
@@ -35,6 +52,15 @@ public:
                        const std::string &refAllele, const std::string &altAllele,
                        const std::vector<double> &altFreq, const std::vector<double> &maf,
                        const std::vector<double> &avgCall, const std::vector<double> &rSq);
+  virtual int WriteAllSNPs(const std::vector<std::string> &chromosome,
+                           const std::vector<std::string> &snpID,
+                           const std::vector<int> bp,
+                           const std::vector<std::string> &refAllele,
+                           const std::vector<std::string> &altAllele,
+                           const std::vector<std::vector<double> > &altFreq,
+                           const std::vector<std::vector<double> > &maf,
+                           const std::vector<std::vector<double> > &avgCall,
+                           const std::vector<std::vector<double> > &rSq);
 };
 
 class CWriteBinaryDosage11 : public CWriteMultifileBinaryDosage {
@@ -43,6 +69,7 @@ public:
   virtual ~CWriteBinaryDosage11() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage12 : public CWriteMultifileBinaryDosage {
@@ -51,6 +78,7 @@ public:
   virtual ~CWriteBinaryDosage12() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage21 : public CWriteMultifileBinaryDosage {
@@ -59,6 +87,7 @@ public:
   virtual ~CWriteBinaryDosage21() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage22 : public CWriteMultifileBinaryDosage {
@@ -67,6 +96,7 @@ public:
   virtual ~CWriteBinaryDosage22() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage31 : public CWriteMultifileBinaryDosage {
@@ -76,6 +106,7 @@ public:
 
   virtual int WriteHeader();
   virtual int WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage32 : public CWriteMultifileBinaryDosage {
@@ -85,6 +116,7 @@ public:
 
   virtual int WriteHeader();
   virtual int WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID);
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage4x : public CWriteBinaryDosage {
@@ -113,6 +145,15 @@ public:
                        const std::vector<double> &altFreq, const std::vector<double> &maf,
                        const std::vector<double> &avgCall, const std::vector<double> &rSq);
   virtual int WriteSNPs();
+  virtual int WriteAllSNPs(const std::vector<std::string> &chromosome,
+                           const std::vector<std::string> &snpID,
+                           const std::vector<int> bp,
+                           const std::vector<std::string> &refAllele,
+                           const std::vector<std::string> &altAllele,
+                           const std::vector<std::vector<double> > &altFreq,
+                           const std::vector<std::vector<double> > &maf,
+                           const std::vector<std::vector<double> > &avgCall,
+                           const std::vector<std::vector<double> > &rSq);
 };
 
 class CWriteBinaryDosage41 : public CWriteBinaryDosage4x {
@@ -121,6 +162,7 @@ public:
   virtual ~CWriteBinaryDosage41() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 class CWriteBinaryDosage42 : public CWriteBinaryDosage4x {
@@ -129,6 +171,7 @@ public:
   virtual ~CWriteBinaryDosage42() {}
 
   virtual int WriteHeader();
+  virtual int AddGeneticValues(const std::vector<std::vector<double> > &geneticValues);
 };
 
 #endif

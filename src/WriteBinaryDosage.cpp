@@ -41,6 +41,16 @@ int CWriteBinaryDosage::WriteVersion(const char *version) {
   return 0;
 }
 
+short CWriteBinaryDosage::ConvertToShort(const double x, const double scale) {
+  short s1, s2;
+
+  s1 = x * scale;
+  s2 = s1 + 1;
+  if (fabs(x - (double)s1 / scale) < fabs(x - (double)s2 / scale))
+    return s1;
+  return s2;
+}
+
 int CWriteBinaryDosage::WriteHeader() {
   const char header[4] = { 'b', 'o', 's', 'e' };
   if (!m_outfile.is_open())
@@ -49,6 +59,86 @@ int CWriteBinaryDosage::WriteHeader() {
   m_outfile.write(header, 4);
   if (!m_outfile.good())
     return 1;
+  return 0;
+}
+
+int CWriteBinaryDosage::AddDosagesOnly(const std::vector<std::vector<double> > &dosageValues, double scale) {
+  std::vector<double>::const_iterator doseIt;
+  std::vector<short>::iterator sdIt;
+
+  if (dosageValues.size() != 1 && dosageValues.size() != 4)
+    return 1;
+  if (dosageValues[0].size() == 0)
+    return 1;
+  if (m_dataToWrite.size() != dosageValues[0].size()) {
+    if (m_dataToWrite.size() != 0)
+      return 1;
+    m_dataToWrite.resize(dosageValues[0].size());
+  }
+
+  sdIt = m_dataToWrite.begin();
+  for (doseIt = dosageValues[0].begin(); doseIt != dosageValues[0].end(); ++doseIt, ++sdIt)
+    *sdIt = ConvertToShort(*doseIt, scale);
+  m_outfile.seekp(0, m_outfile.end);
+  m_outfile.write((char *)m_dataToWrite.data(), m_dataToWrite.size() * sizeof(short));
+  return 0;
+}
+
+int CWriteBinaryDosage::AddGeneticValues32(const std::vector<std::vector<double> > &geneticValues) {
+  const double scale = 10000.;
+  const short shortScale = 10000;
+  short dose, p0, p1, p2;
+  std::vector<double>::const_iterator doseIt, p0It, p1It, p2It;
+  std::vector<short>::iterator sdIt, extraIt;
+  int numExtra = 0;
+  int writeSize;
+
+  if (geneticValues.size() != 4)
+    return 1;
+  if (geneticValues[0].size() == 0)
+    return 1;
+  if (geneticValues[0].size() != geneticValues[1].size() || geneticValues[0].size() != geneticValues[2].size() || geneticValues[0].size() != geneticValues[3].size())
+    return 1;
+  if (m_dataToWrite.size() != 4 * geneticValues[0].size()) {
+    if (m_dataToWrite.size() != 0)
+      return 1;
+    m_dataToWrite.resize(4 * geneticValues[0].size());
+  }
+
+  doseIt = geneticValues[0].begin();
+  p0It = geneticValues[1].begin();
+  p1It = geneticValues[2].begin();
+  p2It = geneticValues[3].begin();
+  sdIt = m_dataToWrite.begin();
+  extraIt = sdIt + geneticValues[0].size();
+  numExtra = 0;
+  for (; doseIt != geneticValues[0].end(); ++doseIt, ++p0It, ++p1It, ++p2It, ++sdIt) {
+    dose = ConvertToShort(*doseIt, scale);
+    p0 = ConvertToShort(*p0It, scale);
+    p1 = ConvertToShort(*p1It, scale);
+    p2 = ConvertToShort(*p2It, scale);
+    if (p0 + p1 + p2 != shortScale || p1 + p2 + p2 != dose) {
+      *sdIt = dose | 0x8000;
+      *extraIt = p1 | 0x8000;
+      ++extraIt;
+      *extraIt = p0;
+      ++extraIt;
+      *extraIt = p2;
+      ++extraIt;
+      numExtra += 3;
+    } else if (p0 != 0 && p2 != 0){
+      *sdIt = dose | 0x8000;
+      *extraIt = p1;
+      ++extraIt;
+      ++numExtra;
+    } else {
+      *sdIt = dose;
+    }
+  }
+  writeSize = (geneticValues[0].size() + numExtra) * sizeof(short);
+  m_outfile.seekp(0, m_outfile.end);
+  m_outfile.write((char *)&writeSize, sizeof(int));
+  m_outfile.write((char *)m_dataToWrite.data(), writeSize);
   return 0;
 }
 
@@ -67,6 +157,35 @@ CWriteMultifileBinaryDosage::CWriteMultifileBinaryDosage(const std::string &file
   m_mapFile.open(outputFilename.c_str());
   outputFilename = m_filename + std::string(".bdose");
   m_outfile.open(outputFilename.c_str(), std::ios_base::out | std::ios_base::binary);
+}
+
+int CWriteMultifileBinaryDosage::AddGeneticValues1or2(const std::vector<std::vector<double> > &geneticValues, double scale) {
+  std::vector<double>::const_iterator gp0It, gp1It;
+  std::vector<short>::iterator sp0It, sp1It;
+
+  if (geneticValues.size() != 4)
+    return 1;
+  if (geneticValues[1].size() == 0)
+    return 1;
+  if (geneticValues[1].size() != geneticValues[2].size())
+    return 1;
+  if (m_dataToWrite.size() != 2 * geneticValues[1].size()) {
+    if (m_dataToWrite.size() != 0)
+      return 1;
+    m_dataToWrite.resize(2 * geneticValues[1].size());
+  }
+
+  sp0It = m_dataToWrite.begin();
+  sp1It = sp0It + geneticValues.size();
+  gp0It = geneticValues[1].begin();
+  gp1It = geneticValues[2].begin();
+  for (; gp0It != geneticValues[1].end(); ++gp0It, ++gp1It, ++sp0It, ++sp1It) {
+    *sp0It = ConvertToShort(*gp0It, scale);
+    *sp1It = ConvertToShort(*gp1It, scale);
+  }
+  m_outfile.seekp(0, m_outfile.end);
+  m_outfile.write((char *)m_dataToWrite.data(), m_dataToWrite.size() * sizeof(short));
+  return 0;
 }
 
 CWriteMultifileBinaryDosage::~CWriteMultifileBinaryDosage() {
@@ -102,6 +221,53 @@ int CWriteMultifileBinaryDosage::AddSNP(const std::string &chromosome, const std
   return 0;
 }
 
+int CWriteMultifileBinaryDosage::WriteAllSNPs(const std::vector<std::string> &chromosome,
+                         const std::vector<std::string> &snpID,
+                         const std::vector<int> bp,
+                         const std::vector<std::string> &refAllele,
+                         const std::vector<std::string> &altAllele,
+                         const std::vector<std::vector<double> > &altFreq,
+                         const std::vector<std::vector<double> > &maf,
+                         const std::vector<std::vector<double> > &avgCall,
+                         const std::vector<std::vector<double> > &rSq) {
+  unsigned int expSize;
+  bool generateSNPID, singleChromosome;
+  std::vector<std::string>::const_iterator chrIt, snpIt, refIt, altIt;
+  std::vector<int>::const_iterator bpIt;
+
+  expSize = bp.size();
+  if (expSize == 0)
+    return 1;
+  generateSNPID = (snpID.size() == 0);
+  if (!generateSNPID && snpID.size() != expSize)
+    return 1;
+  singleChromosome = (chromosome.size() == 1);
+  if (!singleChromosome && chromosome.size() != expSize)
+    return 1;
+  if (refAllele.size() != expSize || altAllele.size() != 1)
+    return 1;
+
+  chrIt = chromosome.begin();
+  bpIt = bp.begin();
+  refIt = refAllele.begin();
+  altIt = altAllele.begin();
+  if (generateSNPID) {
+    for (;bpIt != bp.end(); ++bpIt, ++refIt, ++altIt) {
+      m_mapFile << *chrIt << '\t' << *chrIt << ':' << *bpIt << "\t0\t" << *bpIt << '\t' << *refIt << '\t' << *altIt << std::endl;
+      if (!singleChromosome)
+        ++chrIt;
+    }
+  } else {
+    snpIt = snpID.begin();
+    for (;bpIt != bp.end(); ++bpIt, ++snpIt, ++refIt, ++altIt) {
+      m_mapFile << *chrIt << '\t' << *snpIt << "\t0\t" << *bpIt << '\t' << *refIt << '\t' << *altIt << std::endl;
+      if (!singleChromosome)
+        ++chrIt;
+    }
+  }
+  return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage11
@@ -118,6 +284,9 @@ int CWriteBinaryDosage11::WriteHeader() {
   return WriteVersion(version);
 }
 
+int CWriteBinaryDosage11::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddDosagesOnly(geneticValues, 32767.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage12
@@ -134,6 +303,9 @@ int CWriteBinaryDosage12::WriteHeader() {
   return WriteVersion(version);
 }
 
+int CWriteBinaryDosage12::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddGeneticValues1or2(geneticValues, 65534.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage21
@@ -150,6 +322,9 @@ int CWriteBinaryDosage21::WriteHeader() {
   return WriteVersion(version);
 }
 
+int CWriteBinaryDosage21::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddDosagesOnly(geneticValues, 10000.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage22
@@ -166,6 +341,9 @@ int CWriteBinaryDosage22::WriteHeader() {
   return WriteVersion(version);
 }
 
+int CWriteBinaryDosage22::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddGeneticValues1or2(geneticValues, 10000.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage31
@@ -192,6 +370,9 @@ int CWriteBinaryDosage31::WriteSubjects(const std::vector<std::string> &FID, con
   return CWriteMultifileBinaryDosage::WriteSubjects(FID, IID);
 }
 
+int CWriteBinaryDosage31::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddDosagesOnly(geneticValues, 10000.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage32
@@ -218,6 +399,9 @@ int CWriteBinaryDosage32::WriteSubjects(const std::vector<std::string> &FID, con
   return CWriteMultifileBinaryDosage::WriteSubjects(FID, IID);
 }
 
+int CWriteBinaryDosage32::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddGeneticValues32(geneticValues);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage4x
@@ -451,7 +635,6 @@ int CWriteBinaryDosage4x::WriteSNPs() {
   m_outfile.seekp((int)Header4pos::startSNP);
   m_outfile.write((char *)&m_startSNPs, sizeof(int));
   snpOptions = GetSNPOptions();
-  Rcpp::Rcout << std::hex << snpOptions << std::dec << std::endl;
   if (snpOptions == 0)
     return 1;
   m_outfile.seekp((int)Header4pos::snpOptions);
@@ -504,6 +687,56 @@ int CWriteBinaryDosage4x::WriteSNPs() {
   return 0;
 }
 
+int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosome,
+                                              const std::vector<std::string> &snpID,
+                                              const std::vector<int> bp,
+                                              const std::vector<std::string> &refAllele,
+                                              const std::vector<std::string> &altAllele,
+                                              const std::vector<std::vector<double> > &altFreq,
+                                              const std::vector<std::vector<double> > &maf,
+                                              const std::vector<std::vector<double> > &avgCall,
+                                              const std::vector<std::vector<double> > &rSq) {
+  int numSNPs;
+  std::vector<std::string>::iterator chrIt;
+
+  if (bp.size() == 0 || chromosome.size() == 0)
+    return 1;
+  if (chromosome.size() != 1 && chromosome.size() != bp.size())
+    return 1;
+  if (snpID.size() != 0 && snpID.size() != bp.size())
+    return 1;
+  if (refAllele.size() != 0 && refAllele.size() != bp.size())
+    return 1;
+  if (altAllele.size() != 0 && altAllele.size() != bp.size())
+    return 1;
+  if (altFreq.size() != 0 && altFreq.size() != bp.size())
+    return 1;
+  if (maf.size() != 0 && maf.size() != bp.size())
+    return 1;
+  if (avgCall.size() != 0 && avgCall.size() != bp.size())
+    return 1;
+  if (rSq.size() != 0 && rSq.size() != bp.size())
+    return 1;
+
+  numSNPs = bp.size();
+  if (chromosome.size() == 1) {
+    m_chromosome.resize(numSNPs);
+    for (chrIt = m_chromosome.begin(); chrIt != m_chromosome.end(); ++chrIt)
+      *chrIt = chromosome[0];
+  } else {
+    m_chromosome = chromosome;
+  }
+  m_snpID = snpID;
+  m_bp = bp;
+  m_refAllele = refAllele;
+  m_altAllele = altAllele;
+  m_altFreq = altFreq;
+  m_maf = maf;
+  m_avgCall = avgCall;
+  m_rSq = rSq;
+
+  return WriteSNPs();
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage41
@@ -522,6 +755,9 @@ int CWriteBinaryDosage41::WriteHeader() {
   return CWriteBinaryDosage4x::WriteHeader();
 }
 
+int CWriteBinaryDosage41::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddDosagesOnly(geneticValues, 10000.);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //                            CWriteBinaryDosage42
@@ -540,6 +776,9 @@ int CWriteBinaryDosage42::WriteHeader() {
   return CWriteBinaryDosage4x::WriteHeader();
 }
 
+int CWriteBinaryDosage42::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
+  return AddGeneticValues32(geneticValues);
+}
 ///////////////////////////////////////////////////////////////////////////////
 //                            Test code
 ///////////////////////////////////////////////////////////////////////////////
@@ -589,12 +828,52 @@ int CreateExtraValues(std::vector<std::vector<double> > &altFreq, std::vector<st
   return 0;
 }
 
+int CreateGeneticValues(std::vector<std::vector<std::vector<double> > > &geneticValues) {
+  const double gData[60] = {
+    0., 1., 0., 0.,
+    1., 0., 1., 0.,
+    2., 0., 0., 1.,
+    0.5, 0.5, 0.5, 0.,
+    1.5, 0., 0.5, 0.5,
+    0.1, 0.9, 0.1, 0.,
+    0.2, 0.79, 0.2, 0.,
+    0.3, 0.71, 0.28, 0.01,
+    0., 1., 0., 0.,
+    1.2, 0., 0.8, 0.2,
+    1.5, 0., 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.,
+    2., 0., 0., 1.,
+    1., 0., 1., 0.,
+    0., 1., 0., 0.
+  };
+  std::vector<std::vector<std::vector<double > > >::iterator v3It;
+  std::vector<std::vector<double > >::iterator v2It;
+  std::vector<double>::iterator dIt;
+  const double *d1, *d2, *d3;
+
+  geneticValues.resize(3);
+  d1 = gData;
+  for (v3It = geneticValues.begin(); v3It != geneticValues.end(); ++v3It, d1 += 20) {
+    d2 = d1;
+    v3It->resize(4);
+    for (v2It = v3It->begin(); v2It != v3It->end(); ++v2It, ++d2) {
+      d3 = d2;
+      v2It->resize(5);
+      for (dIt = v2It->begin(); dIt != v2It->end(); ++dIt, d3 += 4) {
+        *dIt = *d3;
+      }
+    }
+  }
+  return 0;
+}
+
 int TestWriteBD(CWriteBinaryDosage *bdf) {
   std::vector<int> groups;
   std::vector<std::string> fid, iid;
   std::vector<std::string> snpID, chromosome, refAllele, altAllele;
   std::vector<int> bp;
   std::vector<std::vector<double> > altFreq, maf, avgCall, rSq;
+  std::vector<std::vector<std::vector<double> > > geneticValues;
 
   bdf->WriteHeader();
   groups.push_back(5);
@@ -606,6 +885,9 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
   for (int i = 0; i < 3; ++i)
     bdf->AddSNP(chromosome[i], snpID[i], bp[i], refAllele[i], altAllele[i], altFreq[i], maf[i], avgCall[i], rSq[i]);
   bdf->WriteSNPs();
+  CreateGeneticValues(geneticValues);
+  for (int i = 0; i < 3; ++i)
+    bdf->AddGeneticValues(geneticValues[i]);
   return 0;
 }
 //' Function to test writing of binary dosage files
@@ -617,23 +899,23 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestWriteBinaryDosage() {
-  CWriteBinaryDosage11 f11("Test/Test.Format11");
-  CWriteBinaryDosage12 f12("Test/Test.Format12");
-  CWriteBinaryDosage21 f21("Test/Test.Format21");
-  CWriteBinaryDosage22 f22("Test/Test.Format22");
-  CWriteBinaryDosage31 f31("Test/Test.Format31");
-  CWriteBinaryDosage32 f32("Test/Test.Format32");
-  CWriteBinaryDosage41 f41("Test/Test.Format41");
-  CWriteBinaryDosage42 f42("Test/Test.Format42");
+  CWriteBinaryDosage11 f11_1("Test/Test1.Format11");
+  CWriteBinaryDosage12 f12_1("Test/Test1.Format12");
+  CWriteBinaryDosage21 f21_1("Test/Test1.Format21");
+  CWriteBinaryDosage22 f22_1("Test/Test1.Format22");
+  CWriteBinaryDosage31 f31_1("Test/Test1.Format31");
+  CWriteBinaryDosage32 f32_1("Test/Test1.Format32");
+  CWriteBinaryDosage41 f41_1("Test/Test1.Format41");
+  CWriteBinaryDosage42 f42_1("Test/Test1.Format42");
 
-  TestWriteBD(&f11);
-  TestWriteBD(&f12);
-  TestWriteBD(&f21);
-  TestWriteBD(&f22);
-  TestWriteBD(&f31);
-  TestWriteBD(&f32);
-  TestWriteBD(&f41);
-  TestWriteBD(&f42);
+  TestWriteBD(&f11_1);
+  TestWriteBD(&f12_1);
+  TestWriteBD(&f21_1);
+  TestWriteBD(&f22_1);
+  TestWriteBD(&f31_1);
+  TestWriteBD(&f32_1);
+  TestWriteBD(&f41_1);
+  TestWriteBD(&f42_1);
 
   return 0;
 }

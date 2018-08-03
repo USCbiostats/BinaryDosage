@@ -133,14 +133,50 @@ void CReadBinaryDosageX::WriteData(std::ostream &outfile) {
   if (m_altFreq.size() != 0) {
     for (dit = m_altFreq[0].begin(); dit != m_altFreq[0].end(); ++dit)
       outfile << '\t' << *dit;
-    outfile << std::endl;
   }
+  outfile << std::endl;
   outfile << "Last altFreq\t\t:";
   if (m_altFreq.size() != 0) {
     for (dit = m_altFreq[m_numSNPs - 1].begin(); dit != m_altFreq[m_numSNPs - 1].end(); ++dit)
       outfile << '\t' << *dit;
-    outfile << std::endl;
   }
+  outfile << std::endl;
+  outfile << "First maf\t\t:";
+  if (m_maf.size() != 0) {
+    for (dit = m_maf[0].begin(); dit != m_maf[0].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
+  outfile << "Last maf\t\t:";
+  if (m_maf.size() != 0) {
+    for (dit = m_maf[m_numSNPs - 1].begin(); dit != m_maf[m_numSNPs - 1].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
+  outfile << "First avgCall\t\t:";
+  if (m_avgCall.size() != 0) {
+    for (dit = m_avgCall[0].begin(); dit != m_avgCall[0].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
+  outfile << "Last avgCall\t\t:";
+  if (m_avgCall.size() != 0) {
+    for (dit = m_avgCall[m_numSNPs - 1].begin(); dit != m_avgCall[m_numSNPs - 1].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
+  outfile << "First r-squared\t\t:";
+  if (m_rSq.size() != 0) {
+    for (dit = m_rSq[0].begin(); dit != m_rSq[0].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
+  outfile << "Last r-squared\t\t:";
+  if (m_rSq.size() != 0) {
+    for (dit = m_rSq[m_numSNPs - 1].begin(); dit != m_rSq[m_numSNPs - 1].end(); ++dit)
+      outfile << '\t' << *dit;
+  }
+  outfile << std::endl;
   outfile << "---------------------------------------------------------" << std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -469,12 +505,12 @@ int CReadBinaryDosage4x::ReadSNPs() {
   m_infile.read((char *)&sizeRef, sizeof(int));
   m_infile.read((char *)&sizeAlt, sizeof(int));
 
-  if (m_snpOptions | 0x0002) {
+  if (m_snpOptions & 0x0002) {
     m_SNPID.resize(m_numSNPs);
     ReadString(m_SNPID, sizeID);
   }
-  if (m_snpOptions | 0x0004) {
-    if (m_snpOptions | 0x0008)
+  if (m_snpOptions & 0x0004) {
+    if (m_snpOptions & 0x0008)
       m_chromosome.resize(1);
     else
       m_chromosome.resize(m_numSNPs);
@@ -482,36 +518,36 @@ int CReadBinaryDosage4x::ReadSNPs() {
   }
   m_bp.resize(m_numSNPs);
   m_infile.read((char *)m_bp.data(), m_numSNPs * sizeof(double));
-  if (m_snpOptions | 0x0020) {
+  if (m_snpOptions & 0x0020) {
     m_refAllele.resize(m_numSNPs);
     ReadString(m_refAllele, sizeRef);
   }
-  if (m_snpOptions | 0x0040) {
+  if (m_snpOptions & 0x0040) {
     m_altAllele.resize(m_numSNPs);
     ReadString(m_altAllele, sizeAlt);
   }
-  if (m_snpOptions | 0x0080) {
+  if (m_snpOptions & 0x0080) {
     m_altFreq.resize(m_numSNPs);
     for (dvIt = m_altFreq.begin(); dvIt != m_altFreq.end(); ++dvIt) {
       dvIt->resize(m_numGroups);
       m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
     }
   }
-  if (m_snpOptions | 0x0100) {
+  if (m_snpOptions & 0x0100) {
     m_maf.resize(m_numSNPs);
     for (dvIt = m_maf.begin(); dvIt != m_maf.end(); ++dvIt) {
       dvIt->resize(m_numGroups);
       m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
     }
   }
-  if (m_snpOptions | 0x0200) {
+  if (m_snpOptions & 0x0200) {
     m_avgCall.resize(m_numSNPs);
     for (dvIt = m_avgCall.begin(); dvIt != m_avgCall.end(); ++dvIt) {
       dvIt->resize(m_numGroups);
       m_infile.read((char *)dvIt->data(), m_numGroups * sizeof(double));
     }
   }
-  if (m_snpOptions | 0x0400) {
+  if (m_snpOptions & 0x0400) {
     m_rSq.resize(m_numSNPs);
     for (dvIt = m_rSq.begin(); dvIt != m_rSq.end(); ++dvIt) {
       dvIt->resize(m_numGroups);
