@@ -518,6 +518,7 @@ int CReadBinaryDosage4x::ReadSNPs() {
   }
   m_bp.resize(m_numSNPs);
   m_infile.read((char *)m_bp.data(), m_numSNPs * sizeof(double));
+  Rcpp::Rcout << m_infile.tellg() << std::endl;
   if (m_snpOptions & 0x0020) {
     m_refAllele.resize(m_numSNPs);
     ReadString(m_refAllele, sizeRef);
