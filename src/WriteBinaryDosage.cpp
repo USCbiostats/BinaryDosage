@@ -26,19 +26,20 @@ enum class Header4pos {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage::CWriteBinaryDosage(const std::string &filename) {
-  m_filename = filename;
+CWriteBinaryDosage::CWriteBinaryDosage(const std::vector<std::string> &filenames) {
+  memset(m_version, 0, sizeof(m_version));
+  if (filenames.size() == 0)
+    m_ready = false;
+  m_filename = filenames[0];
+  if (m_filename != "") {
+    m_outfile.open(m_filename.c_str(), std::ios_base::out | std::ios_base::binary);
+    if (m_outfile.good())
+      m_ready = true;
+  }
 }
 
 CWriteBinaryDosage::~CWriteBinaryDosage() {
   m_outfile.close();
-}
-
-int CWriteBinaryDosage::WriteVersion(const char *version) {
-  m_outfile.write(version, 4);
-  if (!m_outfile.good())
-    return 1;
-  return 0;
 }
 
 short CWriteBinaryDosage::ConvertToShort(const double x, const double scale) {
@@ -53,12 +54,15 @@ short CWriteBinaryDosage::ConvertToShort(const double x, const double scale) {
 
 int CWriteBinaryDosage::WriteHeader() {
   const char header[4] = { 'b', 'o', 's', 'e' };
-  if (!m_outfile.is_open())
+  if (!m_ready)
     return 1;
 
   m_outfile.write(header, 4);
-  if (!m_outfile.good())
+  m_outfile.write(m_version, 4);
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
   return 0;
 }
 
@@ -66,13 +70,21 @@ int CWriteBinaryDosage::AddDosagesOnly(const std::vector<std::vector<double> > &
   std::vector<double>::const_iterator doseIt;
   std::vector<short>::iterator sdIt;
 
-  if (dosageValues.size() != 1 && dosageValues.size() != 4)
+  if (!m_ready)
     return 1;
-  if (dosageValues[0].size() == 0)
+  if (dosageValues.size() != 1 && dosageValues.size() != 4) {
+    m_ready = false;
     return 1;
+  }
+  if (dosageValues[0].size() == 0) {
+    m_ready = false;
+    return 1;
+  }
   if (m_dataToWrite.size() != dosageValues[0].size()) {
-    if (m_dataToWrite.size() != 0)
+    if (m_dataToWrite.size() != 0) {
+      m_ready = false;
       return 1;
+    }
     m_dataToWrite.resize(dosageValues[0].size());
   }
 
@@ -81,6 +93,10 @@ int CWriteBinaryDosage::AddDosagesOnly(const std::vector<std::vector<double> > &
     *sdIt = ConvertToShort(*doseIt, scale);
   m_outfile.seekp(0, m_outfile.end);
   m_outfile.write((char *)m_dataToWrite.data(), m_dataToWrite.size() * sizeof(short));
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -93,15 +109,25 @@ int CWriteBinaryDosage::AddGeneticValues32(const std::vector<std::vector<double>
   int numExtra = 0;
   int writeSize;
 
-  if (geneticValues.size() != 4)
+  if (!m_ready)
     return 1;
-  if (geneticValues[0].size() == 0)
+  if (geneticValues.size() != 4) {
+    m_ready = false;
     return 1;
-  if (geneticValues[0].size() != geneticValues[1].size() || geneticValues[0].size() != geneticValues[2].size() || geneticValues[0].size() != geneticValues[3].size())
+  }
+  if (geneticValues[0].size() == 0) {
+    m_ready = false;
     return 1;
+  }
+  if (geneticValues[0].size() != geneticValues[1].size() || geneticValues[0].size() != geneticValues[2].size() || geneticValues[0].size() != geneticValues[3].size()) {
+    m_ready = false;
+    return 1;
+  }
   if (m_dataToWrite.size() != 4 * geneticValues[0].size()) {
-    if (m_dataToWrite.size() != 0)
+    if (m_dataToWrite.size() != 0) {
+      m_ready = false;
       return 1;
+    }
     m_dataToWrite.resize(4 * geneticValues[0].size());
   }
 
@@ -139,6 +165,10 @@ int CWriteBinaryDosage::AddGeneticValues32(const std::vector<std::vector<double>
   m_outfile.seekp(0, m_outfile.end);
   m_outfile.write((char *)&writeSize, sizeof(int));
   m_outfile.write((char *)m_dataToWrite.data(), writeSize);
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -148,30 +178,43 @@ int CWriteBinaryDosage::AddGeneticValues32(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteMultifileBinaryDosage::CWriteMultifileBinaryDosage(const std::string &filename) : CWriteBinaryDosage(filename) {
-  std::string outputFilename;
-
-  outputFilename = m_filename + std::string(".fam");
-  m_famFile.open(outputFilename.c_str());
-  outputFilename = m_filename + std::string(".map");
-  m_mapFile.open(outputFilename.c_str());
-  outputFilename = m_filename + std::string(".bdose");
-  m_outfile.open(outputFilename.c_str(), std::ios_base::out | std::ios_base::binary);
+CWriteMultifileBinaryDosage::CWriteMultifileBinaryDosage(const std::vector<std::string> &filenames) : CWriteBinaryDosage(filenames) {
+  if (m_ready) {
+    m_ready = false;
+    if (filenames.size() == 3) {
+      m_famFilename = filenames[1];
+      m_mapFilename = filenames[2];
+      m_famFile.open(m_famFilename.c_str());
+      m_mapFile.open(m_mapFilename.c_str());
+      if (m_famFile.good() && m_mapFile.good())
+        m_ready = true;
+    }
+  }
 }
 
 int CWriteMultifileBinaryDosage::AddGeneticValues1or2(const std::vector<std::vector<double> > &geneticValues, double scale) {
   std::vector<double>::const_iterator gp0It, gp1It;
   std::vector<short>::iterator sp0It, sp1It;
 
-  if (geneticValues.size() != 4)
+  if (!m_ready)
     return 1;
-  if (geneticValues[1].size() == 0)
+  if (geneticValues.size() != 4) {
+    m_ready = false;
     return 1;
-  if (geneticValues[1].size() != geneticValues[2].size())
+  }
+  if (geneticValues[1].size() == 0) {
+    m_ready = false;
     return 1;
+  }
+  if (geneticValues[1].size() != geneticValues[2].size()) {
+    m_ready = false;
+    return 1;
+  }
   if (m_dataToWrite.size() != 2 * geneticValues[1].size()) {
-    if (m_dataToWrite.size() != 0)
+    if (m_dataToWrite.size() != 0) {
+      m_ready = false;
       return 1;
+    }
     m_dataToWrite.resize(2 * geneticValues[1].size());
   }
 
@@ -185,6 +228,10 @@ int CWriteMultifileBinaryDosage::AddGeneticValues1or2(const std::vector<std::vec
   }
   m_outfile.seekp(0, m_outfile.end);
   m_outfile.write((char *)m_dataToWrite.data(), m_dataToWrite.size() * sizeof(short));
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -196,7 +243,7 @@ CWriteMultifileBinaryDosage::~CWriteMultifileBinaryDosage() {
 int CWriteMultifileBinaryDosage::WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
   std::vector<std::string>::const_iterator iid, fid;
 
-  if (!m_famFile.is_open())
+  if (!m_ready)
     return 1;
 
   if (FID.size() == 0) {
@@ -206,6 +253,10 @@ int CWriteMultifileBinaryDosage::WriteSubjects(const std::vector<std::string> &F
     for (iid = IID.begin(), fid = FID.begin(); iid != IID.end(); ++iid, ++fid)
       m_famFile << *fid << '\t' << *iid << "\t0\t0\t9\t9" << std::endl;
   }
+  if (!m_famFile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -213,11 +264,13 @@ int CWriteMultifileBinaryDosage::AddSNP(const std::string &chromosome, const std
                                           const std::string &refAllele, const std::string &altAllele,
                                           const std::vector<double> &altFreq, const std::vector<double> &maf,
                                           const std::vector<double> &avgCall, const std::vector<double> &rSq) {
-  if (!m_mapFile.good())
+  if (!m_ready)
     return 1;
   m_mapFile << chromosome << '\t' << snpID << "\t0\t" << location << '\t' << refAllele << '\t' << altAllele << std::endl;
-  if (!m_mapFile.good())
+  if (!m_mapFile.good()) {
+    m_ready = false;
     return 1;
+  }
   return 0;
 }
 
@@ -235,17 +288,27 @@ int CWriteMultifileBinaryDosage::WriteAllSNPs(const std::vector<std::string> &ch
   std::vector<std::string>::const_iterator chrIt, snpIt, refIt, altIt;
   std::vector<int>::const_iterator bpIt;
 
+  if (!m_ready)
+    return 1;
   expSize = bp.size();
-  if (expSize == 0)
+  if (expSize == 0) {
+    m_ready = false;
     return 1;
+  };
   generateSNPID = (snpID.size() == 0);
-  if (!generateSNPID && snpID.size() != expSize)
+  if (!generateSNPID && snpID.size() != expSize) {
+    m_ready = false;
     return 1;
+  }
   singleChromosome = (chromosome.size() == 1);
-  if (!singleChromosome && chromosome.size() != expSize)
+  if (!singleChromosome && chromosome.size() != expSize) {
+    m_ready = false;
     return 1;
-  if (refAllele.size() != expSize || altAllele.size() != 1)
+  }
+  if (refAllele.size() != expSize || altAllele.size() != 1) {
+    m_ready = false;
     return 1;
+  }
 
   chrIt = chromosome.begin();
   bpIt = bp.begin();
@@ -265,6 +328,10 @@ int CWriteMultifileBinaryDosage::WriteAllSNPs(const std::vector<std::string> &ch
         ++chrIt;
     }
   }
+  if (!m_mapFile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -274,14 +341,9 @@ int CWriteMultifileBinaryDosage::WriteAllSNPs(const std::vector<std::string> &ch
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage11::CWriteBinaryDosage11(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage11::WriteHeader() {
-  const char version[4] = { 0x00, 0x01, 0x00, 0x01};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage11::CWriteBinaryDosage11(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x01;
+  m_version[3] = 0x01;
 }
 
 int CWriteBinaryDosage11::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -293,14 +355,9 @@ int CWriteBinaryDosage11::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage12::CWriteBinaryDosage12(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage12::WriteHeader() {
-  const char version[4] = { 0x00, 0x01, 0x00, 0x02};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage12::CWriteBinaryDosage12(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x01;
+  m_version[3] = 0x02;
 }
 
 int CWriteBinaryDosage12::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -312,14 +369,9 @@ int CWriteBinaryDosage12::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage21::CWriteBinaryDosage21(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage21::WriteHeader() {
-  const char version[4] = { 0x00, 0x02, 0x00, 0x01};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage21::CWriteBinaryDosage21(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x02;
+  m_version[3] = 0x01;
 }
 
 int CWriteBinaryDosage21::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -331,14 +383,9 @@ int CWriteBinaryDosage21::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage22::CWriteBinaryDosage22(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage22::WriteHeader() {
-  const char version[4] = { 0x00, 0x02, 0x00, 0x02};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage22::CWriteBinaryDosage22(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x02;
+  m_version[3] = 0x02;
 }
 
 int CWriteBinaryDosage22::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -350,23 +397,22 @@ int CWriteBinaryDosage22::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage31::CWriteBinaryDosage31(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage31::WriteHeader() {
-  const char version[4] = { 0x00, 0x03, 0x00, 0x01};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage31::CWriteBinaryDosage31(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x03;
+  m_version[3] = 0x01;
 }
 
 int CWriteBinaryDosage31::WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
   int numSubjects;
 
+  if (!m_ready)
+    return 1;
   numSubjects = IID.size();
   m_outfile.write((char *)&numSubjects, sizeof(int));
-  if (!m_outfile.good())
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
   return CWriteMultifileBinaryDosage::WriteSubjects(FID, IID);
 }
 
@@ -379,23 +425,22 @@ int CWriteBinaryDosage31::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage32::CWriteBinaryDosage32(const std::string &filename) : CWriteMultifileBinaryDosage(filename) {}
-
-int CWriteBinaryDosage32::WriteHeader() {
-  const char version[4] = { 0x00, 0x03, 0x00, 0x02};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  return WriteVersion(version);
+CWriteBinaryDosage32::CWriteBinaryDosage32(const std::vector<std::string> &filenames) : CWriteMultifileBinaryDosage(filenames) {
+  m_version[1] = 0x03;
+  m_version[3] = 0x02;
 }
 
 int CWriteBinaryDosage32::WriteSubjects(const std::vector<std::string> &FID, const std::vector<std::string> &IID) {
   int numSubjects;
 
+  if (!m_ready)
+    return 1;
   numSubjects = IID.size();
   m_outfile.write((char *)&numSubjects, sizeof(int));
-  if (!m_outfile.good())
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
   return CWriteMultifileBinaryDosage::WriteSubjects(FID, IID);
 }
 
@@ -408,21 +453,68 @@ int CWriteBinaryDosage32::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage4x::CWriteBinaryDosage4x(const std::string &filename) : CWriteBinaryDosage(filename) {
-  std::string outFilename;
+CWriteBinaryDosage4x::CWriteBinaryDosage4x(const std::vector<std::string> &filenames) : CWriteBinaryDosage(filenames) {
+  std::string outputFilename;
+  if (m_ready) {
+    m_ready = false;
+    if (filenames.size() < 3) {
+      m_outfile.open(m_filename.c_str(), std::ios_base::out | std::ios_base::binary);
+      m_numGroups = 0;
+      m_startSubjects = 0;
+      m_startSNPs = 0;
+      m_startDosages = 0;
+      m_usesTempFiles = false;
+      if (m_outfile.good()) {
+        if (filenames.size() == 2) {
+          if (filenames[1] != "") {
+            m_usesTempFiles = true;
+            m_chromosomeFilename = filenames[1] + std::string(".chr");
+            m_SNPFilename = filenames[1] + std::string(".snp");
+            m_refFilename = filenames[1] + std::string(".ref");
+            m_altFilename = filenames[1] + std::string(".alt");
+            m_bpFilename = filenames[1] + std::string(".bp");
+            m_altFreqFilename = filenames[1] + std::string(".altFreq");
+            m_mafFilename = filenames[1] + std::string(".maf");
+            m_avgCallFilename = filenames[1] + std::string(".avgCall");
+            m_rSqFilename = filenames[1] + std::string(".rsq");
+            m_chromosomeFile.open(m_chromosomeFilename.c_str());
+            m_SNPFile.open(m_SNPFilename.c_str());
+            m_refFile.open(m_refFilename.c_str());
+            m_altFile.open(m_altFilename.c_str());
+            m_bpFile.open(m_bpFilename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+            m_altFreqFile.open(m_altFreqFilename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+            m_mafFile.open(m_mafFilename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+            m_avgCallFile.open(m_avgCallFilename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+            m_rSqFile.open(m_rSqFilename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+            m_ready = m_chromosomeFile.good() && m_SNPFile.good() && m_refFile.good() && m_altFile.good() && m_bpFile.good();
+            m_ready = m_ready && m_altFreqFile.good() && m_mafFile.good() && m_avgCallFile.good() && m_rSqFile.good();
+          }
+        } else {
+          m_ready = true;
+        }
+      }
+    }
+  }
+}
 
-  outFilename = m_filename + std::string(".bdose");
-  m_outfile.open(outFilename.c_str(), std::ios_base::out | std::ios_base::binary);
-  m_numGroups = 0;
-  m_startSubjects = 0;
-  m_startSNPs = 0;
-  m_startDosages = 0;
+CWriteBinaryDosage4x::~CWriteBinaryDosage4x() {
+  m_chromosomeFile.close();
+  m_SNPFile.close();
+  m_refFile.close();
+  m_altFile.close();
+  m_bpFile.close();
+  m_altFreqFile.close();
+  m_mafFile.close();
+  m_avgCallFile.close();
+  m_rSqFile.close();
 }
 
 int CWriteBinaryDosage4x::AddToStringVector(std::vector<std::string> &addToVector, const std::string &stringToAdd) {
   if (stringToAdd == "") {
-    if (addToVector.size() != 0)
+    if (addToVector.size() != 0) {
+      m_ready = false;
       return 1;
+    }
     return 0;
   }
   addToVector.push_back(stringToAdd);
@@ -432,8 +524,10 @@ int CWriteBinaryDosage4x::AddToStringVector(std::vector<std::string> &addToVecto
 int CWriteBinaryDosage4x::AddToDoubleVector(std::vector<std::vector<double> > &addToVector,
                                             const std::vector<double> &vectorToAdd) {
   if (vectorToAdd.size() == 0) {
-    if (addToVector.size() != 0)
+    if (addToVector.size() != 0) {
+      m_ready = false;
       return 1;
+    }
     return 0;
   }
   if (vectorToAdd.size() != (unsigned int)m_numGroups)
@@ -453,25 +547,37 @@ int CWriteBinaryDosage4x::WriteString(const std::vector<std::string> &stringToWr
   m_outfile.write(oss.str().c_str(), oss.str().length() - 1);
   m_outfile.write((char *)&zero, 1);
 
-  if (!m_outfile.good())
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
   return 0;
 }
 
 int CWriteBinaryDosage4x::WriteHeader() {
   const int zero = 0;
 
+  if (CWriteBinaryDosage::WriteHeader())
+    return 1;
   for (int i = 0; i < 8; ++i)
     m_outfile.write((char *)&zero, sizeof(int));
-  if (!m_outfile.good())
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
   return 0;
 }
 
 int CWriteBinaryDosage4x::WriteGroups(const std::vector<int> &groupSize) {
   std::streampos startSubPos;
 
+  if (!m_ready)
+    return 1;
   m_numGroups = groupSize.size();
+  if (m_numGroups == 0) {
+    m_ready = false;
+    return 1;
+  }
   m_outfile.seekp((int)Header4pos::numGroups);
   m_outfile.write((char *)&m_numGroups, sizeof(int));
   m_outfile.seekp((int)Header4pos::startGroups);
@@ -480,8 +586,10 @@ int CWriteBinaryDosage4x::WriteGroups(const std::vector<int> &groupSize) {
   m_startSubjects = startSubPos;
   m_outfile.seekp((int)Header4pos::startSub);
   m_outfile.write((char *)&m_startSubjects, sizeof(int));
-  if (!m_outfile.good())
+  if (!m_outfile.good()) {
+    m_ready = false;
     return 1;
+  }
 
   return 0;
 }
@@ -492,7 +600,14 @@ int CWriteBinaryDosage4x::WriteSubjects(const std::vector<std::string> &FID, con
   int subSize, famSize;
   const int zero = 0;
 
+  if (!m_ready)
+    return 1;
+
   numSub = IID.size();
+  if (numSub == 0) {
+    m_ready = false;
+    return 1;
+  }
   m_outfile.seekp((int)Header4pos::numSub);
   m_outfile.write((char *)&numSub, sizeof(int));
 
@@ -517,32 +632,101 @@ int CWriteBinaryDosage4x::WriteSubjects(const std::vector<std::string> &FID, con
   }
 
   m_startSNPs = m_outfile.tellp();
+  m_outfile.seekp((int)Header4pos::startSNP);
+  m_outfile.write((char *)&m_startSNPs, sizeof(int));
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
+int CWriteBinaryDosage4x::WriteStringToTempFile(const std::string &stringToWrite, std::fstream &outfile) {
+  if (stringToWrite == "") {
+    if (outfile.tellp() != 0) {
+      m_ready = false;
+      return 1;
+    }
+  }
+  outfile << stringToWrite << '\t';
+  if (!outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
+  return 0;
+}
+
+int CWriteBinaryDosage4x::WriteIntToTempFile(const int valueToWrite, std::fstream &outfile) {
+  outfile.write((char *)&valueToWrite, sizeof(int));
+  if (!outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
+  return 0;
+}
+
+int CWriteBinaryDosage4x::WriteDoubleVectorToTempFile(const std::vector<double> &vectorToWrite, std::fstream &outfile) {
+  if (vectorToWrite.size() == 0) {
+    if (outfile.tellp() != 0) {
+      m_ready = false;
+      return 1;
+    }
+  }
+  outfile.write((char *)vectorToWrite.data(), vectorToWrite.size() * sizeof(double));
+  if (!outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
+  return 0;
+}
 int CWriteBinaryDosage4x::AddSNP(const std::string &chromosome, const std::string &snpID, int location,
                                    const std::string &refAllele, const std::string &altAllele,
                                    const std::vector<double> &altFreq, const std::vector<double> &maf,
                                    const std::vector<double> &avgCall, const std::vector<double> &rSq) {
-  if (chromosome == "")
+  if (!m_ready)
     return 1;
-  m_chromosome.push_back(chromosome);
-  m_bp.push_back(location);
+  if (chromosome == "") {
+    m_ready = false;
+    return 1;
+  }
+  if (m_usesTempFiles) {
+    if (WriteStringToTempFile(chromosome, m_chromosomeFile))
+      return 1;
+    if (WriteStringToTempFile(snpID, m_SNPFile))
+      return 1;
+    if (WriteStringToTempFile(refAllele, m_refFile))
+      return 1;
+    if (WriteStringToTempFile(altAllele, m_altFile))
+      return 1;
+    if (WriteIntToTempFile(location, m_bpFile))
+      return 1;
+    if (WriteDoubleVectorToTempFile(altFreq, m_altFreqFile))
+      return 1;
+    if (WriteDoubleVectorToTempFile(maf, m_mafFile))
+      return 1;
+    if (WriteDoubleVectorToTempFile(avgCall, m_avgCallFile))
+      return 1;
+    if (WriteDoubleVectorToTempFile(rSq, m_rSqFile))
+      return 1;
+  } else {
+    m_chromosome.push_back(chromosome);
+    m_bp.push_back(location);
 
-  if (AddToStringVector(m_snpID, snpID))
-    return 1;
-  if (AddToStringVector(m_refAllele, refAllele))
-    return 1;
-  if (AddToStringVector(m_altAllele, altAllele))
-    return 1;
-  if (AddToDoubleVector(m_altFreq, altFreq))
-    return 1;
-  if (AddToDoubleVector(m_maf, maf))
-    return 1;
-  if (AddToDoubleVector(m_avgCall, avgCall))
-    return 1;
-  if (AddToDoubleVector(m_rSq, rSq))
-    return 1;
+    if (AddToStringVector(m_snpID, snpID))
+      return 1;
+    if (AddToStringVector(m_refAllele, refAllele))
+      return 1;
+    if (AddToStringVector(m_altAllele, altAllele))
+      return 1;
+    if (AddToDoubleVector(m_altFreq, altFreq))
+      return 1;
+    if (AddToDoubleVector(m_maf, maf))
+      return 1;
+    if (AddToDoubleVector(m_avgCall, avgCall))
+      return 1;
+    if (AddToDoubleVector(m_rSq, rSq))
+      return 1;
+  }
   return 0;
 }
 
@@ -617,6 +801,10 @@ int CWriteBinaryDosage4x::WriteStringVectorToFile(const std::vector<std::string>
   m_outfile.seekp(sizeLocation);
   m_outfile.write((char *)&stringSize, sizeof(int));
   m_outfile.seekp(endPos);
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
   return 0;
 }
 
@@ -627,16 +815,21 @@ int CWriteBinaryDosage4x::WriteSNPs() {
   std::vector<std::string> singleChromosome;
   std::vector<std::vector<double> >::iterator dvIt;
 
-  numSNPs = m_chromosome.size();
-  if (numSNPs == 0)
+  if (!m_ready)
     return 1;
+
+  numSNPs = m_chromosome.size();
+  if (numSNPs == 0) {
+    m_ready = false;
+    return 1;
+  }
   m_outfile.seekp((int)Header4pos::numSNPs);
   m_outfile.write((char *)&numSNPs, sizeof(int));
-  m_outfile.seekp((int)Header4pos::startSNP);
-  m_outfile.write((char *)&m_startSNPs, sizeof(int));
   snpOptions = GetSNPOptions();
-  if (snpOptions == 0)
+  if (snpOptions == 0) {
+    m_ready = false;
     return 1;
+  }
   m_outfile.seekp((int)Header4pos::snpOptions);
   m_outfile.write((char *)&snpOptions, sizeof(int));
   m_outfile.seekp(m_startSNPs);
@@ -677,13 +870,16 @@ int CWriteBinaryDosage4x::WriteSNPs() {
       m_outfile.write((char *)dvIt->data(), m_numGroups * sizeof(double));
   }
 
-  if (m_outfile.fail())
-    return 1;
-
   m_startDosages = (int)m_outfile.tellp();
   m_outfile.seekp((int)Header4pos::startDosage);
   m_outfile.write((char *)&m_startDosages, sizeof(int));
   m_outfile.seekp(m_startDosages);
+
+  if (!m_outfile.good()) {
+    m_ready = false;
+    return 1;
+  }
+
   return 0;
 }
 
@@ -699,24 +895,42 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
   int numSNPs;
   std::vector<std::string>::iterator chrIt;
 
-  if (bp.size() == 0 || chromosome.size() == 0)
+  if (bp.size() == 0 || chromosome.size() == 0) {
+    m_ready = false;
     return 1;
-  if (chromosome.size() != 1 && chromosome.size() != bp.size())
+  }
+  if (chromosome.size() != 1 && chromosome.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (snpID.size() != 0 && snpID.size() != bp.size())
+  }
+  if (snpID.size() != 0 && snpID.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (refAllele.size() != 0 && refAllele.size() != bp.size())
+  }
+  if (refAllele.size() != 0 && refAllele.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (altAllele.size() != 0 && altAllele.size() != bp.size())
+  }
+  if (altAllele.size() != 0 && altAllele.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (altFreq.size() != 0 && altFreq.size() != bp.size())
+  }
+  if (altFreq.size() != 0 && altFreq.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (maf.size() != 0 && maf.size() != bp.size())
+  }
+  if (maf.size() != 0 && maf.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (avgCall.size() != 0 && avgCall.size() != bp.size())
+  }
+  if (avgCall.size() != 0 && avgCall.size() != bp.size()) {
+    m_ready = false;
     return 1;
-  if (rSq.size() != 0 && rSq.size() != bp.size())
+  }
+  if (rSq.size() != 0 && rSq.size() != bp.size()) {
+    m_ready = false;
     return 1;
+  }
 
   numSNPs = bp.size();
   if (chromosome.size() == 1) {
@@ -743,16 +957,9 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage41::CWriteBinaryDosage41(const std::string &filename) : CWriteBinaryDosage4x(filename) {}
-
-int CWriteBinaryDosage41::WriteHeader() {
-  const char version[4] = { 0x00, 0x04, 0x00, 0x01};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  if (WriteVersion(version))
-    return 1;
-  return CWriteBinaryDosage4x::WriteHeader();
+CWriteBinaryDosage41::CWriteBinaryDosage41(const std::vector<std::string> &filenames) : CWriteBinaryDosage4x(filenames) {
+  m_version[1] = 0x04;
+  m_version[3] = 0x01;
 }
 
 int CWriteBinaryDosage41::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -764,16 +971,9 @@ int CWriteBinaryDosage41::AddGeneticValues(const std::vector<std::vector<double>
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CWriteBinaryDosage42::CWriteBinaryDosage42(const std::string &filename) : CWriteBinaryDosage4x(filename) {}
-
-int CWriteBinaryDosage42::WriteHeader() {
-  const char version[4] = { 0x00, 0x04, 0x00, 0x02};
-
-  if (CWriteBinaryDosage::WriteHeader())
-    return 1;
-  if (WriteVersion(version))
-    return 1;
-  return CWriteBinaryDosage4x::WriteHeader();
+CWriteBinaryDosage42::CWriteBinaryDosage42(const std::vector<std::string> &filenames) : CWriteBinaryDosage4x(filenames) {
+  m_version[1] = 0x04;
+  m_version[3] = 0x01;
 }
 
 int CWriteBinaryDosage42::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -899,14 +1099,37 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestWriteBinaryDosage() {
-  CWriteBinaryDosage11 f11_1("Test/Test1.Format11");
-  CWriteBinaryDosage12 f12_1("Test/Test1.Format12");
-  CWriteBinaryDosage21 f21_1("Test/Test1.Format21");
-  CWriteBinaryDosage22 f22_1("Test/Test1.Format22");
-  CWriteBinaryDosage31 f31_1("Test/Test1.Format31");
-  CWriteBinaryDosage32 f32_1("Test/Test1.Format32");
-  CWriteBinaryDosage41 f41_1("Test/Test1.Format41");
-  CWriteBinaryDosage42 f42_1("Test/Test1.Format42");
+  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files;
+
+  f11Files.push_back("Test/Test2.Format11.bdosage");
+  f11Files.push_back("Test/Test2.Format11.fam");
+  f11Files.push_back("Test/Test2.Format11.map");
+  f12Files.push_back("Test/Test2.Format12.bdosage");
+  f12Files.push_back("Test/Test2.Format12.fam");
+  f12Files.push_back("Test/Test2.Format12.map");
+  f21Files.push_back("Test/Test2.Format21.bdosage");
+  f21Files.push_back("Test/Test2.Format21.fam");
+  f21Files.push_back("Test/Test2.Format21.map");
+  f22Files.push_back("Test/Test2.Format22.bdosage");
+  f22Files.push_back("Test/Test2.Format22.fam");
+  f22Files.push_back("Test/Test2.Format22.map");
+  f31Files.push_back("Test/Test2.Format31.bdosage");
+  f31Files.push_back("Test/Test2.Format31.fam");
+  f31Files.push_back("Test/Test2.Format31.map");
+  f32Files.push_back("Test/Test2.Format32.bdosage");
+  f32Files.push_back("Test/Test2.Format32.fam");
+  f32Files.push_back("Test/Test2.Format32.map");
+  f41Files.push_back("Test/Test2.Format41.bdosage");
+  f42Files.push_back("Test/Test2.Format42.bdosage");
+
+  CWriteBinaryDosage11 f11_1(f11Files);
+  CWriteBinaryDosage12 f12_1(f12Files);
+  CWriteBinaryDosage21 f21_1(f21Files);
+  CWriteBinaryDosage22 f22_1(f22Files);
+  CWriteBinaryDosage31 f31_1(f31Files);
+  CWriteBinaryDosage32 f32_1(f32Files);
+  CWriteBinaryDosage41 f41_1(f41Files);
+  CWriteBinaryDosage42 f42_1(f42Files);
 
   TestWriteBD(&f11_1);
   TestWriteBD(&f12_1);
