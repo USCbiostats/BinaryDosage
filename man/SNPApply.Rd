@@ -4,8 +4,8 @@
 \alias{SNPApply}
 \title{Function to loop through the SNPs in a binary dosage file}
 \usage{
-SNPApply(binaryDosageInfo, function2apply, outputValues, extraData = NULL,
-  snps2use, maxSNPs)
+SNPApply(binaryDosageInfo, function2apply, outputValues,
+  extraData = NULL, snps2use, maxSNPs)
 }
 \arguments{
 \item{binaryDosageInfo}{Information returned from GetBinaryFileInfo}

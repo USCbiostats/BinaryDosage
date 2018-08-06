@@ -517,8 +517,7 @@ int CReadBinaryDosage4x::ReadSNPs() {
     ReadString(m_chromosome, sizeChr);
   }
   m_bp.resize(m_numSNPs);
-  m_infile.read((char *)m_bp.data(), m_numSNPs * sizeof(double));
-  Rcpp::Rcout << m_infile.tellg() << std::endl;
+  m_infile.read((char *)m_bp.data(), m_numSNPs * sizeof(int));
   if (m_snpOptions & 0x0020) {
     m_refAllele.resize(m_numSNPs);
     ReadString(m_refAllele, sizeRef);
@@ -621,14 +620,14 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestReadBinaryDosage() {
-  CReadBinaryDosage11 f11("Test/Test.Format11");
-  CReadBinaryDosage12 f12("Test/Test.Format12");
-  CReadBinaryDosage21 f21("Test/Test.Format21");
-  CReadBinaryDosage22 f22("Test/Test.Format22");
-  CReadBinaryDosage31 f31("Test/Test.Format31");
-  CReadBinaryDosage32 f32("Test/Test.Format32");
-  CReadBinaryDosage41 f41("Test/Test.Format41");
-  CReadBinaryDosage42 f42("Test/Test.Format42");
+  CReadBinaryDosage11 f11("Test/Test1.Format11");
+  CReadBinaryDosage12 f12("Test/Test1.Format12");
+  CReadBinaryDosage21 f21("Test/Test1.Format21");
+  CReadBinaryDosage22 f22("Test/Test1.Format22");
+  CReadBinaryDosage31 f31("Test/Test1.Format31");
+  CReadBinaryDosage32 f32("Test/Test1.Format32");
+  CReadBinaryDosage41 f41("Test/Test1.Format41");
+  CReadBinaryDosage42 f42("Test/Test1.Format42");
 
   TestReadBD(&f11);
   TestReadBD(&f12);

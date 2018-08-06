@@ -654,7 +654,7 @@ int CWriteBinaryDosage4x::WriteSNPs() {
       WriteStringVectorToFile(m_chromosome, m_startSNPs + sizeof(int));
     }
   }
-  m_outfile.write((char *)m_bp.data(), m_bp.size() * sizeof(double));
+  m_outfile.write((char *)m_bp.data(), m_bp.size() * sizeof(int));
   if (snpOptions | 0x0020) {
     WriteStringVectorToFile(m_refAllele, m_startSNPs + 2 * sizeof(int));
     WriteStringVectorToFile(m_altAllele, m_startSNPs + 3 * sizeof(int));
