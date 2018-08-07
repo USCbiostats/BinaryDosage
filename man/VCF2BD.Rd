@@ -4,7 +4,8 @@
 \alias{VCF2BD}
 \title{Function to creae a binary dosage file from a VCF file}
 \usage{
-VCF2BD(VCFFilename, outputFilename, infoFilename = "", calculateMAF = TRUE)
+VCF2BD(VCFFilename, outputFilename, infoFilename = "",
+  calculateMAF = TRUE)
 }
 \arguments{
 \item{VCFFilename}{VCF file name}
