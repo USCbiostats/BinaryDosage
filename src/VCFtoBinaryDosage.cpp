@@ -29,7 +29,7 @@ void CVCFtoBinaryDosage42::OpenTempFiles() {
   m_refFile.open(outFilename.c_str());
   outFilename = m_bdFilename + std::string(".tmp.alt");
   m_altFile.open(outFilename.c_str());
-  outFilename = m_bdFilename + std::string(".tmp.altfreq");
+  outFilename = m_bdFilename + std::string(".tmp.altFreq");
   m_altFreqFile.open(outFilename.c_str(), std::ios_base::out | std::ios_base::binary);
   outFilename = m_bdFilename + std::string(".tmp.bd");
   m_doseFile.open(outFilename.c_str(), std::ios_base::out | std::ios_base::binary);
@@ -368,8 +368,8 @@ int CVCFtoBinaryDosage42::Convert(const std::string &vcfFilename, const std::str
     WriteSNPInfo(0x00f4, singleChromosome);
   WriteGeneticValues();
   m_binaryDosageFile.close();
-  OpenTempFiles();
-  CloseTempFiles();
+//  OpenTempFiles();
+//  CloseTempFiles();
 
   return 0;
 }
