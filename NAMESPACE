@@ -2,6 +2,8 @@
 
 export(CreateSubjectDataTable)
 export(FindPointer)
+export(GetBinaryDosageInfo)
+export(GetBinaryDosageInfoC)
 export(GetBinaryFileInfo)
 export(GetDosages)
 export(OpenBDFiles)

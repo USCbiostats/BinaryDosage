@@ -1,5 +1,3 @@
-library(GxEScanR)
-
 RepeatSubjects <- function(bdInfoList) {
   for (i in c(1:(length(bdInfoList)- 1))) {
     fs1 <- paste(bdInfoList[[i]]$subjects$FID, bdInfoList[[i]]$subjects$IID, sep = '_')

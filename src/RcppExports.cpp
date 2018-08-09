@@ -112,6 +112,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetBinaryDosageInfoC
+Rcpp::List GetBinaryDosageInfoC(const std::string& bdFilename, const std::string& famFilename, const std::string& mapFilename);
+RcppExport SEXP _BinaryDosage_GetBinaryDosageInfoC(SEXP bdFilenameSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type famFilename(famFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type mapFilename(mapFilenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetBinaryDosageInfoC(bdFilename, famFilename, mapFilename));
+    return rcpp_result_gen;
+END_RCPP
+}
 // OpenBDFiles
 int OpenBDFiles(const Rcpp::List& bdList, const std::string& mergeFilename, const Rcpp::NumericMatrix& snpLoc);
 RcppExport SEXP _BinaryDosage_OpenBDFiles(SEXP bdListSEXP, SEXP mergeFilenameSEXP, SEXP snpLocSEXP) {
@@ -167,6 +180,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBDSNPs", (DL_FUNC) &_BinaryDosage_ReadBDSNPs, 10},
     {"_BinaryDosage_FindPointer", (DL_FUNC) &_BinaryDosage_FindPointer, 3},
     {"_BinaryDosage_PrintPointer", (DL_FUNC) &_BinaryDosage_PrintPointer, 1},
+    {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 3},
     {"_BinaryDosage_OpenBDFiles", (DL_FUNC) &_BinaryDosage_OpenBDFiles, 3},
     {"_BinaryDosage_GetDosages", (DL_FUNC) &_BinaryDosage_GetDosages, 2},
     {"_BinaryDosage_TestReadBinaryDosage", (DL_FUNC) &_BinaryDosage_TestReadBinaryDosage, 0},

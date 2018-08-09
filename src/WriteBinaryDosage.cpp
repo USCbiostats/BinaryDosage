@@ -202,27 +202,27 @@ int CWriteMultifileBinaryDosage::AddGeneticValues1or2(const std::vector<std::vec
     m_ready = false;
     return 1;
   }
-  if (geneticValues[1].size() == 0) {
+  if (geneticValues[2].size() == 0) {
     m_ready = false;
     return 1;
   }
-  if (geneticValues[1].size() != geneticValues[2].size()) {
+  if (geneticValues[2].size() != geneticValues[3].size()) {
     m_ready = false;
     return 1;
   }
-  if (m_dataToWrite.size() != 2 * geneticValues[1].size()) {
+  if (m_dataToWrite.size() != 2 * geneticValues[2].size()) {
     if (m_dataToWrite.size() != 0) {
       m_ready = false;
       return 1;
     }
-    m_dataToWrite.resize(2 * geneticValues[1].size());
+    m_dataToWrite.resize(2 * geneticValues[2].size());
   }
 
   sp0It = m_dataToWrite.begin();
-  sp1It = sp0It + geneticValues.size();
-  gp0It = geneticValues[1].begin();
-  gp1It = geneticValues[2].begin();
-  for (; gp0It != geneticValues[1].end(); ++gp0It, ++gp1It, ++sp0It, ++sp1It) {
+  sp1It = sp0It + geneticValues[2].size();
+  gp0It = geneticValues[2].begin();
+  gp1It = geneticValues[3].begin();
+  for (; gp0It != geneticValues[2].end(); ++gp0It, ++gp1It, ++sp0It, ++sp1It) {
     *sp0It = ConvertToShort(*gp0It, scale);
     *sp1It = ConvertToShort(*gp1It, scale);
   }
@@ -458,7 +458,6 @@ CWriteBinaryDosage4x::CWriteBinaryDosage4x(const std::vector<std::string> &filen
   if (m_ready) {
     m_ready = false;
     if (filenames.size() < 3) {
-      m_outfile.open(m_filename.c_str(), std::ios_base::out | std::ios_base::binary);
       m_numGroups = 0;
       m_startSubjects = 0;
       m_startSNPs = 0;
@@ -973,7 +972,7 @@ int CWriteBinaryDosage41::AddGeneticValues(const std::vector<std::vector<double>
 
 CWriteBinaryDosage42::CWriteBinaryDosage42(const std::vector<std::string> &filenames) : CWriteBinaryDosage4x(filenames) {
   m_version[1] = 0x04;
-  m_version[3] = 0x01;
+  m_version[3] = 0x02;
 }
 
 int CWriteBinaryDosage42::AddGeneticValues(const std::vector<std::vector<double> > &geneticValues) {
@@ -1101,26 +1100,26 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
 int TestWriteBinaryDosage() {
   std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files;
 
-  f11Files.push_back("Test/Test2.Format11.bdosage");
+  f11Files.push_back("Test/Test2.Format11.bdose");
   f11Files.push_back("Test/Test2.Format11.fam");
   f11Files.push_back("Test/Test2.Format11.map");
-  f12Files.push_back("Test/Test2.Format12.bdosage");
+  f12Files.push_back("Test/Test2.Format12.bdose");
   f12Files.push_back("Test/Test2.Format12.fam");
   f12Files.push_back("Test/Test2.Format12.map");
-  f21Files.push_back("Test/Test2.Format21.bdosage");
+  f21Files.push_back("Test/Test2.Format21.bdose");
   f21Files.push_back("Test/Test2.Format21.fam");
   f21Files.push_back("Test/Test2.Format21.map");
-  f22Files.push_back("Test/Test2.Format22.bdosage");
+  f22Files.push_back("Test/Test2.Format22.bdose");
   f22Files.push_back("Test/Test2.Format22.fam");
   f22Files.push_back("Test/Test2.Format22.map");
-  f31Files.push_back("Test/Test2.Format31.bdosage");
+  f31Files.push_back("Test/Test2.Format31.bdose");
   f31Files.push_back("Test/Test2.Format31.fam");
   f31Files.push_back("Test/Test2.Format31.map");
-  f32Files.push_back("Test/Test2.Format32.bdosage");
+  f32Files.push_back("Test/Test2.Format32.bdose");
   f32Files.push_back("Test/Test2.Format32.fam");
   f32Files.push_back("Test/Test2.Format32.map");
-  f41Files.push_back("Test/Test2.Format41.bdosage");
-  f42Files.push_back("Test/Test2.Format42.bdosage");
+  f41Files.push_back("Test/Test2.Format41.bdose");
+  f42Files.push_back("Test/Test2.Format42.bdose");
 
   CWriteBinaryDosage11 f11_1(f11Files);
   CWriteBinaryDosage12 f12_1(f12Files);
