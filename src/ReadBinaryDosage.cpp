@@ -459,6 +459,9 @@ int CReadBinaryDosageX::GetSNP(const int n) {
   }
   if (n < 0 || n >= m_numSNPs)
     return 1;
+  if (n == m_currentSNP)
+    return 0;
+
   if (m_subVersion == 1) {
     numSubjects = m_numSubjects;
     snpStart = numSubjects * n * sizeof(unsigned short) + m_startDosages;
@@ -466,6 +469,7 @@ int CReadBinaryDosageX::GetSNP(const int n) {
     m_currentSNP = n - 1;
     return GetNext();
   }
+
   if (m_mainVersion < 3) {
     numSubjects = m_numSubjects;
     snpStart = 2 * numSubjects * n * sizeof(unsigned short) + m_startDosages;
@@ -473,15 +477,16 @@ int CReadBinaryDosageX::GetSNP(const int n) {
     m_currentSNP = n - 1;
     return GetNext();
   }
+
   if (m_currentSNP == -2 || n < m_currentSNP) {
     m_infile.seekg(m_startDosages);
-    m_currentSNP = 0;
+    m_currentSNP = -1;
   }
-  for (int i = m_currentSNP; i < n; ++i, ++m_currentSNP) {
+
+  for (int i = m_currentSNP; i < n - 1; ++i, ++m_currentSNP) {
     m_infile.read((char *)&snpSize, sizeof(int));
     m_infile.seekg(snpSize, std::ios_base::cur);
   }
-  --m_currentSNP;
   return GetNext();
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -921,7 +926,10 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
   bdf->ReadSubjects();
   bdf->ReadGroups();
   bdf->ReadSNPs();
-  bdf->GetSNP(1);
+  bdf->GetFirst();
+  bdf->GetSNP(2);
+//  bdf->GetNext();
+//  bdf->GetNext();
   bdf->WriteData(Rcpp::Rcout);
   return 0;
 }
@@ -934,7 +942,7 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestReadBinaryDosage() {
-  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files;
+  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files, f42aFiles, f42bFiles, f42cFiles;
 
   f11Files.push_back("Test/Test2.Format11.bdose");
   f11Files.push_back("Test/Test2.Format11.fam");
@@ -956,6 +964,9 @@ int TestReadBinaryDosage() {
   f32Files.push_back("Test/Test2.Format32.map");
   f41Files.push_back("Test/Test2.Format41.bdose");
   f42Files.push_back("Test/Test2.Format42.bdose");
+  f42aFiles.push_back("Test/Test2.Format42a.bdose");
+  f42bFiles.push_back("Test/Test2.Format42b.bdose");
+  f42cFiles.push_back("Test/Test2.Format42c.bdose");
 
   CReadBinaryDosage11 f11(f11Files);
   CReadBinaryDosage12 f12(f12Files);
@@ -965,6 +976,9 @@ int TestReadBinaryDosage() {
   CReadBinaryDosage32 f32(f32Files);
   CReadBinaryDosage41 f41(f41Files);
   CReadBinaryDosage42 f42(f42Files);
+  CReadBinaryDosage42 f42a(f42aFiles);
+  CReadBinaryDosage42 f42b(f42bFiles);
+  CReadBinaryDosage42 f42c(f42cFiles);
 
   TestReadBD(&f11);
   TestReadBD(&f12);
@@ -974,6 +988,9 @@ int TestReadBinaryDosage() {
   TestReadBD(&f32);
   TestReadBD(&f41);
   TestReadBD(&f42);
+  TestReadBD(&f42a);
+  TestReadBD(&f42b);
+  TestReadBD(&f42c);
 
   return 0;
 }

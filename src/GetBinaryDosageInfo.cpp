@@ -172,7 +172,7 @@ Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string
     snpID.resize(bdFile->NumSNPs());
     intIt = bdFile->Location().begin();
     for (strIt1 = snpID.begin(), strIt2 = chromosome.begin(); strIt1 != snpID.end(); ++strIt1, ++strIt2, ++intIt)
-      *strIt1 = *strIt2 + std::to_string(*intIt);
+      *strIt1 = *strIt2 + ":" + std::to_string(*intIt);
   } else {
     snpID = bdFile->SNPID();
   }

@@ -109,17 +109,22 @@ int CWriteBinaryDosage::AddGeneticValues32(const std::vector<std::vector<double>
   int numExtra = 0;
   int writeSize;
 
-  if (!m_ready)
+  if (!m_ready) {
+    Rcpp::Rcout << "Error already exists" << std::endl;
     return 1;
+  }
   if (geneticValues.size() != 4) {
+    Rcpp::Rcout << "Wrong size" << std::endl;
     m_ready = false;
     return 1;
   }
   if (geneticValues[0].size() == 0) {
+    Rcpp::Rcout << "No values" << std::endl;
     m_ready = false;
     return 1;
   }
   if (geneticValues[0].size() != geneticValues[1].size() || geneticValues[0].size() != geneticValues[2].size() || geneticValues[0].size() != geneticValues[3].size()) {
+    Rcpp::Rcout << "Different sizes" << std::endl;
     m_ready = false;
     return 1;
   }
@@ -894,6 +899,11 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
   int numSNPs;
   std::vector<std::string>::iterator chrIt;
 
+  Rcpp::Rcout << chromosome.size() << '\t' << snpID.size() << '\t' << bp.size() << '\t'
+              << refAllele.size() << '\t' << altAllele.size() << '\t' << altFreq.size() << '\t'
+              << maf.size() << '\t' << avgCall.size() << '\t' << rSq.size() << std::endl;
+
+
   if (bp.size() == 0 || chromosome.size() == 0) {
     m_ready = false;
     return 1;
@@ -948,6 +958,7 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
   m_avgCall = avgCall;
   m_rSq = rSq;
 
+  Rcpp::Rcout << "Before WriteSNPs" << std::endl;
   return WriteSNPs();
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -981,12 +992,12 @@ int CWriteBinaryDosage42::AddGeneticValues(const std::vector<std::vector<double>
 ///////////////////////////////////////////////////////////////////////////////
 //                            Test code
 ///////////////////////////////////////////////////////////////////////////////
-int CreateSubjectIDs(std::vector<std::string> &subID) {
+int CreateSubjectIDs(std::vector<std::string> &subID, const int startID) {
   int i;
   std::string iid;
 
   for (i = 1; i < 6; ++i) {
-    iid = "Subject_" + std::to_string(i);
+    iid = "Subject_" + std::to_string(startID + i);
     subID.push_back(iid);
   }
   return 0;
@@ -1066,7 +1077,7 @@ int CreateGeneticValues(std::vector<std::vector<std::vector<double> > > &genetic
   return 0;
 }
 
-int TestWriteBD(CWriteBinaryDosage *bdf) {
+int TestWriteBD(CWriteBinaryDosage *bdf, const int startID) {
   std::vector<int> groups;
   std::vector<std::string> fid, iid;
   std::vector<std::string> snpID, chromosome, refAllele, altAllele;
@@ -1077,7 +1088,7 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
   bdf->WriteHeader();
   groups.push_back(5);
   bdf->WriteGroups(groups);
-  CreateSubjectIDs(iid);
+  CreateSubjectIDs(iid, startID);
   bdf->WriteSubjects(fid, iid);
   CreateSNPs(snpID, chromosome, bp, refAllele, altAllele);
   CreateExtraValues(altFreq, maf, avgCall, rSq);
@@ -1098,7 +1109,7 @@ int TestWriteBD(CWriteBinaryDosage *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestWriteBinaryDosage() {
-  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files;
+  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files, f42aFiles, f42bFiles, f42cFiles;
 
   f11Files.push_back("Test/Test2.Format11.bdose");
   f11Files.push_back("Test/Test2.Format11.fam");
@@ -1120,6 +1131,9 @@ int TestWriteBinaryDosage() {
   f32Files.push_back("Test/Test2.Format32.map");
   f41Files.push_back("Test/Test2.Format41.bdose");
   f42Files.push_back("Test/Test2.Format42.bdose");
+  f42aFiles.push_back("Test/Test2.Format42a.bdose");
+  f42bFiles.push_back("Test/Test2.Format42b.bdose");
+  f42cFiles.push_back("Test/Test2.Format42c.bdose");
 
   CWriteBinaryDosage11 f11_1(f11Files);
   CWriteBinaryDosage12 f12_1(f12Files);
@@ -1129,15 +1143,21 @@ int TestWriteBinaryDosage() {
   CWriteBinaryDosage32 f32_1(f32Files);
   CWriteBinaryDosage41 f41_1(f41Files);
   CWriteBinaryDosage42 f42_1(f42Files);
+  CWriteBinaryDosage42 f42a_1(f42aFiles);
+  CWriteBinaryDosage42 f42b_1(f42bFiles);
+  CWriteBinaryDosage42 f42c_1(f42cFiles);
 
-  TestWriteBD(&f11_1);
-  TestWriteBD(&f12_1);
-  TestWriteBD(&f21_1);
-  TestWriteBD(&f22_1);
-  TestWriteBD(&f31_1);
-  TestWriteBD(&f32_1);
-  TestWriteBD(&f41_1);
-  TestWriteBD(&f42_1);
+  TestWriteBD(&f11_1, 1);
+  TestWriteBD(&f12_1, 1);
+  TestWriteBD(&f21_1, 1);
+  TestWriteBD(&f22_1, 1);
+  TestWriteBD(&f31_1, 1);
+  TestWriteBD(&f32_1, 1);
+  TestWriteBD(&f41_1, 1);
+  TestWriteBD(&f42_1, 1);
+  TestWriteBD(&f42a_1, 6);
+  TestWriteBD(&f42b_1, 11);
+  TestWriteBD(&f42c_1, 16);
 
   return 0;
 }

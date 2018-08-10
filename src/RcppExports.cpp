@@ -150,6 +150,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Merge42C
+int Merge42C(std::string& mergeFilename, Rcpp::StringVector& filenames, Rcpp::List& mergeInfo);
+RcppExport SEXP _BinaryDosage_Merge42C(SEXP mergeFilenameSEXP, SEXP filenamesSEXP, SEXP mergeInfoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type mergeFilename(mergeFilenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector& >::type filenames(filenamesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type mergeInfo(mergeInfoSEXP);
+    rcpp_result_gen = Rcpp::wrap(Merge42C(mergeFilename, filenames, mergeInfo));
+    return rcpp_result_gen;
+END_RCPP
+}
 // TestReadBinaryDosage
 int TestReadBinaryDosage();
 RcppExport SEXP _BinaryDosage_TestReadBinaryDosage() {
@@ -183,6 +196,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 3},
     {"_BinaryDosage_OpenBDFiles", (DL_FUNC) &_BinaryDosage_OpenBDFiles, 3},
     {"_BinaryDosage_GetDosages", (DL_FUNC) &_BinaryDosage_GetDosages, 2},
+    {"_BinaryDosage_Merge42C", (DL_FUNC) &_BinaryDosage_Merge42C, 3},
     {"_BinaryDosage_TestReadBinaryDosage", (DL_FUNC) &_BinaryDosage_TestReadBinaryDosage, 0},
     {"_BinaryDosage_TestWriteBinaryDosage", (DL_FUNC) &_BinaryDosage_TestWriteBinaryDosage, 0},
     {NULL, NULL, 0}
