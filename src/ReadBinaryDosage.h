@@ -36,8 +36,8 @@ public:
   virtual int ReadSubjects() = 0;
   virtual int ReadSNPs() = 0;
   int GetFirst();
-//  virtual int GetNext() = 0;
-//  virtual int GetSNP(const int n) = 0;
+  virtual int GetNext();
+  virtual int GetSNP(const int n);
 
   bool good() const { return m_good; }
   int Version() const { return m_mainVersion; }

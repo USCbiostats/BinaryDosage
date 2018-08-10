@@ -39,7 +39,7 @@ CReadBinaryDosageX::CReadBinaryDosageX(const std::vector<std::string> &filenames
   m_startDosages = 8;
   m_subjectOptions = 0;
   m_snpOptions = 0;
-  m_currentSNP = -1;
+  m_currentSNP = -2;
   m_usesFamilyID = false;
   m_scale = 10000.;
   if (filenames.size() == 0) {
@@ -424,19 +424,65 @@ void CReadBinaryDosageX::WriteData(std::ostream &outfile) {
 }
 
 int CReadBinaryDosageX::GetFirst() {
+  return GetSNP(0);
+}
+
+int CReadBinaryDosageX::GetNext() {
   if (!m_good || m_numSNPs == 0) {
-    m_currentSNP = -1;
+    m_currentSNP = -3;
     return 1;
   }
-  m_infile.seekg(m_startDosages);
 
-  m_currentSNP = 0;
+  ++m_currentSNP;
+  if (m_currentSNP < 0 || m_currentSNP >= m_numSNPs) {
+    --m_currentSNP;
+    return 1;
+  }
+
   if (m_subVersion == 1) {
     return ReadDosageSNP();
   } else if (m_mainVersion < 3) {
     return ReadFullGeneticSNP();
   }
   return ReadV4GeneticSNP();
+}
+
+int CReadBinaryDosageX::GetSNP(const int n) {
+  long long int numSubjects;
+  std::streampos snpStart;
+  int snpSize;
+
+  if (!m_good || m_numSNPs == 0) {
+    m_currentSNP = -3;
+    m_good = false;
+    return 1;
+  }
+  if (n < 0 || n >= m_numSNPs)
+    return 1;
+  if (m_subVersion == 1) {
+    numSubjects = m_numSubjects;
+    snpStart = numSubjects * n * sizeof(unsigned short) + m_startDosages;
+    m_infile.seekg(snpStart);
+    m_currentSNP = n - 1;
+    return GetNext();
+  }
+  if (m_mainVersion < 3) {
+    numSubjects = m_numSubjects;
+    snpStart = 2 * numSubjects * n * sizeof(unsigned short) + m_startDosages;
+    m_infile.seekg(snpStart);
+    m_currentSNP = n - 1;
+    return GetNext();
+  }
+  if (m_currentSNP == -2 || n < m_currentSNP) {
+    m_infile.seekg(m_startDosages);
+    m_currentSNP = 0;
+  }
+  for (int i = m_currentSNP; i < n; ++i, ++m_currentSNP) {
+    m_infile.read((char *)&snpSize, sizeof(int));
+    m_infile.seekg(snpSize, std::ios_base::cur);
+  }
+  --m_currentSNP;
+  return GetNext();
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -875,7 +921,7 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
   bdf->ReadSubjects();
   bdf->ReadGroups();
   bdf->ReadSNPs();
-  bdf->GetFirst();
+  bdf->GetSNP(1);
   bdf->WriteData(Rcpp::Rcout);
   return 0;
 }
