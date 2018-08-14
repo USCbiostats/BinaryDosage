@@ -927,7 +927,7 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
   bdf->ReadGroups();
   bdf->ReadSNPs();
   bdf->GetFirst();
-  bdf->GetSNP(2);
+//  bdf->GetSNP(2);
 //  bdf->GetNext();
 //  bdf->GetNext();
   bdf->WriteData(Rcpp::Rcout);
@@ -942,7 +942,7 @@ int TestReadBD(CReadBinaryDosageX *bdf) {
 //' @export
 // [[Rcpp::export]]
 int TestReadBinaryDosage() {
-  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files, f42aFiles, f42bFiles, f42cFiles;
+  std::vector<std::string> f11Files, f12Files, f21Files, f22Files, f31Files, f32Files, f41Files, f42Files, f42aFiles, f42bFiles, f42cFiles, f42dFiles;
 
   f11Files.push_back("Test/Test2.Format11.bdose");
   f11Files.push_back("Test/Test2.Format11.fam");
@@ -967,6 +967,7 @@ int TestReadBinaryDosage() {
   f42aFiles.push_back("Test/Test2.Format42a.bdose");
   f42bFiles.push_back("Test/Test2.Format42b.bdose");
   f42cFiles.push_back("Test/Test2.Format42c.bdose");
+  f42dFiles.push_back("Test/TestMerge1.bdose");
 
   CReadBinaryDosage11 f11(f11Files);
   CReadBinaryDosage12 f12(f12Files);
@@ -979,6 +980,7 @@ int TestReadBinaryDosage() {
   CReadBinaryDosage42 f42a(f42aFiles);
   CReadBinaryDosage42 f42b(f42bFiles);
   CReadBinaryDosage42 f42c(f42cFiles);
+  CReadBinaryDosage42 f42d(f42dFiles);
 
   TestReadBD(&f11);
   TestReadBD(&f12);
@@ -991,6 +993,7 @@ int TestReadBinaryDosage() {
   TestReadBD(&f42a);
   TestReadBD(&f42b);
   TestReadBD(&f42c);
+  TestReadBD(&f42d);
 
   return 0;
 }
