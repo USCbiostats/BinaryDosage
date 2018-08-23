@@ -179,9 +179,8 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
   std::vector<std::vector<double> > altAlleleFreq, maf, avgCall, rSq;
   std::vector<int> groups;
   std::vector<std::vector<double> > geneticValues;
+  double af;
   int subNum;
-
-  Rcpp::Rcout << "Entering Merge42C" << std::endl;
 
   std::vector<std::string> mergeStringVector;
   mergeStringVector.resize(1);
@@ -192,17 +191,12 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
   groups.resize(1);
   groups[0] = subjects.nrow();
   bdOut.WriteGroups(groups);
-  Rcpp::Rcout << groups[0] << std::endl;
 
-  Rcpp::Rcout << fid.size() << '\t' << iid.size() << std::endl;
-  Rcpp::Rcout << ':' << fid[0] << ':' << iid[0] << std::endl;
   if (fid[0] == "") {
     fid.resize(0);
   }
-  Rcpp::Rcout << fid.size() << '\t' << iid.size() << std::endl;
   bdOut.WriteSubjects(fid, iid);
 
-  Rcpp::Rcout << snpID.size() << '\t' << chromosome.size() << '\t' << bp.size() << '\t' << refAllele.size() << '\t' << altAllele.size() << std::endl;
   altAlleleFreq.resize(1);
   altAlleleFreq[0].resize(chromosome.size());
   std::fill(altAlleleFreq[0].begin(), altAlleleFreq[0].end(), 0.);
@@ -210,10 +204,8 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
     Rcpp::Rcout << "Error writing SNP data" << std::endl;
 
   bdFilename.resize(1);
-  Rcpp::Rcout << filenames.length() << std::endl;
   bdFiles.resize(filenames.length());
   for (int i = 0; i < filenames.length(); ++i) {
-    Rcpp::Rcout << filenames(i) << std::endl;
     bdFilename[0] = filenames(i);
     bdf42 = new CReadBinaryDosage42(bdFilename);
     bdf42->ReadHeader();
@@ -230,7 +222,6 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
   geneticValues[1].resize(subjects.nrow());
   geneticValues[2].resize(subjects.nrow());
   geneticValues[3].resize(subjects.nrow());
-  Rcpp::Rcout << "NumSub\t" << subjects.nrow() << std::endl;
 
   for (int i = 0; i < snpsToUse.nrow(); ++i) {
     subNum = 0;
@@ -243,20 +234,14 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
         geneticValues[2][subNum] = bdFiles[j]->P1()[uk];
         geneticValues[3][subNum] = bdFiles[j]->P2()[uk];
       }
-      Rcpp::Rcout << '\t' << subNum;
     }
-    Rcpp::Rcout << std::endl;
-    Rcpp::Rcout << std::accumulate(geneticValues[0].begin(), geneticValues[0].end(), 0.) / (subNum + subNum) << std::endl;
+    af = std::accumulate(geneticValues[0].begin(), geneticValues[0].end(), 0.) / (subNum + subNum);
+    altAlleleFreq[0][i] = af;
     if (bdOut.AddGeneticValues(geneticValues))
       Rcpp::Rcout << "Error adding genetic values" << std::endl;
   }
-
-  Rcpp::Rcout << snpsToUse.nrow() << '\t' << snpsToUse.ncol() << std::endl;
-  for (int i = 0; i < snpsToUse.nrow(); ++i) {
-    for (int j = 0; j < snpsToUse.ncol(); ++j)
-      Rcpp::Rcout << '\t' << snpsToUse(i, j);
-    Rcpp::Rcout << std::endl;
-  }
+  if (bdOut.WriteAllSNPs(chromosome, snpID, bp, refAllele, altAllele, altAlleleFreq, maf, avgCall, rSq))
+    Rcpp::Rcout << "Error writing SNP data" << std::endl;
 
   for (int i = 0; i < bdFiles.size(); ++i) {
     if (bdFiles[i])

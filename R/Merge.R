@@ -46,6 +46,18 @@ MergeBD <- function(filenames) {
     bdInfoList[[i]] <- GetBinaryDosageInfo(filenames[i])
   return (bdInfoList)
 }
+#' Function to merge binary dosage files in format 4.2
+#'
+#' Function to merge binary dosage files in format 4.2
+#'
+#' @param mergeFile
+#' Name of file that will contain the merged data.
+#' @param filesToMerge
+#' A vector of strings. Names of the files to merge.
+#' @return
+#' 0 - Successfully merged
+#' 1 - Merge failed
+#' @export
 
 MergeBD42 <- function(mergedFile, filesToMerge) {
   bdInfoList <- vector("list", length = length(filesToMerge))

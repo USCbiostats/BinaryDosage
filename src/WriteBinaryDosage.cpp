@@ -746,7 +746,6 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
     snpOptions |= 0x0002;
 
   reqSize = m_chromosome.size();
-  Rcpp::Rcout << "reqSize\t" << reqSize << std::endl;
   if (reqSize == 0)
     return 0;
   stringIt = m_chromosome.begin();
@@ -759,11 +758,9 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
   if (stringIt == m_chromosome.end())
     snpOptions |= 0x0008;
 
-  Rcpp::Rcout << "bpSize\t" << m_bp.size() << std::endl;
   if (m_bp.size() != reqSize)
     return 0;
 
-  Rcpp::Rcout << "Stop 1" << std::endl;
   if (m_refAllele.size() != 0) {
     if (m_refAllele.size() != reqSize)
       return 0;
@@ -772,7 +769,6 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
     snpOptions |= 0x0060;
   }
 
-  Rcpp::Rcout << "Stop 2" << std::endl;
   if (m_altFreq.size() != 0) {
     if (m_altFreq.size() != m_numGroups)
       return 0;
@@ -783,7 +779,6 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
     snpOptions |= 0x0080;
   }
 
-  Rcpp::Rcout << "Stop 3" << std::endl;
   if (m_maf.size() != 0) {
     if (m_maf.size() != m_numGroups)
       return 0;
@@ -794,7 +789,6 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
     snpOptions |= 0x0100;
   }
 
-  Rcpp::Rcout << "Stop 4" << std::endl;
   if (m_avgCall.size() != 0) {
     if (m_avgCall.size() != m_numGroups)
       return 0;
@@ -805,7 +799,6 @@ int CWriteBinaryDosage4x::GetSNPOptions() {
     snpOptions |= 0x0200;
   }
 
-  Rcpp::Rcout << "Stop 5" << std::endl;
   if (m_rSq.size() != 0) {
     if (m_rSq.size() != m_numGroups)
       return 0;
@@ -855,7 +848,6 @@ int CWriteBinaryDosage4x::WriteSNPs() {
   m_outfile.seekp((int)Header4pos::numSNPs);
   m_outfile.write((char *)&numSNPs, sizeof(int));
   snpOptions = GetSNPOptions();
-  Rcpp::Rcout << "SNP options\t" << std::hex << snpOptions << std::dec << std::endl;
   if (snpOptions == 0) {
     m_ready = false;
     return 1;
@@ -886,7 +878,6 @@ int CWriteBinaryDosage4x::WriteSNPs() {
   if (snpOptions | 0x0080) {
     for (dvIt = m_altFreq.begin(); dvIt != m_altFreq.end(); ++dvIt) {
       for (dIt = dvIt->begin(); dIt != dvIt->end(); ++dIt) {
-        Rcpp::Rcout << "Allele freq\t" << (*dvIt)[0] << std::endl;
         m_outfile.write((char *)dvIt->data(), m_numGroups * sizeof(double));
       }
     }
@@ -929,11 +920,6 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
   int numSNPs;
   std::vector<std::string>::iterator chrIt;
   std::vector<std::vector<double > >::const_iterator vdIt;
-
-  Rcpp::Rcout << chromosome.size() << '\t' << snpID.size() << '\t' << bp.size() << '\t'
-              << refAllele.size() << '\t' << altAllele.size() << '\t' << altFreq.size() << '\t'
-              << maf.size() << '\t' << avgCall.size() << '\t' << rSq.size() << '\t' << m_numGroups << std::endl;
-
 
   if (bp.size() == 0 || chromosome.size() == 0) {
     m_ready = false;
@@ -1012,7 +998,6 @@ int CWriteBinaryDosage4x::WriteAllSNPs(const std::vector<std::string> &chromosom
   m_avgCall = avgCall;
   m_rSq = rSq;
 
-  Rcpp::Rcout << "Before WriteSNPs" << std::endl;
   return WriteSNPs();
 }
 ///////////////////////////////////////////////////////////////////////////////
