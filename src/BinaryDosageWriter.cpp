@@ -174,7 +174,7 @@ CBinaryDosageWriter4::CBinaryDosageWriter4(const std::string &_filename, const i
 	m_outfile.write((char *)&numSNPs, sizeof(unsigned int));
 	m_outfile.write((char *)&numGroups, sizeof(unsigned int));
 
-	if (_FID.size() == 0)
+	if (_FID.size() == 0 || _FID[0] == "")
 		sampleOptions = 1;
 	else
 		sampleOptions = 0;
@@ -191,7 +191,7 @@ CBinaryDosageWriter4::CBinaryDosageWriter4(const std::string &_filename, const i
 	m_outfile.write((char *)&zeroInt, sizeof(int));
 	m_outfile.write((char *)&zeroInt, sizeof(int));
 	ProcessString(_SID, sidLength);
-	if (_FID.size() == 0)
+	if (_FID.size() == 0 || _FID[0] == "")
 		fidLength = 0;
 	else
 		ProcessString(_FID, fidLength);
@@ -318,4 +318,33 @@ int CBinaryDosageWriter4::ProcessExtraSNPData(const std::vector<std::vector<doub
 		m_outfile.write((char *)vdblIt->data(), _groupSize * sizeof(double));
 	}
 	return 0;
+}
+
+int CBinaryDosageWriter4::UpdateAlternateAlleleFreq(const std::vector<std::vector<double> > &_aaf) {
+  int numSNPs, numGroups, snpOptions, chrSize, snpSize, refSize, altSize, jumpSize;
+  if (!m_good)
+    return 1;
+
+  m_outfile.seekg((int)Header4pos::numSNPs);
+  m_outfile.read((char *)&numSNPs, sizeof(int));
+  m_outfile.read((char *)&numGroups, sizeof(int));
+  if (numSNPs == 0)
+    return 1;
+
+  m_outfile.seekg((int)Header4pos::snpOptions);
+  m_outfile.read((char *)&snpOptions, sizeof(int));
+  if ((snpOptions & 0x0080) == 0)
+    return 1;
+
+  m_outfile.seekg(m_startSNPs);
+  m_outfile.read((char *)&chrSize, sizeof(int));
+  m_outfile.read((char *)&snpSize, sizeof(int));
+  m_outfile.read((char *)&altSize, sizeof(int));
+  m_outfile.read((char *)&refSize, sizeof(int));
+
+  jumpSize = chrSize + snpSize + altSize + refSize + numSNPs * sizeof(int);
+  m_outfile.seekg(jumpSize, std::ios_base::cur);
+  m_outfile.seekp(m_outfile.tellg());
+
+  return ProcessExtraSNPData(_aaf, numGroups);
 }

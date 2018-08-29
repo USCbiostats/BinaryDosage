@@ -5,7 +5,6 @@
 #include <cstring>
 #include <vector>
 #include <limits>
-#include <Rcpp.h>
 #include "GeneticDataReader.h"
 #include "BinaryDosageReader.h"
 
@@ -330,6 +329,7 @@ bool CBinaryDosageReader::GetSNP(unsigned int n) {
 	}
 	return GetNext();
 }
+
 CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBinaryDosageReader(_filename) {
 	int numSamples, numSNPs, numGroups, sampleOptions, snpOptions;
 	int startSampleData, startSNPData, startDosageData;
@@ -338,7 +338,8 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 	int maxSize;
 	char *dataString;
 	std::string s1;
-	std::vector<std::string>::iterator strIt;
+	std::vector<std::string>::iterator strIt, strIt2;
+	std::vector<int>::iterator intIt;
 
 	if (!m_good)
 		return;
@@ -382,7 +383,6 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 	m_infile.read((char *)&altSize, sizeof(int));
 	if (altSize > maxSize)
 		maxSize = altSize;
-
 	if (!m_infile.good())
 		return;
 
@@ -427,14 +427,10 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 			return;
 		}
 	}
-	else {
-		for (strIt = m_snpID.begin(); strIt != m_snpID.end(); ++strIt)
-			*strIt = "";
-	}
 
 	m_chromosome.resize(numSNPs);
 	m_infile.read(dataString, chromosomeSize);
-	dataString[chromosomeSize] = 0;
+	dataString[chromosomeSize - 1] = 0;
 	s1 = dataString;
 	if (snpOptions & 0x0008) {
 		for (strIt = m_chromosome.begin(); strIt != m_chromosome.end(); ++strIt)
@@ -450,6 +446,13 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 
 	m_location.resize(numSNPs);
 	m_infile.read((char *)m_location.data(), numSNPs * sizeof(int));
+
+	if (snpSize == 0) {
+	  intIt = m_location.begin();
+	  strIt2 = m_chromosome.begin();
+	  for (strIt = m_snpID.begin(); strIt != m_snpID.end(); ++strIt, ++strIt2, ++intIt)
+	    *strIt = *strIt2 + ":" + std::to_string(*intIt);
+	}
 
 	m_refAllele.resize(numSNPs);
 	if (refSize > 0) {

@@ -2,8 +2,8 @@ GetSubjects <- function(bdInfoList) {
   fid <- character();
   iid <- character();
   for (i in c(1:(length(bdInfoList)))) {
-    fid <- c(fid, bdInfoList[[i]]$Subjects$FID)
-    iid <- c(iid, bdInfoList[[i]]$Subjects$IID)
+    fid <- c(fid, bdInfoList[[i]]$Samples$FID)
+    iid <- c(iid, bdInfoList[[i]]$Samples$SID)
   }
   df <- data.frame(fid, iid, stringsAsFactors = FALSE);
   if (length(unique(df)) != length(df))
@@ -63,7 +63,7 @@ MergeBD42 <- function(mergedFile, filesToMerge) {
   bdInfoList <- vector("list", length = length(filesToMerge))
   for (i in c(1:length(filesToMerge))) {
     bdInfoList[[i]] <- GetBinaryDosageInfo(filesToMerge[i])
-    if (bdInfoList[[i]]$Format != 4 || bdInfoList[[i]]$Version != 2) {
+    if (bdInfoList[[i]]$format != 4 || bdInfoList[[i]]$version != 2) {
       print ("Not all files in format 4.2")
       return (1)
     }
@@ -79,6 +79,10 @@ MergeBD42 <- function(mergedFile, filesToMerge) {
     print ("Intersection of SNPs has size 0")
     return (3)
   }
+
+  snpName <- paste(snpsToMerge$SNPs$Chromosome, snpsToMerge$SNPs$Location, sep = ':')
+  if (all(snpName == snpsToMerge$SNPs$SNPID))
+    snpsToMerge$SNPs$SNPID <- ""
 
   return (list(bdInfo = bdInfoList, subjects = subjects, locations = as.matrix(snpLocations), snpsToMerge = snpsToMerge))
 }

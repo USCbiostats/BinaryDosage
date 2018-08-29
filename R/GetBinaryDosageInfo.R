@@ -21,5 +21,5 @@
 GetBinaryDosageInfo <- function(bdFile, famFile = "", mapFile = "") {
   if (missing(bdFile))
     return (NULL)
-  return (GetBinaryDosageInfoC(bdFile, famFile, mapFile))
+  return (GetBinaryDosageInfoC2(bdFile, famFile, mapFile))
 }

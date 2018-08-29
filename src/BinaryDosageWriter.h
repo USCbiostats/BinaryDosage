@@ -25,6 +25,8 @@ public:
 	virtual ~CBinaryDosageWriter();
 
 	int WriteGeneticData(const std::vector<double> &_dosage, const std::vector<double> &_p0, const std::vector<double> &_p1, const std::vector<double> &_p2);
+	virtual int UpdateAlternateAlleleFreq(const std::vector<std::vector<double> > &_aaf) { return 0; }
+
 	bool good() const { return m_good; }
 	int Version() const { return m_version; }
 	int SubVersion() const { return m_subversion; }
@@ -62,6 +64,8 @@ public:
 		const std::vector<std::vector<double> > &_altFreq, const std::vector<std::vector<double> > &_maf,
 		const std::vector<std::vector<double> > &_avgCall, const std::vector<std::vector<double> > &_rSq);
 	virtual ~CBinaryDosageWriter4() {};
+
+	virtual int UpdateAlternateAlleleFreq(const std::vector<std::vector<double> > &_aaf);
 };
 
 #endif

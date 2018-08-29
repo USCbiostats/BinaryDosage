@@ -171,6 +171,22 @@ GetBinaryDosageInfoC <- function(bdFilename, famFilename, mapFilename) {
     .Call('_BinaryDosage_GetBinaryDosageInfoC', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename)
 }
 
+#' Function to get infromation about a binary dosage file
+#'
+#' Function to get infromation about a binary dosage file
+#' @param bdFilename
+#' Name of binary dosage file
+#' @param famFilename
+#' Name of subject data file
+#' @param mapFilename
+#' Name of SNP data file
+#' @return
+#' List with information about the binary dosage file
+#' @export
+GetBinaryDosageInfoC2 <- function(bdFilename, famFilename, mapFilename) {
+    .Call('_BinaryDosage_GetBinaryDosageInfoC2', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename)
+}
+
 #' Function to test opening an array of binary dosage files
 #'
 #' Function to test opening an array of binary dosage files
