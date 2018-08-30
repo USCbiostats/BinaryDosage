@@ -155,3 +155,108 @@ PrintPointer <- function(y) {
     .Call('_BinaryDosage_PrintPointer', PACKAGE = 'BinaryDosage', y)
 }
 
+#' Function to get infromation about a binary dosage file
+#'
+#' Function to get infromation about a binary dosage file
+#' @param bdFilename
+#' Name of binary dosage file
+#' @param famFilename
+#' Name of subject data file
+#' @param mapFilename
+#' Name of SNP data file
+#' @return
+#' List with information about the binary dosage file
+#' @export
+GetBinaryDosageInfoC <- function(bdFilename, famFilename, mapFilename) {
+    .Call('_BinaryDosage_GetBinaryDosageInfoC', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename)
+}
+
+#' Function to get infromation about a binary dosage file
+#'
+#' Function to get infromation about a binary dosage file
+#' @param bdFilename
+#' Name of binary dosage file
+#' @param famFilename
+#' Name of subject data file
+#' @param mapFilename
+#' Name of SNP data file
+#' @return
+#' List with information about the binary dosage file
+#' @export
+GetBinaryDosageInfoC2 <- function(bdFilename, famFilename, mapFilename) {
+    .Call('_BinaryDosage_GetBinaryDosageInfoC2', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename)
+}
+
+#' Function to test opening an array of binary dosage files
+#'
+#' Function to test opening an array of binary dosage files
+#'
+#' @param bdList
+#' List of binary dosage info lists
+#' @param mergeFilename
+#' Name of file to merge data into
+#' @param snpLoc
+#' Locations of snps in the various binary dosage files
+#' @return
+#' 0 Success
+#' 1 failure
+#' @export
+OpenBDFiles <- function(bdList, mergeFilename, snpLoc) {
+    .Call('_BinaryDosage_OpenBDFiles', PACKAGE = 'BinaryDosage', bdList, mergeFilename, snpLoc)
+}
+
+#' Function to test getting dosage values
+#'
+#' Function to test getting dosage values
+#'
+#' @param bdInfo
+#' Binary dosage info list
+#' @return
+#' List of dosages
+#' @export
+GetDosages <- function(bdInfo, snpNumber) {
+    .Call('_BinaryDosage_GetDosages', PACKAGE = 'BinaryDosage', bdInfo, snpNumber)
+}
+
+#' Function to merge binary dosage files
+#'
+#' Function to merge binary dosage files
+#' Files need to be in format 4.2
+#'
+#' @param mergeFilename
+#' Name of file containing merged data
+#' @param filenames
+#' Names of files to merge
+#' @param mergeInfo
+#' Information on files to merge and intersection of SNPs
+#' and union of subjects
+#' @return
+#' 0 - success
+#' 1 - failure
+#' @export
+Merge42C <- function(mergeFilename, filenames, mergeInfo) {
+    .Call('_BinaryDosage_Merge42C', PACKAGE = 'BinaryDosage', mergeFilename, filenames, mergeInfo)
+}
+
+#' Function to test writing of binary dosage files
+#'
+#' Function to test writing of binary dosage files
+#' @return
+#' 0 success
+#' 1 failure
+#' @export
+TestReadBinaryDosage <- function() {
+    .Call('_BinaryDosage_TestReadBinaryDosage', PACKAGE = 'BinaryDosage')
+}
+
+#' Function to test writing of binary dosage files
+#'
+#' Function to test writing of binary dosage files
+#' @return
+#' 0 success
+#' 1 failure
+#' @export
+TestWriteBinaryDosage <- function() {
+    .Call('_BinaryDosage_TestWriteBinaryDosage', PACKAGE = 'BinaryDosage')
+}
+
