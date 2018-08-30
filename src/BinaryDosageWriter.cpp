@@ -186,9 +186,9 @@ CBinaryDosageWriter4::CBinaryDosageWriter4(const std::string &_filename, const i
 	m_outfile.write((char *)&numGroups, sizeof(unsigned int));
 
 	if (_FID.size() == 0 || _FID[0] == "")
-		sampleOptions = 1;
-	else
 		sampleOptions = 0;
+	else
+		sampleOptions = 1;
 	m_outfile.write((char *)&sampleOptions, sizeof(unsigned int));
 	snpOptions = GetSNPOptions(_chromosome, _snpID, _location, _refAllele, _altAllele, _altFreq, _maf, _avgCall, _rSq);
 	m_outfile.write((char *)&snpOptions, sizeof(unsigned int));
@@ -280,7 +280,7 @@ unsigned int CBinaryDosageWriter4::GetSNPOptions(const std::vector<std::string> 
 	std::string s1;
 	std::vector<std::string>::const_iterator strIt;
 
-	if (_snpID.size() != 0)
+	if (_snpID.size() != 0 && _snpID[0] != "")
 		retVal |= 0x0002;
 	s1 = _chromosome[0];
 	for (strIt = _chromosome.begin(); strIt != _chromosome.end(); ++strIt) {
