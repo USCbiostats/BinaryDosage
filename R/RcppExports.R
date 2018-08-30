@@ -218,9 +218,10 @@ GetDosages <- function(bdInfo, snpNumber) {
     .Call('_BinaryDosage_GetDosages', PACKAGE = 'BinaryDosage', bdInfo, snpNumber)
 }
 
-#' Function to test getting dosage values
+#' Function to merge binary dosage files
 #'
-#' Function to test getting dosage values
+#' Function to merge binary dosage files
+#' Files need to be in format 4.2
 #'
 #' @param mergeFilename
 #' Name of file containing merged data
@@ -230,7 +231,8 @@ GetDosages <- function(bdInfo, snpNumber) {
 #' Information on files to merge and intersection of SNPs
 #' and union of subjects
 #' @return
-#' List of dosages
+#' 0 - success
+#' 1 - failure
 #' @export
 Merge42C <- function(mergeFilename, filenames, mergeInfo) {
     .Call('_BinaryDosage_Merge42C', PACKAGE = 'BinaryDosage', mergeFilename, filenames, mergeInfo)

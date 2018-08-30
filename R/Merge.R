@@ -84,5 +84,6 @@ MergeBD42 <- function(mergedFile, filesToMerge) {
   if (all(snpName == snpsToMerge$SNPs$SNPID))
     snpsToMerge$SNPs$SNPID <- ""
 
-  return (list(bdInfo = bdInfoList, subjects = subjects, locations = as.matrix(snpLocations), snpsToMerge = snpsToMerge))
+  mergeInfo <- list(bdInfo = bdInfoList, subjects = subjects, locations = as.matrix(snpLocations), snpsToMerge = snpsToMerge)
+  return (Merge42C(mergedFile, filesToMerge, mergeInfo))
 }

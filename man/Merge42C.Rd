@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{Merge42C}
 \alias{Merge42C}
-\title{Function to test getting dosage values}
+\title{Function to merge binary dosage files}
 \usage{
 Merge42C(mergeFilename, filenames, mergeInfo)
 }
@@ -15,8 +15,10 @@ Merge42C(mergeFilename, filenames, mergeInfo)
 and union of subjects}
 }
 \value{
-List of dosages
+0 - success
+1 - failure
 }
 \description{
-Function to test getting dosage values
+Function to merge binary dosage files
+Files need to be in format 4.2
 }

@@ -85,8 +85,19 @@ int WriteMapFile(const std::string &_filename, const std::vector<std::string> &_
 }
 
 CBinaryDosageWriter::CBinaryDosageWriter(const std::string &_filename, const int _version, const int _subversion) : m_version(_version), m_subversion(_subversion) {
+  std::ofstream outfile;
+
 	m_filename = _filename;
 	m_geneticDataWriter = NULL;
+
+	outfile.open(m_filename.c_str());
+	if (!outfile.good()) {
+	  outfile.close();
+	  m_good = false;
+	  return;
+	}
+	outfile.close();
+
 	m_outfile.open(m_filename.c_str(), std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::trunc);
 	if (!m_outfile.good()) {
 		m_good = false;
@@ -202,10 +213,10 @@ CBinaryDosageWriter4::CBinaryDosageWriter4(const std::string &_filename, const i
 	m_outfile.write((char *)&zeroInt, sizeof(int));
 	m_outfile.write((char *)&zeroInt, sizeof(int));
 	m_outfile.write((char *)&zeroInt, sizeof(int));
-	if (_snpID.size() != 0)
-		ProcessString(_snpID, snpLength);
+	if (_snpID.size() == 0 || _snpID[0] == "")
+	  snpLength = 0;
 	else
-		snpLength = 0;
+	  ProcessString(_snpID, snpLength);
 	if (snpOptions & 0x0008) {
 		s1 = _chromosome[0];
 		m_outfile.write(s1.c_str(), s1.length());

@@ -8,6 +8,8 @@
 #include "GeneticDataReader.h"
 #include "BinaryDosageReader.h"
 
+//#define BINARYDOSAGEREADER_DEBUG 1
+
 const char BDHeader[4] = { 'b', 'o', 's', 'e' };
 const int BDHeaderSize = 8;
 
@@ -324,7 +326,6 @@ bool CBinaryDosageReader::GetSNP(unsigned int n) {
 	}
 	while (m_currentSNP < n - 1) {
 		m_geneticDataReader->SkipSNP(m_infile);
-		std::cout << m_infile.tellg() << std::endl;
 		++m_currentSNP;
 	}
 	return GetNext();
@@ -354,6 +355,11 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 	m_infile.read((char *)&startSampleData, sizeof(int));
 	m_infile.read((char *)&startSNPData, sizeof(int));
 	m_infile.read((char *)&startDosageData, sizeof(int));
+#ifdef BINARYDOSAGEREADER_DEBUG
+	std::cout << numSamples << '\t' << numSNPs << '\t' << numGroups << '\t'
+           << std::hex << sampleOptions << '\t' << snpOptions << '\t'
+           << std::dec << startSampleData << '\t' << startSNPData << '\t' << startDosageData << std::endl;
+# endif
 	m_startDosageData = startDosageData;
 
 	if (!m_infile.good())
@@ -385,6 +391,10 @@ CBinaryDosageReader4::CBinaryDosageReader4(const std::string &_filename) : CBina
 		maxSize = altSize;
 	if (!m_infile.good())
 		return;
+#ifdef BINARYDOSAGEREADER_DEBUG
+	std::cout << sidSize << '\t' << fidSize << '\t' << snpSize << '\t' << chromosomeSize << '\t'
+           << refSize << '\t' << altSize << std::endl;
+#endif
 
 	dataString = new char[maxSize + 1];
 	m_infile.seekg(startSampleData + 2*sizeof(int));
