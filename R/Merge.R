@@ -1,51 +1,3 @@
-GetSubjects <- function(bdInfoList) {
-  fid <- character();
-  iid <- character();
-  for (i in c(1:(length(bdInfoList)))) {
-    fid <- c(fid, bdInfoList[[i]]$Samples$FID)
-    iid <- c(iid, bdInfoList[[i]]$Samples$SID)
-  }
-  df <- data.frame(fid, iid, stringsAsFactors = FALSE);
-  if (length(unique(df)) != length(df))
-    return (data.frame())
-  return (df)
-}
-
-CombineSubjects <- function(bdInfoList) {
-  subID <- numeric()
-  for (i in c(1:(length(bdInfoList))))
-    subID <- c(subID, bdInfoList[[i]]$subjects$IID)
-  return (subID)
-}
-
-SNPIntersection <- function(bdInfoList, snpsToUse) {
-  df <- bdInfoList[[1]]$SNPs[snpsToUse[,1],]
-  snpID <- paste(df$CHR, df$BP, sep = ":")
-  noSNPID = all(df$SNP == snpID)
-  singleChromosome = (length(unique(df$CHR)) == 1)
-  return (list(SNPs = df, noSNPID = noSNPID, singleChromosome = singleChromosome))
-}
-
-GetSNPList <- function(bdInfoList) {
-  matchList <- vector("list", length = length(bdInfoList))
-  snpList1 <- paste(bdInfoList[[1]]$SNPs$SNP, bdInfoList[[1]]$SNPs$A1, bdInfoList[[1]]$SNPs$A2)
-  for (i in c(1:length(bdInfoList))) {
-    snpList2 <- paste(bdInfoList[[i]]$SNPs$SNP, bdInfoList[[i]]$SNPs$A1, bdInfoList[[i]]$SNPs$A2)
-    matchList[[i]] <- match(snpList1, snpList2)
-  }
-  cn <- paste("set", 1:length(bdInfoList), sep = '_')
-  df <- data.frame(matchList)
-  colnames(df) <- cn
-  df <- df[complete.cases(df),]
-  return (df)
-}
-
-MergeBD <- function(filenames) {
-  bdInfoList <- vector("list", length = length(filenames))
-  for (i in c(1:length(filenames)))
-    bdInfoList[[i]] <- GetBinaryDosageInfo(filenames[i])
-  return (bdInfoList)
-}
 #' Function to merge binary dosage files in format 4.2
 #'
 #' Function to merge binary dosage files in format 4.2
@@ -58,32 +10,41 @@ MergeBD <- function(filenames) {
 #' 0 - Successfully merged
 #' 1 - Merge failed
 #' @export
-
 MergeBD42 <- function(mergedFile, filesToMerge) {
-  bdInfoList <- vector("list", length = length(filesToMerge))
+  if (length(filesToMerge) < 2) {
+    print("At least two files must be specified to merge")
+    return (1)
+  }
+  fid <- character();
+  iid <- character();
+  matchList <- vector("list", length = length(filesToMerge))
   for (i in c(1:length(filesToMerge))) {
-    bdInfoList[[i]] <- GetBinaryDosageInfo(filesToMerge[i])
-    if (bdInfoList[[i]]$format != 4 || bdInfoList[[i]]$version != 2) {
+    bdInfo <- GetBinaryDosageInfo(filesToMerge[i])
+    if (bdInfo$format != 4 || bdInfo$version != 2) {
       print ("Not all files in format 4.2")
       return (1)
     }
+    fid <- c(fid, bdInfo$Samples$FID)
+    iid <- c(iid, bdInfo$Samples$SID)
+    if (i == 1)
+      snpList1 <- bdInfo$SNPs
+    snpList2 <- bdInfo$SNPs
+    matchList[[i]] = row.match(snpList1, snpList2)
   }
-  subjects <- GetSubjects(bdInfoList = bdInfoList)
-  if (nrow(subjects) == 0) {
-    print ("Duplicate subject IDs exist")
-    return (2)
+  subjects <- data.frame(fid, iid, stringsAsFactors = FALSE);
+  if (length(unique(subjects)) != length(subjects)) {
+    print("Sample IDs are not unique")
+    return (list())
   }
-  snpLocations <- GetSNPList(bdInfoList = bdInfoList)
-  snpsToMerge <- SNPIntersection(bdInfoList = bdInfoList, snpsToUse = snpLocations)
-  if (nrow(snpsToMerge$SNPs) == 0) {
-    print ("Intersection of SNPs has size 0")
-    return (3)
+  snpLocations <- data.frame(matchList)
+  snpLocations <- as.matrix(snpLocations[complete.cases(snpLocations),])
+  snpsToMerge <- snpList1[snpLocations[,1],]
+  if (nrow(snpsToMerge) == 0) {
+    print("Intersection of SNPs is empty")
+    return (list())
   }
 
-  snpName <- paste(snpsToMerge$SNPs$Chromosome, snpsToMerge$SNPs$Location, sep = ':')
-  if (all(snpName == snpsToMerge$SNPs$SNPID))
-    snpsToMerge$SNPs$SNPID <- ""
+  mergeInfo <- list(subjects = subjects, locations = snpLocations, snpsToMerge = snpsToMerge)
 
-  mergeInfo <- list(bdInfo = bdInfoList, subjects = subjects, locations = as.matrix(snpLocations), snpsToMerge = snpsToMerge)
   return (Merge42C(mergedFile, filesToMerge, mergeInfo))
 }

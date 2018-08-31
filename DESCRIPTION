@@ -18,7 +18,8 @@ Imports:
     graphics,
     stats,
     utils,
-    XLConnect
+    XLConnect,
+    prodlim
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
 RoxygenNote: 6.1.0

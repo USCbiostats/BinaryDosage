@@ -10,7 +10,7 @@
 #include "BinaryDosage.h"
 #include "WriteBinaryDosage.h"
 #include "ReadBinaryDosage.h"
-#include "BinaryDosageReader.h"
+#include "BinaryDosageMiniReader.h"
 #include "BinaryDosageWriter.h"
 
 void WriteMergeHeader(std::ofstream &outfile, int numSubjects, int numSNPs, int numGroups) {
@@ -166,16 +166,17 @@ Rcpp::NumericVector GetDosages(const Rcpp::List &bdInfo, int snpNumber) {
 //' @export
 // [[Rcpp::export]]
 int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::List &mergeInfo) {
-  std::vector<CBinaryDosageReader4 *> bdr;
-  std::vector<CBinaryDosageReader4 *>::iterator bdrIt;
-  CBinaryDosageReader4 *bdrTemp;
+  std::vector<CBinaryDosageMiniReader4 *> bdr;
+  std::vector<CBinaryDosageMiniReader4 *>::iterator bdrIt;
+  CBinaryDosageMiniReader4 *bdrTemp;
   std::vector<std::string> bdFilename = Rcpp::as<std::vector<std::string> >(filenames);
   Rcpp::IntegerMatrix snpsToUse = mergeInfo["locations"];
   Rcpp::DataFrame subjects(mergeInfo["subjects"]);
   std::vector<std::string> fid = Rcpp::as<std::vector<std::string> >(subjects["fid"]);
   std::vector<std::string> iid = Rcpp::as<std::vector<std::string> >(subjects["iid"]);
-  Rcpp::List snpsToMerge = mergeInfo["snpsToMerge"];
-  Rcpp::DataFrame snps(snpsToMerge["SNPs"]);
+//  Rcpp::List snpsToMerge = mergeInfo["snpsToMerge"];
+//  Rcpp::DataFrame snps(snpsToMerge["SNPs"]);
+  Rcpp::DataFrame snps(mergeInfo["snpsToMerge"]);
   std::vector<std::string> snpID = Rcpp::as<std::vector<std::string> >(snps["SNPID"]);
   std::vector<std::string> chromosome = Rcpp::as<std::vector<std::string> >(snps["Chromosome"]);
   std::vector<int> bp = Rcpp::as<std::vector<int> >(snps["Location"]);
@@ -203,8 +204,9 @@ int Merge42C(std::string &mergeFilename, Rcpp::StringVector &filenames, Rcpp::Li
   bdrIt = bdr.begin();
   bdrGood = true;
   for (std::vector<std::string>::iterator strIt = bdFilename.begin(); strIt != bdFilename.end(); ++strIt, ++bdrIt) {
-    bdrTemp = new CBinaryDosageReader4(*strIt);
+    bdrTemp = new CBinaryDosageMiniReader4(*strIt);
     if (!bdrTemp->good()) {
+      Rcpp::Rcout << "Failed to open binary dosage file " << *strIt << std::endl;
       bdrGood = false;
     }
     else
