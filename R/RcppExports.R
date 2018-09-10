@@ -187,6 +187,21 @@ GetBinaryDosageInfoC2 <- function(bdFilename, famFilename, mapFilename) {
     .Call('_BinaryDosage_GetBinaryDosageInfoC2', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename)
 }
 
+#' Function to get information about a VCF file
+#'
+#' Function to get information about a VCF file.
+#' This information is used to get dosage and genetic
+#' probabilities from the file.
+#'
+#' @param vcfFilename
+#' Name of VCF file
+#' @return
+#' List of information about the VCF file
+#' @export
+GetVCFInfo_C <- function(vcfFile) {
+    .Call('_BinaryDosage_GetVCFInfo_C', PACKAGE = 'BinaryDosage', vcfFile)
+}
+
 #' Function to test opening an array of binary dosage files
 #'
 #' Function to test opening an array of binary dosage files

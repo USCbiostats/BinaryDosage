@@ -48,7 +48,7 @@ public:
 class CBinaryDosageMiniReader1 : public CBinaryDosageMiniReader {
 protected:
 public:
-  CBinaryDosageMiniReader1(const std::string &_filename, const std::string &_famFilename, const std::string &_mapFilename) : CBinaryDosageMiniReader(_filename) {}
+  CBinaryDosageMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs);
   virtual ~CBinaryDosageMiniReader1() {};
 };
 

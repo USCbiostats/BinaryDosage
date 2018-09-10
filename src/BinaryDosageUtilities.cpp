@@ -264,8 +264,7 @@ int VCF2BD_C(const std::string &vcfFilename, const std::string &infoFilename, co
 int VCF53toBD_C(const std::string &vcfFilename, const std::string &bdFilename) {
   CVCF53toBinaryDosage42 vcfbd42;
 
-  vcfbd42.Convert(vcfFilename, bdFilename);
-  return 0;
+  return vcfbd42.Convert(vcfFilename, bdFilename);
 }
 //' Function to convert a BioBank VCF file from HRC to a binary dosage file for GxEScan without an info file
 //'
@@ -284,8 +283,7 @@ int VCF53toBD_C(const std::string &vcfFilename, const std::string &bdFilename) {
 int VCFBBtoBD_C(const std::string &vcfFilename, const std::string &bdFilename) {
   CVCFtoBinaryDosage42 vcfbd42;
 
-  vcfbd42.Convert(vcfFilename, bdFilename);
-  return 0;
+  return vcfbd42.Convert(vcfFilename, bdFilename);
 }
 //' Function to convert an Impute 2 dosage file to a binary dosage file for GxEScan
 //'

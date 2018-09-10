@@ -138,6 +138,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetVCFInfo_C
+Rcpp::List GetVCFInfo_C(std::string& vcfFile);
+RcppExport SEXP _BinaryDosage_GetVCFInfo_C(SEXP vcfFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type vcfFile(vcfFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetVCFInfo_C(vcfFile));
+    return rcpp_result_gen;
+END_RCPP
+}
 // OpenBDFiles
 int OpenBDFiles(const Rcpp::List& bdList, const std::string& mergeFilename, const Rcpp::NumericMatrix& snpLoc);
 RcppExport SEXP _BinaryDosage_OpenBDFiles(SEXP bdListSEXP, SEXP mergeFilenameSEXP, SEXP snpLocSEXP) {
@@ -208,6 +219,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_PrintPointer", (DL_FUNC) &_BinaryDosage_PrintPointer, 1},
     {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 3},
     {"_BinaryDosage_GetBinaryDosageInfoC2", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC2, 3},
+    {"_BinaryDosage_GetVCFInfo_C", (DL_FUNC) &_BinaryDosage_GetVCFInfo_C, 1},
     {"_BinaryDosage_OpenBDFiles", (DL_FUNC) &_BinaryDosage_OpenBDFiles, 3},
     {"_BinaryDosage_GetDosages", (DL_FUNC) &_BinaryDosage_GetDosages, 2},
     {"_BinaryDosage_Merge42C", (DL_FUNC) &_BinaryDosage_Merge42C, 3},

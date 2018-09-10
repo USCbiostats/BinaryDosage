@@ -336,8 +336,10 @@ int CVCFtoBinaryDosage42::Convert(const std::string &vcfFilename, const std::str
   m_numSub = m_vcfFile->NumSubjects();
   m_bd = new unsigned short[4 * m_numSub];
 
-  if (m_vcfFile->GetFirstSNP())
+  if (m_vcfFile->GetFirstSNP()) {
+    Rcpp::Rcout << "Error reading first SNP" << std::endl;
     return 1;
+  }
   oneChromosome = true;
   singleChromosome = "";
   OpenTempFiles();

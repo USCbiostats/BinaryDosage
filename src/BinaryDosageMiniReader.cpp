@@ -95,6 +95,23 @@ bool CBinaryDosageMiniReader::GetSNP(unsigned int n) {
   return GetNext();
 }
 
+CBinaryDosageMiniReader1::CBinaryDosageMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs) : CBinaryDosageMiniReader(_filename) {
+  if (!m_good)
+    return;
+
+  if (m_version == 3) {
+    m_infile.read((char *)&m_numSamples, sizeof(int));
+    if (m_numSamples == _numSamples)
+      return;
+    m_startDosageData = 12;
+  } else {
+    m_numSamples = _numSamples;
+    m_startDosageData = 8;
+  }
+  m_numSNPs = _numSNPs;
+  m_good = true;
+}
+
 CBinaryDosageMiniReader4::CBinaryDosageMiniReader4(const std::string &_filename) : CBinaryDosageMiniReader(_filename) {
   int startDosageData;
 

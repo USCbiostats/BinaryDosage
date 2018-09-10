@@ -1,6 +1,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
+#include <algorithm>
 #include <Rcpp.h>
 #include "ReadVCF.h"
 
@@ -239,10 +241,13 @@ int CReadVCF_Generic::GetNextSNP() {
   std::string skipped;
   std::string valueString;
   std::string valueFormat;
-  std::istringstream iss;
+  std::istringstream iss, iss2;
   const char *pStart;
   char *pEnd;
   std::vector<double>::iterator d, p0, p1, p2;
+  size_t colonPos1, colonPos2;
+  std::vector<std::string> format;
+  std::vector<std::string>::iterator strIt;
   int i;
 
   if (!m_infile.is_open())
@@ -260,6 +265,8 @@ int CReadVCF_Generic::GetNextSNP() {
   getline(m_infile, junk);
   if (m_infile.fail())
     return 1;
+  if (junk == "")
+    return 1;
 
   ++m_numSNPs;
   iss.str(junk);
@@ -268,19 +275,38 @@ int CReadVCF_Generic::GetNextSNP() {
     iss >> skipped;
   iss >> valueFormat;
   // ??? This needs to change to make routine more generic
-  if (valueFormat != "DS:GP")
-    return 1;
+  colonPos1 = 0;
+  colonPos2 = valueFormat.find(":");
+  while(colonPos2 != std::string::npos) {
+    format.push_back(valueFormat.substr(colonPos1, colonPos2 - colonPos1));
+    colonPos1 = colonPos2 + 1;
+    colonPos2 = valueFormat.find(":", colonPos1);
+  }
+  format.push_back(valueFormat.substr(colonPos1, valueFormat.length() - colonPos1));
 
+//  Rcpp::Rcout <<  std::find(valueFormat.begin(), valueFormat.end(), "DS") << std::endl;
+//  if (std::find(valueFormat.begin(), valueFormat.end(), "DS") == valueFormat.end() || std::find(valueFormat.begin(), valueFormat.end(), "GP") == valueFormat.end())
+//    return 1;
+
+  // There is no error checking here. The values in the file are assumed to be valid.
   for (d = m_dosage.begin(), p0 = m_p0.begin(), p1 = m_p1.begin(), p2 = m_p2.begin(); d != m_dosage.end(); ++d, ++p0, ++p1, ++p2) {
     iss >> valueString;
-    pStart = valueString.c_str();
-    *d = std::strtod(pStart, &pEnd);
-    pStart = pEnd + 1;
-    *p0 = std::strtod(pStart, &pEnd);
-    pStart = pEnd + 1;
-    *p1 = std::strtod(pStart, &pEnd);
-    pStart = pEnd + 1;
-    *p2 = std::strtod(pStart, &pEnd);
+    colonPos1 = 0;
+    for (strIt = format.begin(); strIt != format.end(); ++strIt) {
+      if (*strIt == "DS") {
+        pStart = valueString.substr(colonPos1, valueString.length() - colonPos1).c_str();
+        *d = std::strtod(pStart, &pEnd);
+      } else if (*strIt == "GP") {
+        pStart = valueString.substr(colonPos1, valueString.length() - colonPos1).c_str();
+        *p0 = std::strtod(pStart, &pEnd);
+        pStart = pEnd + 1;
+        *p1 = std::strtod(pStart, &pEnd);
+        pStart = pEnd + 1;
+        *p2 = std::strtod(pStart, &pEnd);
+      }
+      colonPos2 = valueString.find(":", colonPos1);
+      colonPos1 = colonPos2 + 1;
+    }
   }
 
   return 0;
