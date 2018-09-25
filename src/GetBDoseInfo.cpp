@@ -5,9 +5,10 @@
 #include <cstring>
 #include <vector>
 #include <limits>
-#include "GetBinaryDosageInfo2.h"
+#include "GetBDoseInfo.h"
 #include <Rcpp.h>
 
+// Converts a C++ vector of double vectors to a Rcpp::NumericMatrix
 Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> > &_vToDbl) {
   unsigned int rows, columns;
   unsigned int ui, uj;
@@ -16,7 +17,7 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
 
   rows = _vToDbl.size();
   columns = _vToDbl[0].size();
-//  Rcpp::Rcout << rows << '\t' << columns << std::endl;
+  //  Rcpp::Rcout << rows << '\t' << columns << std::endl;
 
   Rcpp::NumericMatrix x(rows, columns);
   ui = 0;
@@ -27,6 +28,7 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
   }
   return x;
 }
+
 //' Function to get infromation about a binary dosage file
 //'
 //' Function to get infromation about a binary dosage file
@@ -40,25 +42,24 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
 //' List with information about the binary dosage file
 //' @export
 // [[Rcpp::export]]
-Rcpp::List GetBinaryDosageInfoC2(const std::string &bdFilename, const std::string &famFilename, const std::string &mapFilename) {
+Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string &famFilename, const std::string &mapFilename) {
   Rcpp::List retVal;
   Rcpp::DataFrame samples, snps, snpInfo;
   int format, version;
   bool usesFamilyID;
   unsigned int numSamples;
   unsigned int numSNPs;
-  unsigned int ui, uj;
   Rcpp::NumericMatrix x1, x2, x3, x4;
 
-  CBinaryDosageReader *bdr = NULL;
+  CBDoseReader *bdr = NULL;
 
-  if (GetBinaryDosageFormat(bdFilename, format, version))
+  if (GetBDoseFormat(bdFilename, format, version))
     return retVal;
 
   if (format == 4)
-    bdr = new CBinaryDosageReader4(bdFilename);
+    bdr = new CBDoseReader4(bdFilename);
   else
-    bdr = new CBinaryDosageReader1(bdFilename, famFilename, mapFilename);
+    bdr = new CBDoseReader1(bdFilename, famFilename, mapFilename);
 
   if (!bdr->good())
     return retVal;
@@ -74,11 +75,11 @@ Rcpp::List GetBinaryDosageInfoC2(const std::string &bdFilename, const std::strin
 
   numSNPs = bdr->Location().size();
   snps = Rcpp::DataFrame::create(Rcpp::Named("SNPID") = bdr->SNPID(),
-                      Rcpp::Named("Chromosome") = bdr->Chromosome(),
-                      Rcpp::Named("Location") = bdr->Location(),
-                      Rcpp::Named("Reference") = bdr->ReferenceAllele(),
-                      Rcpp::Named("Alternate") = bdr->AlternateAllele(),
-                      Rcpp::Named("stringsAsFactors") = false);
+                                 Rcpp::Named("Chromosome") = bdr->Chromosome(),
+                                 Rcpp::Named("Location") = bdr->Location(),
+                                 Rcpp::Named("Reference") = bdr->ReferenceAllele(),
+                                 Rcpp::Named("Alternate") = bdr->AlternateAllele(),
+                                 Rcpp::Named("stringsAsFactors") = false);
 
   x1 = VectorVectorToMatrix(bdr->AlternateAlleleFreq());
   x2 = VectorVectorToMatrix(bdr->MinorAlleleFreq());
@@ -103,8 +104,7 @@ Rcpp::List GetBinaryDosageInfoC2(const std::string &bdFilename, const std::strin
                               Rcpp::Named("Samples") = samples,
                               Rcpp::Named("NumSNPs") = numSNPs,
                               Rcpp::Named("SNPs") = snps,
-                              Rcpp::Named("SNPInfo") = snpInfo
-                              );
+                              Rcpp::Named("SNPInfo") = snpInfo);
 
   if (bdr)
     delete bdr;

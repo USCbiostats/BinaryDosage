@@ -1,0 +1,80 @@
+#ifndef BDOSEREADER_H
+#define BDOSEREADER_H 1
+
+#ifndef GENETICDATAREADER_H
+#include "GeneticDataReader.h"
+#endif
+
+int GetBDoseFormat(const std::string &_filename, int &_version, int &_subversion);
+
+class CBDoseReader {
+protected:
+  bool m_good;
+  std::string m_filename;
+  std::ifstream m_infile;
+  int m_version, m_subversion;
+
+  std::streampos m_startDosageData;
+  std::vector<unsigned int> m_groupSize;
+  std::vector<std::string> m_FID, m_SID;
+
+  std::vector<std::string> m_chromosome, m_snpID, m_refAllele, m_altAllele;
+  std::vector<int> m_location;
+  std::vector<std::vector<double> > m_altFreq, m_maf, m_avgCall, m_rSq;
+
+  CGeneticDataReader *m_geneticDataReader;
+  std::vector<double> m_dosage, m_p0, m_p1, m_p2;
+  unsigned int m_currentSNP;
+
+  int ProcessString(const std::string &_dataString, std::vector<std::string> &_stringsToFill);
+  int ReadSNPAdditionalInfo(std::vector<std::vector<double> > &_infotoRead);
+  int MissingSNPAdditionalInfo(std::vector<std::vector<double> > &_infotoRead);
+
+  CBDoseReader(const std::string &_filename);
+public:
+  virtual ~CBDoseReader();
+
+  bool GetFirst();
+  bool GetNext();
+  bool GetSNP(unsigned int n);
+
+  bool good() const { return m_good; }
+  int Version() const { return m_version;  }
+  int SubVersion() const { return m_subversion; }
+  unsigned int NumSamples() const { return m_SID.size(); }
+  unsigned int NumSNPs() const { return m_chromosome.size(); }
+  unsigned int NumGroups() const { return m_groupSize.size(); }
+  const std::vector<unsigned int> &GroupSize() const { return m_groupSize; }
+  const std::vector<std::string> &FamilyID() const { return m_FID; }
+  const std::vector<std::string> &SampleID() const { return m_SID; }
+  const std::vector<std::string> &Chromosome() const { return m_chromosome; }
+  const std::vector<std::string> &SNPID() const { return m_snpID; }
+  const std::vector<int> &Location() const { return m_location; }
+  const std::vector<std::string> &ReferenceAllele() const { return m_refAllele; }
+  const std::vector<std::string> &AlternateAllele() const { return m_altAllele; }
+  const std::vector<std::vector<double> > &AlternateAlleleFreq() const { return m_altFreq; }
+  const std::vector<std::vector<double> > &MinorAlleleFreq() const { return m_maf; }
+  const std::vector<std::vector<double> > &AvgCall() const { return m_avgCall; }
+  const std::vector<std::vector<double> > &RSquared() const { return m_rSq; }
+  const std::vector<double> &Dosage() const { return m_dosage; }
+  const std::vector<double> &P0() const { return m_p0; }
+  const std::vector<double> &P1() const { return m_p1; }
+  const std::vector<double> &P2() const { return m_p2; }
+  int CurrentSNP() const { return m_currentSNP + 1; }
+};
+
+class CBDoseReader1 : public CBDoseReader {
+protected:
+public:
+  CBDoseReader1(const std::string &_filename, const std::string &_famFilename, const std::string &_mapFilename) : CBDoseReader(_filename) {}
+  virtual ~CBDoseReader1() {};
+};
+
+class CBDoseReader4 : public CBDoseReader {
+protected:
+public:
+  CBDoseReader4(const std::string &_filename);
+  virtual ~CBDoseReader4() {} ;
+};
+
+#endif
