@@ -29,20 +29,20 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
   return x;
 }
 
-//' Function to get infromation about a binary dosage file
-//'
-//' Function to get infromation about a binary dosage file
-//' @param bdFilename
-//' Name of binary dosage file
-//' @param famFilename
-//' Name of subject data file
-//' @param mapFilename
-//' Name of SNP data file
-//' @return
-//' List with information about the binary dosage file
-//' @export
+// Function to get infromation about a binary dosage file
+//
+// Function to get infromation about a binary dosage file
+// @param bdFilename
+// Name of binary dosage file
+// @param famFilename
+// Name of subject data file
+// @param mapFilename
+// Name of SNP data file
+// @return
+// List with information about the binary dosage file
+// @export
 // [[Rcpp::export]]
-Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string &famFilename, const std::string &mapFilename) {
+Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string &famFilename, const std::string &mapFilename, const int index) {
   Rcpp::List retVal;
   Rcpp::DataFrame samples, snps, snpInfo;
   int format, version;
@@ -63,6 +63,9 @@ Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string
 
   if (!bdr->good())
     return retVal;
+
+  if (index)
+    bdr->GetIndices();
 
   if (bdr->FamilyID()[0] == "")
     usesFamilyID = false;
@@ -104,7 +107,8 @@ Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string
                               Rcpp::Named("Samples") = samples,
                               Rcpp::Named("NumSNPs") = numSNPs,
                               Rcpp::Named("SNPs") = snps,
-                              Rcpp::Named("SNPInfo") = snpInfo);
+                              Rcpp::Named("SNPInfo") = snpInfo,
+                              Rcpp::Named("Indices") = bdr->Indices());
 
   if (bdr)
     delete bdr;

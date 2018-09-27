@@ -7,21 +7,35 @@
 using namespace Rcpp;
 
 // GetBinaryDosageInfoC
-Rcpp::List GetBinaryDosageInfoC(const std::string& bdFilename, const std::string& famFilename, const std::string& mapFilename);
-RcppExport SEXP _BinaryDosage_GetBinaryDosageInfoC(SEXP bdFilenameSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP) {
+Rcpp::List GetBinaryDosageInfoC(const std::string& bdFilename, const std::string& famFilename, const std::string& mapFilename, const int index);
+RcppExport SEXP _BinaryDosage_GetBinaryDosageInfoC(SEXP bdFilenameSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP, SEXP indexSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type famFilename(famFilenameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type mapFilename(mapFilenameSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetBinaryDosageInfoC(bdFilename, famFilename, mapFilename));
+    Rcpp::traits::input_parameter< const int >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetBinaryDosageInfoC(bdFilename, famFilename, mapFilename, index));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetSNPValues
+Rcpp::DataFrame GetSNPValues(const std::string& bdFilename, const int n);
+RcppExport SEXP _BinaryDosage_GetSNPValues(SEXP bdFilenameSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
+    Rcpp::traits::input_parameter< const int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetSNPValues(bdFilename, n));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 3},
+    {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 4},
+    {"_BinaryDosage_GetSNPValues", (DL_FUNC) &_BinaryDosage_GetSNPValues, 2},
     {NULL, NULL, 0}
 };
 

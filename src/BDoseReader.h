@@ -15,6 +15,8 @@ protected:
   int m_version, m_subversion;
 
   std::streampos m_startDosageData;
+  std::vector<unsigned int> m_snpIndex;
+
   std::vector<unsigned int> m_groupSize;
   std::vector<std::string> m_FID, m_SID;
 
@@ -33,6 +35,8 @@ protected:
   CBDoseReader(const std::string &_filename);
 public:
   virtual ~CBDoseReader();
+
+  virtual int GetIndices() = 0;
 
   bool GetFirst();
   bool GetNext();
@@ -60,6 +64,7 @@ public:
   const std::vector<double> &P0() const { return m_p0; }
   const std::vector<double> &P1() const { return m_p1; }
   const std::vector<double> &P2() const { return m_p2; }
+  const std::vector<unsigned int> &Indices() const { return m_snpIndex; }
   int CurrentSNP() const { return m_currentSNP + 1; }
 };
 
@@ -67,14 +72,18 @@ class CBDoseReader1 : public CBDoseReader {
 protected:
 public:
   CBDoseReader1(const std::string &_filename, const std::string &_famFilename, const std::string &_mapFilename) : CBDoseReader(_filename) {}
-  virtual ~CBDoseReader1() {};
+  virtual ~CBDoseReader1() {}
+
+  virtual int GetIndices() { return 0; }
 };
 
 class CBDoseReader4 : public CBDoseReader {
 protected:
 public:
   CBDoseReader4(const std::string &_filename);
-  virtual ~CBDoseReader4() {} ;
+  virtual ~CBDoseReader4() {}
+
+  virtual int GetIndices();
 };
 
 #endif

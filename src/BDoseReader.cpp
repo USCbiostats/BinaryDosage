@@ -392,3 +392,20 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
   m_good = true;
   m_good = GetFirst();
 }
+
+int CBDoseReader4::GetIndices() {
+  std::vector<unsigned int>::iterator uiIt;
+  std::streampos curPos, lastPos;
+
+  m_snpIndex.resize(NumSNPs());
+  m_snpIndex[0] = (unsigned int)m_startDosageData;
+  lastPos = m_startDosageData;
+  GetFirst();
+  for (uiIt = m_snpIndex.begin() + 1; uiIt != m_snpIndex.end(); ++uiIt) {
+    curPos = m_infile.tellg();
+    *uiIt = (unsigned int)(curPos - lastPos);
+    lastPos = curPos;
+    GetNext();
+  }
+  return 0;
+}
