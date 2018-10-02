@@ -50,7 +50,14 @@ GetSNPValues <- function(bdInfo, SNPs, Subjects) {
   else
     valueMatrix <- matrix(0, length(subVec), length(snpVec))
 
-  GetSNPValuesC(bdInfo$filename, subVec, snpVec, bdInfo$Indices, valueMatrix)
+  if (GetSNPValuesC(bdInfo$filename, subVec, snpVec, bdInfo$Indices, valueMatrix) == 1)
+    return (NULL)
 
-  return (list(snpVec, subVec, valueMatrix))
+  if (bdInfo$version == 2)
+    colnames(valueMatrix) <- paste0(rep(bdInfo$SNPs$SNPID[snpVec], each = 4), rep(c("_dose", "_p0", "_p1", "_p2"), length(snpVec)))
+  else
+    colnames(valueMatrix) <- bdInfo$SNPs$SNPID[snpVec]
+  rownames(valueMatrix) <- bdInfo$Samples$SID[subVec]
+
+  return (valueMatrix)
 }
