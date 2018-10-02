@@ -15,7 +15,7 @@ protected:
   int m_version, m_subversion;
 
   std::streampos m_startDosageData;
-  std::vector<unsigned int> m_snpIndex;
+  std::vector<int> m_snpIndex;
 
   std::vector<unsigned int> m_groupSize;
   std::vector<std::string> m_FID, m_SID;
@@ -64,7 +64,7 @@ public:
   const std::vector<double> &P0() const { return m_p0; }
   const std::vector<double> &P1() const { return m_p1; }
   const std::vector<double> &P2() const { return m_p2; }
-  const std::vector<unsigned int> &Indices() const { return m_snpIndex; }
+  const std::vector<int> &Indices() const { return m_snpIndex; }
   int CurrentSNP() const { return m_currentSNP + 1; }
 };
 

@@ -13,13 +13,6 @@ Description: A program to perform Genome-Environment wide interaction scans
 License: GPL-3
 Imports:
     Rcpp (>= 0.12.9),
-    data.table,
-    grDevices,
-    graphics,
-    stats,
-    utils,
-    XLConnect,
-    prodlim
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp
 Encoding: UTF-8
 RoxygenNote: 6.1.0

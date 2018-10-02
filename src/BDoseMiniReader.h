@@ -28,6 +28,7 @@ public:
   bool GetFirst();
   bool GetNext();
   bool GetSNP(unsigned int n);
+  bool GetSNP(unsigned int n, std::streampos snpLoc);
 
   bool good() const { return m_good; }
   int Version() const { return m_version;  }

@@ -5,19 +5,7 @@ GetBinaryDosageInfoC <- function(bdFilename, famFilename, mapFilename, index) {
     .Call('_BinaryDosage_GetBinaryDosageInfoC', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename, index)
 }
 
-#' Function to get infromation about a binary dosage file
-#'
-#' Function to get infromation about a binary dosage file
-#' @param bdFilename
-#' Name of binary dosage file
-#' @param famFilename
-#' Name of subject data file
-#' @param mapFilename
-#' Name of SNP data file
-#' @return
-#' List with information about the binary dosage file
-#' @export
-GetSNPValues <- function(bdFilename, n) {
-    .Call('_BinaryDosage_GetSNPValues', PACKAGE = 'BinaryDosage', bdFilename, n)
+GetSNPValuesC <- function(bdFilename, subVec, snpVec, indices, valueMatrix) {
+    .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', bdFilename, subVec, snpVec, indices, valueMatrix)
 }
 

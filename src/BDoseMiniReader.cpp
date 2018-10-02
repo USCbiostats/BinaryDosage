@@ -95,6 +95,14 @@ bool CBDoseMiniReader::GetSNP(unsigned int n) {
   return GetNext();
 }
 
+bool CBDoseMiniReader::GetSNP(unsigned int n, std::streampos snpLoc) {
+  m_infile.seekg(snpLoc);
+  m_currentSNP = n - 1;
+  if (m_geneticDataReader->ReadData(m_infile, m_dosage, m_p0, m_p1, m_p2))
+    m_good = false;
+  return m_good;
+}
+
 CBDoseMiniReader1::CBDoseMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs) : CBDoseMiniReader(_filename) {
   if (!m_good)
     return;
