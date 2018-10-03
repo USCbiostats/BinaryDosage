@@ -385,9 +385,9 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
   m_p2.resize(NumSamples());
 
   if (m_subversion == 1)
-    m_geneticDataReader = new CGeneticDataReader1(10000, NumSamples());
+    m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
   else
-    m_geneticDataReader = new CGeneticDataReader3(10000, NumSamples());
+    m_geneticDataReader = new CBDose3DataReader(10000, NumSamples());
 
   m_good = true;
   m_good = GetFirst();

@@ -4,14 +4,14 @@
 #include "GeneticDataReader.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-//							CGeneticDataReader
+//							CBDoseDataReader
 ////////////////////////////////////////////////////////////////////////////////
 // Base class for reading genetic data from binary dosage files
 // When it is created the scale parameter and number of observations
 // must be specified. These are constants and cannot be changed.
 
 // Constructor
-CGeneticDataReader::CGeneticDataReader(const unsigned short _scale, const unsigned int _sampleSize) : m_scale(_scale), m_sampleSize(_sampleSize) {
+CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(), m_scale(_scale), m_sampleSize(_sampleSize) {
   // The scale is changed to a double. This helps the speed of
   // execution by not having to constantly convert the short
   // value to a double every time.
@@ -19,7 +19,7 @@ CGeneticDataReader::CGeneticDataReader(const unsigned short _scale, const unsign
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//							CDosageDataReader
+//							CBDoseDosageReader
 ////////////////////////////////////////////////////////////////////////////////
 // Class for reading genetic data from binary dosage files when only
 // dosages are saved.
@@ -27,14 +27,14 @@ CGeneticDataReader::CGeneticDataReader(const unsigned short _scale, const unsign
 // Constructor
 // Since only dosages are read, the data read is always a vector of
 // short integers of length the number of samples.
-CDosageDataReader::CDosageDataReader(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(_scale, _sampleSize) {
+CBDoseDosageReader::CBDoseDosageReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(m_sampleSize);
 }
 
 // Read the data to the file. Since only dosages are being read, the
 // values of _p0, _p1, and _p2 are ignored. The data is always read from
 // the current file location.
-int CDosageDataReader::ReadData(std::fstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDoseDosageReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt;
   std::vector<double>::iterator dIt;
 
@@ -65,7 +65,7 @@ int CDosageDataReader::ReadData(std::fstream &_infile, std::vector<double> &_dos
 }
 
 // Skip over the next SNP
-int CDosageDataReader::SkipSNP(std::ifstream &_infile) {
+int CBDoseDosageReader::SkipSNP(std::ifstream &_infile) {
   // Check if stream is capable of being read from
   if (!_infile.good())
     return 1;
@@ -78,7 +78,7 @@ int CDosageDataReader::SkipSNP(std::ifstream &_infile) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//							CGeneticDataReader1
+//							CBDose1DataReader
 ////////////////////////////////////////////////////////////////////////////////
 // Class for reading genetic data from a binary dosage files. Only the values for
 // Pr(g=1) and Pr(g=2) are saved. P(g=0) and the dosage calculated from the
@@ -87,14 +87,14 @@ int CDosageDataReader::SkipSNP(std::ifstream &_infile) {
 // Constructor
 // Since only Pr(g=1) and Pr(g=2) are saved. The vector of values read has a
 // length twice the number of samples.
-CGeneticDataReader1::CGeneticDataReader1(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(_scale, _sampleSize) {
+CBDose1DataReader::CBDose1DataReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(2 * m_sampleSize);
 }
 
 // Write the values to the file. Although only the values for _p1 and _p2 are
 // written to the file, the values of _dosage and _p0 are used to check the
 // validity fo the data. The values are written to the end of the file.
-int CGeneticDataReader1::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDose1DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt1, usIt2;
   std::vector<double>::iterator dItd, dItp0, dItp1, dItp2;
 
@@ -140,7 +140,7 @@ int CGeneticDataReader1::ReadData(std::ifstream &_infile, std::vector<double> &_
 }
 
 // Skip over the next SNP
-int CGeneticDataReader1::SkipSNP(std::ifstream &_infile) {
+int CBDose1DataReader::SkipSNP(std::ifstream &_infile) {
   // Check if stream is capable of being read from
   if (!_infile.good())
     return 1;
@@ -153,7 +153,7 @@ int CGeneticDataReader1::SkipSNP(std::ifstream &_infile) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//							CGeneticDataWriter3
+//							CBDose3DataReader
 ////////////////////////////////////////////////////////////////////////////////
 // Class to read genetic data from a binary dosage file where the minimum
 // number of values are stored such that all the values can be restored within
@@ -163,11 +163,11 @@ int CGeneticDataReader1::SkipSNP(std::ifstream &_infile) {
 // Since it possible that all four values will be needed to keep required
 // precision, the maximum size of the vector to be read needs to be
 // a vector of 4 times the number of samples.
-CGeneticDataReader3::CGeneticDataReader3(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(_scale, _sampleSize) {
+CBDose3DataReader::CBDose3DataReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(4 * m_sampleSize);
 }
 
-int CGeneticDataReader3::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDose3DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt1, usIt2;
   std::vector<double>::iterator dItd, dItp0, dItp1, dItp2;
   int inputLength;
@@ -246,7 +246,7 @@ int CGeneticDataReader3::ReadData(std::ifstream &_infile, std::vector<double> &_
 }
 
 // Skip over the next SNP
-int CGeneticDataReader3::SkipSNP(std::ifstream &_infile) {
+int CBDose3DataReader::SkipSNP(std::ifstream &_infile) {
   unsigned int snpSize;
   // Check if stream is capable of being read from
   if (!_infile.good())
