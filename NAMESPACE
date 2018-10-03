@@ -2,6 +2,7 @@
 
 export(GetBDoseInfo)
 export(GetSNPValues)
+export(GetVCFInfo)
 importFrom(Rcpp,evalCpp)
 importFrom(data.table,data.table)
 importFrom(data.table,fread)

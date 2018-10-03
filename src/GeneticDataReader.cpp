@@ -1,6 +1,10 @@
+#include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <limits>
+#include <algorithm>
 #include "GeneticDataReader.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -11,7 +15,7 @@
 // must be specified. These are constants and cannot be changed.
 
 // Constructor
-CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(), m_scale(_scale), m_sampleSize(_sampleSize) {
+CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(_sampleSize), m_scale(_scale) {
   // The scale is changed to a double. This helps the speed of
   // execution by not having to constantly convert the short
   // value to a double every time.
@@ -259,3 +263,80 @@ int CBDose3DataReader::SkipSNP(std::ifstream &_infile) {
     return 1;
   return 0;
 }
+
+int CVCFDataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+  std::istringstream iss, iss2;
+  std::string format;
+  std::string formatVal;
+  std::string dataStr;
+  std::string values;
+  double p0, p1, p2;
+  int numFormat;
+  int i;
+  int dsLoc, gpLoc;
+  std::vector<double>::iterator dIt, p0It, p1It, p2It;
+
+  _infile >> format >> format >> format >> format >> format >> format >> format >> format >> format;
+  std::replace(format.begin(), format.end(), ':', ' ');
+
+  dsLoc = -1;
+  gpLoc = -1;
+  numFormat = 0;
+  iss.str(format);
+  iss >> formatVal;
+  do {
+    if (formatVal == "GP")
+      gpLoc = numFormat;
+    if (formatVal == "DS")
+      dsLoc = numFormat;
+    iss >> formatVal;
+    ++numFormat;
+  } while (!iss.fail());
+
+  if (dsLoc == -1) {
+    std::fill(_dosage.begin(), _dosage.end(), std::numeric_limits<double>::quiet_NaN());
+  }
+  if (gpLoc == -1) {
+    std::fill(_p0.begin(), _p0.end(), std::numeric_limits<double>::quiet_NaN());
+    std::fill(_p1.begin(), _p1.end(), std::numeric_limits<double>::quiet_NaN());
+    std::fill(_p2.begin(), _p2.end(), std::numeric_limits<double>::quiet_NaN());
+  }
+
+  p0It = _p0.begin();
+  p1It = _p1.begin();
+  p2It = _p2.begin();
+  for (dIt = _dosage.begin(); dIt != _dosage.end(); ++dIt, ++p0It, ++p1It, ++p2It) {
+    _infile >> dataStr;
+    std::replace(dataStr.begin(), dataStr.end(), ':', ' ');
+    iss.clear();
+    iss.str(dataStr);
+    for (i = 0; i < numFormat; ++i) {
+      iss >> values;
+      if (i == dsLoc) {
+        *dIt = std::stod(values);
+      }
+      if (i == gpLoc) {
+        std::replace(values.begin(), values.end(), ',', ' ');
+        iss2.clear();
+        iss2.str(values);
+        iss2 >> p0 >> p1 >> p2;
+        *p0It = p0;
+        *p1It = p1;
+        *p2It = p2;
+      }
+    }
+  }
+
+  return 0;
+}
+
+int CVCFDataReader::SkipSNP(std::ifstream &_infile) {
+  std::string junk;
+
+  std::getline(_infile, junk);
+  if (!_infile.good())
+    return 1;
+  return 0;
+}
+
+

@@ -112,7 +112,6 @@ Rcpp::List GetVCFSNPInfoC(std::string &filename, int startData, int reserve) {
     return retVal;
   }
 
-  Rcpp::Rcout << startData << std::endl;
   infile.seekg(startData);
   if (!infile.good()) {
     Rcpp::Rcerr << "Error going to starting point" << std::endl;
@@ -134,6 +133,7 @@ Rcpp::List GetVCFSNPInfoC(std::string &filename, int startData, int reserve) {
   pos.reserve(reserve);
   index.reserve(reserve);
 
+  curPos = infile.tellg();
   infile >> s1 >> i1 >> s2 >> s3 >> s4 >> s5 >> s6 >> s7 >> s8;
   if (infile.fail()) {
     Rcpp::Rcerr << "Error reading first line of data" << std::endl;
@@ -144,7 +144,6 @@ Rcpp::List GetVCFSNPInfoC(std::string &filename, int startData, int reserve) {
   numSNPs = 0;
   while(1) {
     ++numSNPs;
-    curPos = infile.tellg();
     offset = (int)(curPos - lastPos);
     chromosome.push_back(s1);
     pos.push_back(i1);
@@ -156,8 +155,9 @@ Rcpp::List GetVCFSNPInfoC(std::string &filename, int startData, int reserve) {
     info.push_back(s7);
     format.push_back(s8);
     index.push_back(offset);
-    lastPos = curPos;
     std::getline(infile, junk);
+    lastPos = curPos;
+    curPos = infile.tellg();
     infile >> s1 >> i1 >> s2 >> s3 >> s4 >> s5 >> s6 >> s7 >> s8;
     if (infile.fail()) {
       if (infile.eof())

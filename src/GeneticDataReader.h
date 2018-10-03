@@ -3,7 +3,9 @@
 
 class CGeneticDataReader {
 protected:
-  CGeneticDataReader() {}
+  const unsigned int m_sampleSize;
+
+  CGeneticDataReader(const unsigned int _sampleSize) : m_sampleSize(_sampleSize) {}
 public:
   virtual ~CGeneticDataReader() {}
 
@@ -19,8 +21,6 @@ class CBDoseDataReader : public CGeneticDataReader {
 protected:
   const unsigned short m_scale;
   double m_dScale;
-
-  const unsigned int m_sampleSize;
 
   std::vector<unsigned short> m_dataToRead;
 
@@ -69,6 +69,20 @@ protected:
 public:
   CBDose3DataReader(const unsigned short _scale, const unsigned int _sampleSize);
   virtual ~CBDose3DataReader() {}
+
+  virtual int ReadData(std::ifstream &_infile,
+                       std::vector<double> &_dosage,
+                       std::vector<double> &_p0,
+                       std::vector<double> &_p1,
+                       std::vector<double> &_p2);
+  virtual int SkipSNP(std::ifstream &_infile);
+};
+
+class CVCFDataReader : public CGeneticDataReader {
+protected:
+public:
+  CVCFDataReader(const unsigned int _sampleSize) : CGeneticDataReader(_sampleSize) {}
+  virtual ~CVCFDataReader() {}
 
   virtual int ReadData(std::ifstream &_infile,
                        std::vector<double> &_dosage,

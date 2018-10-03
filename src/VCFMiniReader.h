@@ -5,7 +5,7 @@
 #include "MiniReader.h"
 #endif
 
-class CVCFMiniReader : CMiniReader {
+class CVCFMiniReader : public CMiniReader {
 protected:
 
 public:

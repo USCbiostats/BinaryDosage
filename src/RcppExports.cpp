@@ -35,8 +35,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetVCFSNPValues
-int GetVCFSNPValues(const std::string& vcfFilename, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix);
-RcppExport SEXP _BinaryDosage_GetVCFSNPValues(SEXP vcfFilenameSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP) {
+int GetVCFSNPValues(const std::string& vcfFilename, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix, int startRow, int numSubjects, int numSNPs);
+RcppExport SEXP _BinaryDosage_GetVCFSNPValues(SEXP vcfFilenameSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP, SEXP startRowSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -45,7 +45,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type valueMatrix(valueMatrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetVCFSNPValues(vcfFilename, subVec, snpVec, indices, valueMatrix));
+    Rcpp::traits::input_parameter< int >::type startRow(startRowSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetVCFSNPValues(vcfFilename, subVec, snpVec, indices, valueMatrix, startRow, numSubjects, numSNPs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -77,7 +80,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 4},
     {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 5},
-    {"_BinaryDosage_GetVCFSNPValues", (DL_FUNC) &_BinaryDosage_GetVCFSNPValues, 5},
+    {"_BinaryDosage_GetVCFSNPValues", (DL_FUNC) &_BinaryDosage_GetVCFSNPValues, 8},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
     {NULL, NULL, 0}

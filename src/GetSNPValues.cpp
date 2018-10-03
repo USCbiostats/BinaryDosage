@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 #include "BDoseMiniReader.h"
+#include "VCFMiniReader.h"
 #include <Rcpp.h>
 
 // Function to get infromation about a binary dosage file
@@ -105,6 +106,43 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
 
 // [[Rcpp::export]]
 int GetVCFSNPValues(const std::string &vcfFilename, const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
-                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix) {
+                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix, int startRow,
+                  int numSubjects, int numSNPs) {
+  std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
+  std::streampos startData;
+  std::ifstream infile;
+  std::string junk;
+  int i;
+
+  if (index.size() == 0) {
+    if (startRow < 3) {
+      Rcpp::Rcerr << "Invalid starting location of data" << std::endl;
+      return 1;
+    }
+    infile.open(vcfFilename.c_str());
+    if (!infile.good()) {
+      Rcpp::Rcerr << "Unable to open VCF file" << std::endl;
+      return 1;
+    }
+    for (i = 0; i < startRow; ++i)
+      getline(infile, junk);
+    if (!infile.good()) {
+      Rcpp::Rcerr << "Invalid starting location of data" << std::endl;
+      infile.close();
+      return 1;
+    }
+    startData = infile.tellg();
+  } else {
+    startData = index[0];
+  }
+
+  CVCFMiniReader vcfReader(vcfFilename, numSubjects, numSNPs, startData);
+
+  vcfReader.GetFirst();
+  Rcpp::Rcout << vcfReader.Dosage()[0] << '\t' << vcfReader.Dosage()[numSubjects - 1] << std::endl;
+  Rcpp::Rcout << vcfReader.P0()[0] << '\t' << vcfReader.P0()[numSubjects - 1] << std::endl;
+  Rcpp::Rcout << vcfReader.P1()[0] << '\t' << vcfReader.P1()[numSubjects - 1] << std::endl;
+  Rcpp::Rcout << vcfReader.P2()[0] << '\t' << vcfReader.P2()[numSubjects - 1] << std::endl;
+
   return 0;
 }
