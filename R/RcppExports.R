@@ -9,3 +9,15 @@ GetSNPValuesC <- function(bdFilename, subVec, snpVec, indices, valueMatrix) {
     .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', bdFilename, subVec, snpVec, indices, valueMatrix)
 }
 
+GetVCFSNPValues <- function(vcfFilename, subVec, snpVec, indices, valueMatrix) {
+    .Call('_BinaryDosage_GetVCFSNPValues', PACKAGE = 'BinaryDosage', vcfFilename, subVec, snpVec, indices, valueMatrix)
+}
+
+GetVCFHeaderC <- function(vcfFile) {
+    .Call('_BinaryDosage_GetVCFHeaderC', PACKAGE = 'BinaryDosage', vcfFile)
+}
+
+GetVCFSNPInfoC <- function(filename, startData, reserve) {
+    .Call('_BinaryDosage_GetVCFSNPInfoC', PACKAGE = 'BinaryDosage', filename, startData, reserve)
+}
+

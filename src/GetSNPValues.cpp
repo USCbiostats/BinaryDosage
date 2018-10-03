@@ -102,3 +102,9 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
 
   return 0;
 }
+
+// [[Rcpp::export]]
+int GetVCFSNPValues(const std::string &vcfFilename, const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
+                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix) {
+  return 0;
+}

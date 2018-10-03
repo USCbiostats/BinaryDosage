@@ -27,15 +27,10 @@ enum class Header4pos {
     startGroups = 40
 };
 
-CBDoseMiniReader::CBDoseMiniReader(const std::string &_filename) {
+CBDoseMiniReader::CBDoseMiniReader(const std::string &_filename) : CMiniReader(_filename) {
   m_good = false;
   m_version = 0;
   m_subversion = 0;
-  m_numSamples = 0;
-  m_numSNPs = 0;
-  m_filename = _filename;
-  m_geneticDataReader = NULL;
-  m_currentSNP = 0;
   if (GetBDoseFormat(m_filename, m_version, m_subversion))
     return;
   m_infile.open(_filename.c_str(), std::ios_base::in | std::ios_base::binary);
@@ -44,64 +39,6 @@ CBDoseMiniReader::CBDoseMiniReader(const std::string &_filename) {
   m_good = true;
 }
 
-CBDoseMiniReader::~CBDoseMiniReader() {
-  if (m_geneticDataReader)
-    delete m_geneticDataReader;
-  m_infile.close();
-}
-
-bool CBDoseMiniReader::GetFirst() {
-  if (!m_good)
-    return false;
-  m_currentSNP = 0;
-  m_infile.seekg(m_startDosageData);
-  if (m_geneticDataReader->ReadData(m_infile, m_dosage, m_p0, m_p1, m_p2))
-    m_good = false;
-  return m_good;
-}
-
-bool CBDoseMiniReader::GetNext() {
-  if (!m_good)
-    return false;
-  ++m_currentSNP;
-  if (m_currentSNP == NumSNPs()) {
-    --m_currentSNP;
-    return false;
-  }
-  if (m_geneticDataReader->ReadData(m_infile, m_dosage, m_p0, m_p1, m_p2))
-    m_good = false;
-  return m_good;
-}
-
-bool CBDoseMiniReader::GetSNP(unsigned int n) {
-  if (!m_good)
-    return false;
-  if (n == 0 || n > NumSNPs())
-    return false;
-  --n;
-  if (n == m_currentSNP)
-    return true;
-  if (n == 0)
-    return GetFirst();
-  if (n < m_currentSNP) {
-    m_infile.seekg(m_startDosageData);
-    m_geneticDataReader->SkipSNP(m_infile);
-    m_currentSNP = 0;
-  }
-  while (m_currentSNP < n - 1) {
-    m_geneticDataReader->SkipSNP(m_infile);
-    ++m_currentSNP;
-  }
-  return GetNext();
-}
-
-bool CBDoseMiniReader::GetSNP(unsigned int n, std::streampos snpLoc) {
-  m_infile.seekg(snpLoc);
-  m_currentSNP = n - 1;
-  if (m_geneticDataReader->ReadData(m_infile, m_dosage, m_p0, m_p1, m_p2))
-    m_good = false;
-  return m_good;
-}
 
 CBDoseMiniReader1::CBDoseMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs) : CBDoseMiniReader(_filename) {
   if (!m_good)
