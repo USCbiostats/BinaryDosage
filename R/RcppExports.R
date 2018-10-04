@@ -5,12 +5,8 @@ GetBinaryDosageInfoC <- function(bdFilename, famFilename, mapFilename, index) {
     .Call('_BinaryDosage_GetBinaryDosageInfoC', PACKAGE = 'BinaryDosage', bdFilename, famFilename, mapFilename, index)
 }
 
-GetSNPValuesC <- function(bdFilename, subVec, snpVec, indices, valueMatrix) {
-    .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', bdFilename, subVec, snpVec, indices, valueMatrix)
-}
-
-GetVCFSNPValues <- function(vcfFilename, subVec, snpVec, indices, valueMatrix, startRow, numSubjects, numSNPs) {
-    .Call('_BinaryDosage_GetVCFSNPValues', PACKAGE = 'BinaryDosage', vcfFilename, subVec, snpVec, indices, valueMatrix, startRow, numSubjects, numSNPs)
+GetSNPValuesC <- function(filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs) {
+    .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs)
 }
 
 GetVCFHeaderC <- function(vcfFile) {

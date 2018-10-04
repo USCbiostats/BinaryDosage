@@ -4,10 +4,10 @@
 \alias{GetSNPValues}
 \title{Function to read in SNPs from a binary dosage file}
 \usage{
-GetSNPValues(bdInfo, SNPs, Subjects)
+GetSNPValues(fileInfo, SNPs, Subjects, geneProb = TRUE)
 }
 \arguments{
-\item{bdInfo}{Information about the binary dosage file return from
+\item{fileInfo}{Information about the binary dosage file return from
 GetBDoseInfo}
 
 \item{SNPs}{Vector of either SNP names or indices in binary dosage
@@ -15,6 +15,8 @@ file to extract values for}
 
 \item{Subjects}{Vector of either Subject IDs of indices in binary dosage
 file to extract values for}
+
+\item{geneProb}{Include genetic probabilities - default true}
 }
 \value{
 List with information about the file including subject and

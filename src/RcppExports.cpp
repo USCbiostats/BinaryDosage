@@ -20,35 +20,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetSNPValuesC
-int GetSNPValuesC(const std::string& bdFilename, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix);
-RcppExport SEXP _BinaryDosage_GetSNPValuesC(SEXP bdFilenameSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP) {
+int GetSNPValuesC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix, const int numSubjects, const int numSNPs);
+RcppExport SEXP _BinaryDosage_GetSNPValuesC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP geneProbSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
+    Rcpp::traits::input_parameter< int >::type geneProb(geneProbSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type valueMatrix(valueMatrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetSNPValuesC(bdFilename, subVec, snpVec, indices, valueMatrix));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetVCFSNPValues
-int GetVCFSNPValues(const std::string& vcfFilename, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix, int startRow, int numSubjects, int numSNPs);
-RcppExport SEXP _BinaryDosage_GetVCFSNPValues(SEXP vcfFilenameSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP, SEXP startRowSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type vcfFilename(vcfFilenameSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type valueMatrix(valueMatrixSEXP);
-    Rcpp::traits::input_parameter< int >::type startRow(startRowSEXP);
-    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
-    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetVCFSNPValues(vcfFilename, subVec, snpVec, indices, valueMatrix, startRow, numSubjects, numSNPs));
+    Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetSNPValuesC(filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -79,8 +65,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetBinaryDosageInfoC", (DL_FUNC) &_BinaryDosage_GetBinaryDosageInfoC, 4},
-    {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 5},
-    {"_BinaryDosage_GetVCFSNPValues", (DL_FUNC) &_BinaryDosage_GetVCFSNPValues, 8},
+    {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 9},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
     {NULL, NULL, 0}

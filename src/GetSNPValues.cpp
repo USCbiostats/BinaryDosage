@@ -9,38 +9,42 @@
 #include "VCFMiniReader.h"
 #include <Rcpp.h>
 
-// Function to get infromation about a binary dosage file
-//
-// Function to get infromation about a binary dosage file
-// @param bdFilename
-// Name of binary dosage file
-// @param famFilename
-// Name of subject data file
-// @param mapFilename
-// Name of SNP data file
-// @param indices
-// Index of SNPs returned from GetBDoseInfo
-// @param valueMatrix
-// Matrix to write values to. This needs to be created in R
-// @return
-// List with information about the binary dosage file
-// @export
 // [[Rcpp::export]]
-int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
-                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix) {
+int GetSNPValuesC(const std::string &filename, const std::string &filetype, int geneProb,
+                  const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
+                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix,
+                  const int numSubjects, const int numSNPs) {
 
   CMiniReader *miniReader = NULL;
+  std::ifstream infile;
   std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
   std::streampos snpIndex = 0;
   Rcpp::NumericVector d, p0, p1, p2;
   Rcpp::DataFrame retVal;
-  int format, version;
   int i, j, n;
   unsigned int un;
+  std::string junk;
 
-  miniReader = new CBDoseMiniReader4(bdFilename);
+  if (filetype == "BinaryDosage") {
+    miniReader = new CBDoseMiniReader4(filename);
+    if (miniReader->P0().size() == 0 && geneProb == 1) {
+      Rcpp::Rcerr << "Gene probabilities are request but don't exist in file" << std::endl;
+      delete miniReader;
+      return 1;
+    }
+  } else if (filetype == "VCF") {
+    if (index.size() == 0) {
+      Rcpp::Rcerr << "VCF files require indices" << std::endl;
+      return 1;
+    }
+    miniReader = new CVCFMiniReader(filename, numSubjects, numSNPs, index[0]);
+  } else {
+    Rcpp::Rcerr << "Unknown file type" << std::endl;
+    return 1;
+  }
+
   if (!miniReader->good()) {
-    Rcpp::Rcerr << "Error reading file" << std::endl;
+    Rcpp::Rcerr << "Error opening file" << std::endl;
     delete miniReader;
     return 1;
   }
@@ -65,13 +69,6 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
         snpIndex += index[ui];
     }
 
-    GetBDoseFormat(bdFilename, format, version);
-    if (format != 4) {
-      Rcpp::Rcerr << "GetSNPValues currently only works with format 4.X or greater" << std::endl;
-      delete miniReader;
-      return 1;
-    }
-
     if (snpIndex > 0) {
       if (!miniReader->GetSNP(n, snpIndex)) {
         Rcpp::Rcerr << "Error reading SNP" << std::endl;
@@ -85,7 +82,7 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
         return 1;
       }
     }
-    if (version == 1) {
+    if (geneProb == 0) {
       for (j = 0; j < subVec.length(); ++j) {
         valueMatrix(j, i) = miniReader->Dosage()[subVec[j] - 1];
       }
@@ -100,49 +97,6 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
   }
 
   delete miniReader;
-
-  return 0;
-}
-
-// [[Rcpp::export]]
-int GetVCFSNPValues(const std::string &vcfFilename, const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
-                  const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix, int startRow,
-                  int numSubjects, int numSNPs) {
-  std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
-  std::streampos startData;
-  std::ifstream infile;
-  std::string junk;
-  int i;
-
-  if (index.size() == 0) {
-    if (startRow < 3) {
-      Rcpp::Rcerr << "Invalid starting location of data" << std::endl;
-      return 1;
-    }
-    infile.open(vcfFilename.c_str());
-    if (!infile.good()) {
-      Rcpp::Rcerr << "Unable to open VCF file" << std::endl;
-      return 1;
-    }
-    for (i = 0; i < startRow; ++i)
-      getline(infile, junk);
-    if (!infile.good()) {
-      Rcpp::Rcerr << "Invalid starting location of data" << std::endl;
-      infile.close();
-      return 1;
-    }
-    startData = infile.tellg();
-  } else {
-    startData = index[0];
-  }
-
-  CVCFMiniReader vcfReader(vcfFilename, numSubjects, numSNPs, startData);
-
-  vcfReader.GetFirst();
-  Rcpp::Rcout << vcfReader.Dosage()[0] << '\t' << vcfReader.Dosage()[numSubjects - 1] << std::endl;
-  Rcpp::Rcout << vcfReader.P0()[0] << '\t' << vcfReader.P0()[numSubjects - 1] << std::endl;
-  Rcpp::Rcout << vcfReader.P1()[0] << '\t' << vcfReader.P1()[numSubjects - 1] << std::endl;
-  Rcpp::Rcout << vcfReader.P2()[0] << '\t' << vcfReader.P2()[numSubjects - 1] << std::endl;
 
   return 0;
 }
