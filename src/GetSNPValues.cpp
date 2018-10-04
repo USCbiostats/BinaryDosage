@@ -29,7 +29,7 @@
 int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
                   const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &valueMatrix) {
 
-  CBDoseMiniReader *bdmr = NULL;
+  CMiniReader *miniReader = NULL;
   std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
   std::streampos snpIndex = 0;
   Rcpp::NumericVector d, p0, p1, p2;
@@ -38,10 +38,10 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
   int i, j, n;
   unsigned int un;
 
-  bdmr = new CBDoseMiniReader4(bdFilename);
-  if (!bdmr->good()) {
+  miniReader = new CBDoseMiniReader4(bdFilename);
+  if (!miniReader->good()) {
     Rcpp::Rcerr << "Error reading file" << std::endl;
-    delete bdmr;
+    delete miniReader;
     return 1;
   }
 
@@ -49,7 +49,7 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
     n = snpVec[i];
     if (n < 1) {
       Rcpp::Rcerr << "SNP number must be a postive value" << std::endl;
-      delete bdmr;
+      delete miniReader;
       return 1;
     }
     un = (unsigned int)n;
@@ -57,7 +57,7 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
     if (index.size() != 0) {
       if (un > index.size()) {
         Rcpp::Rcerr << "SNP number greater than number of SNP indices" << std::endl;
-        delete bdmr;
+        delete miniReader;
         return 1;
       }
       snpIndex = 0;
@@ -68,38 +68,38 @@ int GetSNPValuesC(const std::string &bdFilename, const Rcpp::IntegerVector &subV
     GetBDoseFormat(bdFilename, format, version);
     if (format != 4) {
       Rcpp::Rcerr << "GetSNPValues currently only works with format 4.X or greater" << std::endl;
-      delete bdmr;
+      delete miniReader;
       return 1;
     }
 
     if (snpIndex > 0) {
-      if (!bdmr->GetSNP(n, snpIndex)) {
+      if (!miniReader->GetSNP(n, snpIndex)) {
         Rcpp::Rcerr << "Error reading SNP" << std::endl;
-        delete bdmr;
+        delete miniReader;
         return 1;
       }
     } else {
-      if (!bdmr->GetSNP(n)) {
+      if (!miniReader->GetSNP(n)) {
         Rcpp::Rcerr << "Error reading SNP" << std::endl;
-        delete bdmr;
+        delete miniReader;
         return 1;
       }
     }
     if (version == 1) {
       for (j = 0; j < subVec.length(); ++j) {
-        valueMatrix(j, i) = bdmr->Dosage()[subVec[j] - 1];
+        valueMatrix(j, i) = miniReader->Dosage()[subVec[j] - 1];
       }
     } else {
       for (j = 0; j < subVec.length(); ++j) {
-        valueMatrix(j, 4*i) = bdmr->Dosage()[subVec[j] - 1];
-        valueMatrix(j, 4*i + 1) = bdmr->P0()[subVec[j] - 1];
-        valueMatrix(j, 4*i + 2) = bdmr->P1()[subVec[j] - 1];
-        valueMatrix(j, 4*i + 3) = bdmr->P2()[subVec[j] - 1];
+        valueMatrix(j, 4*i) = miniReader->Dosage()[subVec[j] - 1];
+        valueMatrix(j, 4*i + 1) = miniReader->P0()[subVec[j] - 1];
+        valueMatrix(j, 4*i + 2) = miniReader->P1()[subVec[j] - 1];
+        valueMatrix(j, 4*i + 3) = miniReader->P2()[subVec[j] - 1];
       }
     }
   }
 
-  delete bdmr;
+  delete miniReader;
 
   return 0;
 }
