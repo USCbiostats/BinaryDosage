@@ -12,12 +12,12 @@ protected:
   bool m_good;
   std::string m_filename;
   std::ifstream m_infile;
-  int m_version, m_subversion;
+  int m_format, m_version;
 
   std::streampos m_startDosageData;
   std::vector<int> m_snpIndex;
 
-  std::vector<unsigned int> m_groupSize;
+  std::vector<int> m_groupSize;
   std::vector<std::string> m_FID, m_SID;
 
   std::vector<std::string> m_chromosome, m_snpID, m_refAllele, m_altAllele;
@@ -26,7 +26,7 @@ protected:
 
   CGeneticDataReader *m_geneticDataReader;
   std::vector<double> m_dosage, m_p0, m_p1, m_p2;
-  unsigned int m_currentSNP;
+  int m_currentSNP;
 
   int ProcessString(const std::string &_dataString, std::vector<std::string> &_stringsToFill);
   int ReadSNPAdditionalInfo(std::vector<std::vector<double> > &_infotoRead);
@@ -40,15 +40,15 @@ public:
 
   bool GetFirst();
   bool GetNext();
-  bool GetSNP(unsigned int n);
+  bool GetSNP(int n);
 
   bool good() const { return m_good; }
-  int Version() const { return m_version;  }
-  int SubVersion() const { return m_subversion; }
-  unsigned int NumSamples() const { return m_SID.size(); }
-  unsigned int NumSNPs() const { return m_chromosome.size(); }
-  unsigned int NumGroups() const { return m_groupSize.size(); }
-  const std::vector<unsigned int> &GroupSize() const { return m_groupSize; }
+  int Format() const { return m_format;  }
+  int Version() const { return m_version; }
+  int NumSamples() const { return m_SID.size(); }
+  int NumSNPs() const { return m_chromosome.size(); }
+  int NumGroups() const { return m_groupSize.size(); }
+  const std::vector<int> &GroupSize() const { return m_groupSize; }
   const std::vector<std::string> &FamilyID() const { return m_FID; }
   const std::vector<std::string> &SampleID() const { return m_SID; }
   const std::vector<std::string> &Chromosome() const { return m_chromosome; }
@@ -71,10 +71,13 @@ public:
 class CBDoseReader1 : public CBDoseReader {
 protected:
 public:
-  CBDoseReader1(const std::string &_filename, const std::string &_famFilename, const std::string &_mapFilename) : CBDoseReader(_filename) {}
+  CBDoseReader1(const std::string &_filename, const std::vector<std::string> &_FID, std::vector<std::string> &_SID,
+                const std::vector<std::string> &_SNPID, const std::vector<std::string> &_chromosome,
+                const std::vector<int> &_location, const std::vector<std::string> &_refAllele,
+                const std::vector<std::string> &_altAllele);
   virtual ~CBDoseReader1() {}
 
-  virtual int GetIndices() { return 0; }
+  virtual int GetIndices();
 };
 
 class CBDoseReader4 : public CBDoseReader {

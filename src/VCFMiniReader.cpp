@@ -8,8 +8,8 @@
 #include "GeneticDataReader.h"
 #include "VCFMiniReader.h"
 
-CVCFMiniReader::CVCFMiniReader(const std::string &_filename, const unsigned int _numSamples,
-                               const unsigned int _numSNPs, const std::streampos _startData) : CMiniReader(_filename) {
+CVCFMiniReader::CVCFMiniReader(const std::string &_filename, const int _numSamples,
+                               const int _numSNPs, const std::streampos _startData) : CMiniReader(_filename) {
   m_good = false;
   m_numSamples = _numSamples;
   m_numSNPs = _numSNPs;

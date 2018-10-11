@@ -8,10 +8,54 @@
 #include "GetBDoseInfo.h"
 #include <Rcpp.h>
 
+// [[Rcpp::export]]
+Rcpp::List GetBDose4Header(std::string &filename) {
+  char header[4];
+  char format[4];
+  int numSubjects;
+  int numSNPs;
+  int numGroups;
+  int subjectOptions;
+  int snpOptions;
+  int startSubjectData;
+  int startSNPData;
+  int startDosageData;
+  std::ifstream infile;
+  Rcpp::List retVal;
+
+  infile.open(filename.c_str(), std::ios::in | std::ios::binary);
+  if (!infile.good())
+    return retVal;
+
+  infile.read(header, 4);
+  infile.read(format, 4);
+  infile.read((char *)&numSubjects, sizeof(int));
+  infile.read((char *)&numSNPs, sizeof(int));
+  infile.read((char *)&numGroups, sizeof(int));
+  infile.read((char *)&subjectOptions, sizeof(int));
+  infile.read((char *)&snpOptions, sizeof(int));
+  infile.read((char *)&startSubjectData, sizeof(int));
+  infile.read((char *)&startSNPData, sizeof(int));
+  infile.read((char *)&startDosageData, sizeof(int));
+
+  if (!infile.good())
+    return retVal;
+
+  retVal = Rcpp::List::create(Rcpp::Named("Subjects") = numSubjects,
+                              Rcpp::Named("SNPs") = numSNPs,
+                              Rcpp::Named("Groups") = numGroups,
+                              Rcpp::Named("SubOption") = subjectOptions,
+                              Rcpp::Named("SNPOption") = snpOptions,
+                              Rcpp::Named("StartSub") = startSubjectData,
+                              Rcpp::Named("StartSNP") = startSNPData,
+                              Rcpp::Named("StartDose") = startDosageData);
+  infile.close();
+  return retVal;
+}
 // Converts a C++ vector of double vectors to a Rcpp::NumericMatrix
 Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> > &_vToDbl) {
-  unsigned int rows, columns;
-  unsigned int ui, uj;
+  int rows, columns;
+  int ui, uj;
   std::vector<std::vector<double> >::const_iterator vDblIt;
   std::vector<double>::const_iterator dblIt;
 
@@ -29,6 +73,68 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
   return x;
 }
 
+// [[Rcpp::export]]
+Rcpp::List GetBDoseFormatC(const std::string &bdFilename) {
+  int format, version;
+  Rcpp::List retVal;
+
+  if (GetBDoseFormat(bdFilename, format, version))
+    return retVal;
+  retVal = Rcpp::List::create(Rcpp::Named("Format") = format,
+                              Rcpp::Named("Version") = version);
+  return retVal;
+}
+
+// [[Rcpp::export]]
+Rcpp::List GetBinaryDosage1Info(const std::string &bdFilename, const Rcpp::DataFrame &subjects,
+                                const Rcpp::DataFrame &snps, const int index) {
+  Rcpp::List retVal;
+  Rcpp::DataFrame samples, SNPs, snpInfo;
+  bool usesFamilyID;
+  std::vector<std::string> fid = Rcpp::as<std::vector<std::string> >(subjects["FID"]);
+  std::vector<std::string> sid = Rcpp::as<std::vector<std::string> >(subjects["SID"]);
+  std::vector<std::string> snpID = Rcpp::as<std::vector<std::string> >(snps["SNPID"]);
+  std::vector<std::string> chromosome = Rcpp::as<std::vector<std::string> >(snps["CHR"]);
+  std::vector<std::string> refAllele = Rcpp::as<std::vector<std::string> >(snps["REF"]);
+  std::vector<std::string> altAllele = Rcpp::as<std::vector<std::string> >(snps["ALT"]);
+  std::vector<int> location = Rcpp::as<std::vector<int> >(snps["LOC"]);
+  CBDoseReader1 bdr(bdFilename, fid, sid, snpID, chromosome, location, refAllele, altAllele);
+
+  if (!bdr.good()) {
+    Rcpp::Rcerr << "Unable to open binary dosage file" << std::endl;
+    return retVal;
+  }
+
+  samples = Rcpp::DataFrame::create(Rcpp::Named("FID") = bdr.FamilyID(),
+                                    Rcpp::Named("SID") = bdr.SampleID(),
+                                    Rcpp::Named("stringsAsFactors") = false);
+  SNPs = Rcpp::DataFrame::create(Rcpp::Named("SNPID") = bdr.SNPID(),
+                                 Rcpp::Named("Chromosome") = bdr.Chromosome(),
+                                 Rcpp::Named("Location") = bdr.Location(),
+                                 Rcpp::Named("Reference") = bdr.ReferenceAllele(),
+                                 Rcpp::Named("Alternate") = bdr.AlternateAllele(),
+                                 Rcpp::Named("stringsAsFactors") = false);
+  snpInfo = Rcpp::DataFrame::create(Rcpp::Named("Dosage") = bdr.Dosage(),
+                                    Rcpp::Named("P0") = bdr.P0(),
+                                    Rcpp::Named("P1") = bdr.P1(),
+                                    Rcpp::Named("p2") = bdr.P2());
+
+  retVal = Rcpp::List::create(Rcpp::Named("filetype") = "BinaryDosage",
+                              Rcpp::Named("filename") = bdFilename,
+                              Rcpp::Named("format") = bdr.Format(),
+                              Rcpp::Named("version") = bdr.Version(),
+                              Rcpp::Named("Groups") = bdr.NumGroups(),
+                              Rcpp::Named("GroupSizes") = bdr.GroupSize(),
+                              Rcpp::Named("NumSamples") = bdr.NumSamples(),
+                              Rcpp::Named("usesFID") = usesFamilyID,
+                              Rcpp::Named("Samples") = samples,
+                              Rcpp::Named("NumSNPs") = bdr.NumSNPs(),
+                              Rcpp::Named("SNPs") = SNPs,
+                              Rcpp::Named("SNPInfo") = snpInfo,
+                              Rcpp::Named("Indices") = bdr.Indices());
+  return retVal;
+}
+
 // Function to get infromation about a binary dosage file
 //
 // Function to get infromation about a binary dosage file
@@ -42,28 +148,26 @@ Rcpp::NumericMatrix VectorVectorToMatrix(const std::vector<std::vector<double> >
 // List with information about the binary dosage file
 // @export
 // [[Rcpp::export]]
-Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string &famFilename, const std::string &mapFilename, const int index) {
+Rcpp::List GetBinaryDosage4Info(const std::string &bdFilename, const int index) {
   Rcpp::List retVal;
   Rcpp::DataFrame samples, snps, snpInfo;
   int format, version;
   bool usesFamilyID;
-  unsigned int numSamples;
-  unsigned int numSNPs;
+  int numSamples;
+  int numSNPs;
   Rcpp::NumericMatrix x1, x2, x3, x4;
-
+  std::ifstream infile;
   CBDoseReader *bdr = NULL;
 
   if (GetBDoseFormat(bdFilename, format, version))
     return retVal;
 
-  if (format == 4)
-    bdr = new CBDoseReader4(bdFilename);
-  else
-    bdr = new CBDoseReader1(bdFilename, famFilename, mapFilename);
-
-  if (!bdr->good())
+  if (format != 4)
     return retVal;
 
+  bdr = new CBDoseReader4(bdFilename);
+  if (!bdr->good())
+    return retVal;
   if (index)
     bdr->GetIndices();
 
@@ -94,8 +198,6 @@ Rcpp::List GetBinaryDosageInfoC(const std::string &bdFilename, const std::string
                                     Rcpp::Named("AvgCall") = x3,
                                     Rcpp::Named("RSquared") = x4,
                                     Rcpp::Named("stringsAsFactors") = false);
-
-
   retVal = Rcpp::List::create(Rcpp::Named("filetype") = "BinaryDosage",
                               Rcpp::Named("filename") = bdFilename,
                               Rcpp::Named("format") = format,

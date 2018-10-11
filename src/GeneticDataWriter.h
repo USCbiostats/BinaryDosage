@@ -6,12 +6,12 @@ protected:
   const unsigned short m_scale;
   double m_dScale;
 
-  const unsigned int m_sampleSize;
+  const int m_sampleSize;
 
   std::vector<unsigned short> m_dataToWrite;
 
   short ConvertToShort(const double x);
-  CGeneticDataWriter(const unsigned short _scale, const unsigned int _sampleSize);
+  CGeneticDataWriter(const unsigned short _scale, const int _sampleSize);
 public:
   virtual ~CGeneticDataWriter() {};
 
@@ -25,7 +25,7 @@ public:
 class CDosageDataWriter : public CGeneticDataWriter {
 protected:
 public:
-  CDosageDataWriter(const unsigned short _scale, const unsigned int _sampleSize);
+  CDosageDataWriter(const unsigned short _scale, const int _sampleSize);
   virtual ~CDosageDataWriter() {};
 
   virtual int WriteData(std::fstream &_outfile,
@@ -38,7 +38,7 @@ public:
 class CGeneticDataWriter1 : public CGeneticDataWriter {
 protected:
 public:
-  CGeneticDataWriter1(const unsigned short _scale, const unsigned int _sampleSize);
+  CGeneticDataWriter1(const unsigned short _scale, const int _sampleSize);
   virtual ~CGeneticDataWriter1() {};
 
   virtual int WriteData(std::fstream &_outfile,
@@ -51,7 +51,7 @@ public:
 class CGeneticDataWriter3 : public CGeneticDataWriter {
 protected:
 public:
-  CGeneticDataWriter3(const unsigned short _scale, const unsigned int _sampleSize);
+  CGeneticDataWriter3(const unsigned short _scale, const int _sampleSize);
   virtual ~CGeneticDataWriter3() {};
 
   virtual int WriteData(std::fstream &_outfile,

@@ -46,7 +46,7 @@ bool CMiniReader::GetNext() {
   return m_good;
 }
 
-bool CMiniReader::GetSNP(unsigned int n) {
+bool CMiniReader::GetSNP(int n) {
   if (!m_good)
     return false;
   if (n == 0 || n > NumSNPs())
@@ -68,7 +68,7 @@ bool CMiniReader::GetSNP(unsigned int n) {
   return GetNext();
 }
 
-bool CMiniReader::GetSNP(unsigned int n, std::streampos snpLoc) {
+bool CMiniReader::GetSNP(int n, std::streampos snpLoc) {
   m_infile.seekg(snpLoc);
   m_currentSNP = n - 1;
   if (m_geneticDataReader->ReadData(m_infile, m_dosage, m_p0, m_p1, m_p2))

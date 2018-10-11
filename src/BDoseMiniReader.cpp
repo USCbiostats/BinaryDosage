@@ -40,21 +40,45 @@ CBDoseMiniReader::CBDoseMiniReader(const std::string &_filename) : CMiniReader(_
 }
 
 
-CBDoseMiniReader1::CBDoseMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs) : CBDoseMiniReader(_filename) {
+CBDoseMiniReader1::CBDoseMiniReader1(const std::string &_filename, const int _numSamples, const int _numSNPs) : CBDoseMiniReader(_filename) {
   if (!m_good)
     return;
-
   if (m_version == 3) {
+    m_infile.seekg(8);
     m_infile.read((char *)&m_numSamples, sizeof(int));
-    if (m_numSamples == _numSamples)
+    if (m_numSamples != _numSamples) {
+      m_good = false;
       return;
+    }
     m_startDosageData = 12;
+    if (m_subversion == 1)
+      m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
+    else
+      m_geneticDataReader = new CBDose3DataReader(10000, NumSamples());
   } else {
     m_numSamples = _numSamples;
     m_startDosageData = 8;
+    if (m_version == 1) {
+      if (m_subversion == 1)
+        m_geneticDataReader = new CBDoseDosageReader(0x7ffe, NumSamples());
+      else
+        m_geneticDataReader = new CBDose1DataReader(0xfffe, NumSamples());
+    } else {
+      if (m_subversion == 1)
+        m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
+      else
+        m_geneticDataReader = new CBDose1DataReader(10000, NumSamples());
+    }
   }
+
+  m_dosage.resize(NumSamples());
+  m_p0.resize(NumSamples());
+  m_p1.resize(NumSamples());
+  m_p2.resize(NumSamples());
+
   m_numSNPs = _numSNPs;
   m_good = true;
+  m_good = GetFirst();
 }
 
 CBDoseMiniReader4::CBDoseMiniReader4(const std::string &_filename) : CBDoseMiniReader(_filename) {

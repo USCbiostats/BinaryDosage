@@ -4,7 +4,8 @@
 \alias{GetBDoseInfo}
 \title{Function to read in information about binary dosage file}
 \usage{
-GetBDoseInfo(bdFile, famFile = "", mapFile = "", index = FALSE)
+GetBDoseInfo(bdFile, famFile = "", mapFile = "", index = FALSE,
+  sep = "\\t")
 }
 \arguments{
 \item{bdFile}{Name of the binary dosage file}
@@ -18,6 +19,8 @@ used by plink for extended map file files. Not needed for
 format 4 or greater binary dosage files.}
 
 \item{index}{Index the SNPs for faster reading.}
+
+\item{sep}{Separator in fam and map files}
 }
 \value{
 List with information about the file including subject and

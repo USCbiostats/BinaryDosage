@@ -19,7 +19,7 @@ public:
 class CBDoseMiniReader1 : public CBDoseMiniReader {
 protected:
 public:
-  CBDoseMiniReader1(const std::string &_filename, const unsigned int _numSamples, const unsigned int _numSNPs);
+  CBDoseMiniReader1(const std::string &_filename, const int _numSamples, const int _numSNPs);
   virtual ~CBDoseMiniReader1() {}
 };
 

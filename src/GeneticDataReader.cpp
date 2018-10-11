@@ -15,7 +15,7 @@
 // must be specified. These are constants and cannot be changed.
 
 // Constructor
-CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataReader(_sampleSize), m_scale(_scale) {
+CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const int _sampleSize) : CGeneticDataReader(_sampleSize), m_scale(_scale) {
   // The scale is changed to a double. This helps the speed of
   // execution by not having to constantly convert the short
   // value to a double every time.
@@ -31,7 +31,7 @@ CBDoseDataReader::CBDoseDataReader(const unsigned short _scale, const unsigned i
 // Constructor
 // Since only dosages are read, the data read is always a vector of
 // short integers of length the number of samples.
-CBDoseDosageReader::CBDoseDosageReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
+CBDoseDosageReader::CBDoseDosageReader(const unsigned short _scale, const int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(m_sampleSize);
 }
 
@@ -46,7 +46,7 @@ int CBDoseDosageReader::ReadData(std::ifstream &_infile, std::vector<double> &_d
   if (!_infile.good())
     return 1;
   // Were the correct number of values passed?
-  if (_dosage.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize)
     return 1;
 
   // Read in the data
@@ -91,7 +91,7 @@ int CBDoseDosageReader::SkipSNP(std::ifstream &_infile) {
 // Constructor
 // Since only Pr(g=1) and Pr(g=2) are saved. The vector of values read has a
 // length twice the number of samples.
-CBDose1DataReader::CBDose1DataReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
+CBDose1DataReader::CBDose1DataReader(const unsigned short _scale, const int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(2 * m_sampleSize);
 }
 
@@ -106,7 +106,7 @@ int CBDose1DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_do
   if (!_infile.good())
     return 1;
   // Are vectors for the appropriate sizes?
-  if (_dosage.size() != m_sampleSize || _p0.size() != m_sampleSize || _p1.size() != m_sampleSize || _p2.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize || (int)_p2.size() != m_sampleSize)
     return 1;
 
   // Write the data
@@ -167,7 +167,7 @@ int CBDose1DataReader::SkipSNP(std::ifstream &_infile) {
 // Since it possible that all four values will be needed to keep required
 // precision, the maximum size of the vector to be read needs to be
 // a vector of 4 times the number of samples.
-CBDose3DataReader::CBDose3DataReader(const unsigned short _scale, const unsigned int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
+CBDose3DataReader::CBDose3DataReader(const unsigned short _scale, const int _sampleSize) : CBDoseDataReader(_scale, _sampleSize) {
   m_dataToRead.resize(4 * m_sampleSize);
 }
 
@@ -180,7 +180,7 @@ int CBDose3DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_do
   if (!_infile.good())
     return 1;
   // Are vectors for the appropriate sizes?
-  if (_dosage.size() != m_sampleSize || _p0.size() != m_sampleSize || _p1.size() != m_sampleSize || _p2.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize || (int)_p2.size() != m_sampleSize)
     return 1;
 
   _infile.read((char *)&inputLength, sizeof(int));
@@ -251,11 +251,11 @@ int CBDose3DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_do
 
 // Skip over the next SNP
 int CBDose3DataReader::SkipSNP(std::ifstream &_infile) {
-  unsigned int snpSize;
+  int snpSize;
   // Check if stream is capable of being read from
   if (!_infile.good())
     return 1;
-  _infile.read((char *)&snpSize, sizeof(unsigned int));
+  _infile.read((char *)&snpSize, sizeof(int));
   // Skip the data for the next SNP
   _infile.seekg(snpSize, std::ios_base::cur);
   // Check if stream is still good

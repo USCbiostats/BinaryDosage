@@ -27,7 +27,7 @@ enum class Header4pos {
     startGroups = 40
 };
 // Gets the format of the binary dosage file
-int GetBDoseFormat(const std::string &_filename, int &_version, int &_subversion) {
+int GetBDoseFormat(const std::string &_filename, int &_format, int &_version) {
   char header[BDHeaderSize];
   std::ifstream infile;
   int fullVersion;
@@ -42,10 +42,10 @@ int GetBDoseFormat(const std::string &_filename, int &_version, int &_subversion
     return 1;
   if (std::memcmp(header, BDHeader, 4))
     return 1;
-  _version = header[5];
-  _subversion = header[7];
+  _format = header[5];
+  _version = header[7];
 
-  fullVersion = _version * 100 + _subversion;
+  fullVersion = _format * 100 + _version;
   switch (fullVersion) {
   case 101:
   case 102:
@@ -66,12 +66,12 @@ int GetBDoseFormat(const std::string &_filename, int &_version, int &_subversion
 
 CBDoseReader::CBDoseReader(const std::string &_filename) {
   m_good = false;
+  m_format = 0;
   m_version = 0;
-  m_subversion = 0;
   m_filename = _filename;
   m_geneticDataReader = NULL;
   m_currentSNP = 0;
-  if (GetBDoseFormat(m_filename, m_version, m_subversion))
+  if (GetBDoseFormat(m_filename, m_format, m_version))
     return;
   m_infile.open(_filename.c_str(), std::ios_base::in | std::ios_base::binary);
   if (!m_infile.good())
@@ -155,7 +155,7 @@ bool CBDoseReader::GetNext() {
   return m_good;
 }
 
-bool CBDoseReader::GetSNP(unsigned int n) {
+bool CBDoseReader::GetSNP(int n) {
   if (!m_good)
     return false;
   if (n == 0 || n > NumSNPs())
@@ -177,6 +177,96 @@ bool CBDoseReader::GetSNP(unsigned int n) {
   return GetNext();
 }
 
+CBDoseReader1::CBDoseReader1(const std::string &_filename, const std::vector<std::string> &_FID, std::vector<std::string> &_SID,
+              const std::vector<std::string> &_SNPID, const std::vector<std::string> &_chromosome,
+              const std::vector<int> &_location, const std::vector<std::string> &_refAllele,
+              const std::vector<std::string> &_altAllele) : CBDoseReader(_filename) {
+  int numSub;
+
+  if (m_format > 3) {
+    m_good = false;
+    return;
+  }
+
+  if (m_format == 3) {
+    m_infile.seekg(8);
+    m_infile.read((char *)&numSub, sizeof(int));
+    if ((int)_SID.size() != numSub || !m_infile.good()) {
+      m_good = false;
+      return;
+    }
+    m_startDosageData = 12;
+  } else {
+    m_startDosageData = 8;
+  }
+
+  m_FID = _FID;
+  m_SID = _SID;
+  m_groupSize.resize(1);
+  m_groupSize[0] = m_SID.size();
+  m_snpID = _SNPID;
+  m_chromosome = _chromosome;
+  m_location = _location;
+  m_refAllele = _refAllele;
+  m_altAllele = _altAllele;
+
+  m_dosage.resize(NumSamples());
+  m_p0.resize(NumSamples());
+  m_p1.resize(NumSamples());
+  m_p2.resize(NumSamples());
+
+  if (m_format == 1) {
+    if (m_version == 1)
+      m_geneticDataReader = new CBDoseDosageReader(0x7ffe, NumSamples());
+    else
+      m_geneticDataReader = new CBDose1DataReader(0xfffe, NumSamples());
+  } else if (m_format == 2) {
+    if (m_version == 1)
+      m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
+    else
+      m_geneticDataReader = new CBDose1DataReader(10000, NumSamples());
+  } else {
+    if (m_version == 1)
+      m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
+    else
+      m_geneticDataReader = new CBDose3DataReader(10000, NumSamples());
+  }
+
+  m_good = true;
+  m_good = GetFirst();
+}
+
+int CBDoseReader1::GetIndices() {
+  std::vector<int>::iterator intIt;
+  std::streampos curPos, lastPos;
+  int dataSize;
+
+  m_snpIndex.resize(NumSNPs());
+  m_snpIndex[0] = (int)m_startDosageData;
+  if (m_format == 3) {
+    if (m_version == 2) {
+      lastPos = m_startDosageData;
+      GetFirst();
+      for (intIt = m_snpIndex.begin() + 1; intIt != m_snpIndex.end(); ++intIt) {
+        curPos = m_infile.tellg();
+        *intIt = (int)(curPos - lastPos);
+        lastPos = curPos;
+        GetNext();
+      }
+    } else {
+      dataSize = 2 * NumSamples();
+      std::fill(m_snpIndex.begin() + 1, m_snpIndex.end(), dataSize);
+    }
+  } else {
+    if (m_version == 2)
+      dataSize = 4 * NumSamples();
+    else
+      dataSize = 2 * NumSamples();
+    std::fill(m_snpIndex.begin() + 1, m_snpIndex.end(), dataSize);
+  }
+  return 0;
+}
+
 CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filename) {
   int numSamples, numSNPs, numGroups, sampleOptions, snpOptions;
   int startSampleData, startSNPData, startDosageData;
@@ -190,7 +280,10 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
 
   if (!m_good)
     return;
+
   m_good = false;
+  if (m_format != 4)
+    return;
 
   m_infile.seekg((int)Header4pos::numSub);
   m_infile.read((char *)&numSamples, sizeof(int));
@@ -212,7 +305,7 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
     return;
 
   m_groupSize.resize(numGroups);
-  m_infile.read((char *)m_groupSize.data(), numGroups * sizeof(unsigned int));
+  m_infile.read((char *)m_groupSize.data(), numGroups * sizeof(int));
 
   if (!m_infile.good())
     return;
@@ -384,7 +477,7 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
   m_p1.resize(NumSamples());
   m_p2.resize(NumSamples());
 
-  if (m_subversion == 1)
+  if (m_version == 1)
     m_geneticDataReader = new CBDoseDosageReader(10000, NumSamples());
   else
     m_geneticDataReader = new CBDose3DataReader(10000, NumSamples());
@@ -396,16 +489,22 @@ CBDoseReader4::CBDoseReader4(const std::string &_filename) : CBDoseReader(_filen
 int CBDoseReader4::GetIndices() {
   std::vector<int>::iterator intIt;
   std::streampos curPos, lastPos;
+  int dataSize;
 
   m_snpIndex.resize(NumSNPs());
-  m_snpIndex[0] = (unsigned int)m_startDosageData;
-  lastPos = m_startDosageData;
-  GetFirst();
-  for (intIt = m_snpIndex.begin() + 1; intIt != m_snpIndex.end(); ++intIt) {
-    curPos = m_infile.tellg();
-    *intIt = (int)(curPos - lastPos);
-    lastPos = curPos;
-    GetNext();
+  m_snpIndex[0] = (int)m_startDosageData;
+  if (m_version == 2) {
+    lastPos = m_startDosageData;
+    GetFirst();
+    for (intIt = m_snpIndex.begin() + 1; intIt != m_snpIndex.end(); ++intIt) {
+      curPos = m_infile.tellg();
+      *intIt = (int)(curPos - lastPos);
+      lastPos = curPos;
+      GetNext();
+    }
+  } else {
+    dataSize = 2 * NumSamples();
+    std::fill(m_snpIndex.begin() + 1, m_snpIndex.end(), dataSize);
   }
   return 0;
 }

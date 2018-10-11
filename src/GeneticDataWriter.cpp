@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <cmath>
 #include <vector>
@@ -22,7 +23,7 @@ const double WritingTolerance = 0.000001;
 // must be specified. These are constants and cannot be changed.
 
 // Constructor
-CGeneticDataWriter::CGeneticDataWriter(const unsigned short _scale, const unsigned int _sampleSize) : m_scale(_scale), m_sampleSize(_sampleSize) {
+CGeneticDataWriter::CGeneticDataWriter(const unsigned short _scale, const int _sampleSize) : m_scale(_scale), m_sampleSize(_sampleSize) {
   // The scale is changed to a double. This helps the speed of
   // execution by not having to constantly convert the short
   // value to a double every time.
@@ -30,7 +31,7 @@ CGeneticDataWriter::CGeneticDataWriter(const unsigned short _scale, const unsign
 }
 
 short CGeneticDataWriter::ConvertToShort(const double x) {
-  short s1, s2;
+  unsigned short s1, s2;
 
   s1 = (unsigned short)floor(x * m_dScale);
   s2 = s1 + 1;
@@ -47,7 +48,7 @@ short CGeneticDataWriter::ConvertToShort(const double x) {
 // Constructor
 // Since only dosages are written the data written is always a vector of
 // short integers of length the number of samples.
-CDosageDataWriter::CDosageDataWriter(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
+CDosageDataWriter::CDosageDataWriter(const unsigned short _scale, const int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
   m_dataToWrite.resize(m_sampleSize);
 }
 
@@ -62,7 +63,7 @@ int CDosageDataWriter::WriteData(std::fstream &_outfile, const std::vector<doubl
   if (!_outfile.good())
     return 1;
   // Were the correct number of values passed?
-  if (_dosage.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize)
     return 1;
   // Got ot the end of the file.
   _outfile.seekp(0, std::ios_base::end);
@@ -99,7 +100,7 @@ int CDosageDataWriter::WriteData(std::fstream &_outfile, const std::vector<doubl
 // Constructor
 // Since only Pr(g=1) and Pr(g=2) are saved. The vector of values written has a
 // length twice the number of samples.
-CGeneticDataWriter1::CGeneticDataWriter1(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
+CGeneticDataWriter1::CGeneticDataWriter1(const unsigned short _scale, const int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
   m_dataToWrite.resize(2 * m_sampleSize);
 }
 
@@ -114,7 +115,7 @@ int CGeneticDataWriter1::WriteData(std::fstream &_outfile, const std::vector<dou
   if (!_outfile.good())
     return 1;
   // Are vectors for the appropriate sizes?
-  if (_dosage.size() != m_sampleSize || _p0.size() != m_sampleSize || _p1.size() != m_sampleSize || _p2.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize ||(int) _p2.size() != m_sampleSize)
     return 1;
   _outfile.seekp(0, std::ios_base::end);
 
@@ -126,7 +127,7 @@ int CGeneticDataWriter1::WriteData(std::fstream &_outfile, const std::vector<dou
   dItp2 = _p2.begin();
   for (dItp1 = _p1.begin(); dItp1 != _p1.end(); ++dItd, ++dItp0, ++dItp1, ++dItp2, ++usIt1, ++usIt2) {
     // Is all the data not missing?
-    if (*dItd == *dItd && *dItp0 == *dItp1 && *dItp0 == *dItp1 && *dItp2 == *dItp2) {
+    if (*dItd == *dItd && *dItp0 == *dItp0 && *dItp1 == *dItp1 && *dItp2 == *dItp2) {
       // Are all the values in the required range?
       if (*dItd < 0. || *dItd > 2. || *dItp0 < 0. || *dItp0 > 1. || *dItp1 < 0. || *dItp1 > 1. || *dItp2 < 0. || *dItp2 > 1.)
         return 1;
@@ -166,7 +167,7 @@ int CGeneticDataWriter1::WriteData(std::fstream &_outfile, const std::vector<dou
 // Since it possible that all four values will be needed to keep required
 // precision, the maximum size of the vector to be written out needs to be
 // a vector of 4 times the number of samples.
-CGeneticDataWriter3::CGeneticDataWriter3(const unsigned short _scale, const unsigned int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
+CGeneticDataWriter3::CGeneticDataWriter3(const unsigned short _scale, const int _sampleSize) : CGeneticDataWriter(_scale, _sampleSize) {
   m_dataToWrite.resize(4 * m_sampleSize);
 }
 
@@ -180,7 +181,7 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
   if (!_outfile.good())
     return 1;
   // Are vectors for the appropriate sizes?
-  if (_dosage.size() != m_sampleSize || _p0.size() != m_sampleSize || _p1.size() != m_sampleSize || _p2.size() != m_sampleSize)
+  if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize || (int)_p2.size() != m_sampleSize)
     return 1;
   _outfile.seekp(0, std::ios_base::end);
 
@@ -193,6 +194,7 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
   dItp2 = _p2.begin();
   for (dItp1 = _p1.begin(); dItp1 != _p1.end(); ++dItd, ++dItp0, ++dItp1, ++dItp2, ++usIt1) {
     // Is all the data not missing?
+//    std::cout << *dItd << '\t' << *dItp0 << '\t' << *dItp1 << '\t' << *dItp2 << std::endl;
     if (*dItd == *dItd && *dItp0 == *dItp0 && *dItp1 == *dItp1 && *dItp2 == *dItp2) {
       // Are all the values in the required range?
       if (*dItd < 0. || *dItd > 2. || *dItp0 < 0. || *dItp0 > 1. || *dItp1 < 0. || *dItp1 > 1. || *dItp2 < 0. || *dItp2 > 1.)
