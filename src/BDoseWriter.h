@@ -47,6 +47,10 @@ public:
                            const std::vector<std::vector<double> > &_rSq);
   int WriteGeneticData(const std::vector<double> &_dosage, const std::vector<double> &_p0,
                        const std::vector<double> &_p1, const std::vector<double> &_p2);
+  virtual int UpdateSNPInfo(const std::vector<std::vector<double> > &_aaf,
+                            const std::vector<std::vector<double> > &_maf,
+                            const std::vector<std::vector<double> > &_avgCall,
+                            const std::vector<std::vector<double> > &_rSq) { return 0; }
   int Finalize();
 
   bool good() const { return m_good; }
@@ -83,6 +87,8 @@ protected:
   std::streampos m_startSNPData;
   std::streampos m_startSNPInfo;
 
+  int m_snpOptions;
+
   int ProcessString(const std::vector<std::string> &_stringsToWrite, int &_strLength);
   int ProcessExtraSNPData(const std::vector<std::vector<double> > &_dataToWrite, const int _groupSize);
 
@@ -106,6 +112,10 @@ public:
                            const std::vector<std::vector<double> > &_maf,
                            const std::vector<std::vector<double> > &_avgCall,
                            const std::vector<std::vector<double> > &_rSq);
+  virtual int UpdateSNPInfo(const std::vector<std::vector<double> > &_aaf,
+                            const std::vector<std::vector<double> > &_maf,
+                            const std::vector<std::vector<double> > &_avgCall,
+                            const std::vector<std::vector<double> > &_rSq);
 };
 
 #endif

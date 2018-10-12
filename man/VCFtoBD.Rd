@@ -5,7 +5,7 @@
 \title{Function to read in information about a vcf file}
 \usage{
 VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4,
-  version = 1)
+  version = 2)
 }
 \arguments{
 \item{vcfFile}{Name of the vcf file}

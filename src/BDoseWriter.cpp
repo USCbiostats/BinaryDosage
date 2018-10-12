@@ -352,6 +352,7 @@ CBDoseWriter4::CBDoseWriter4(const std::string &_filename, const int _format,
   m_startSNPData = 0;
   m_startSNPInfo = 0;
   m_startDosageData = 0;
+  m_snpOptions = 0;
 
   if (m_format != 4 || m_version < 1 || m_version > 2) {
     m_good = false;
@@ -394,7 +395,7 @@ int CBDoseWriter4::ProcessExtraSNPData(const std::vector<std::vector<double> > &
       return 1;
     }
     m_outfile.write((char *)vdblIt->data(), _groupSize * sizeof(double));
-    if (m_outfile.good()) {
+    if (!m_outfile.good()) {
       m_good = false;
       return 1;
     }
@@ -546,8 +547,8 @@ int CBDoseWriter4::WriteSNPData(const std::vector<std::string> &_chromosome,
 
   if (CBDoseWriter::WriteSNPData(_chromosome, _snpID, _location, _refAllele, _altAllele, _aaf, _maf, _avgCall, _rSq))
     return 1;
-
   snpOptions = GetSNPOptions(_chromosome, _snpID,  _location, _refAllele, _altAllele, _aaf, _maf, _avgCall, _rSq);
+  m_snpOptions = snpOptions;
   m_outfile.seekp((int)Header4pos::snpOptions);
   m_outfile.write((char *)&snpOptions, sizeof(int));
   if (!m_outfile.good()) {
@@ -648,3 +649,39 @@ int CBDoseWriter4::WriteSNPData(const std::vector<std::string> &_chromosome,
   return OpenGeneticDataWriter();
 }
 
+int CBDoseWriter4::UpdateSNPInfo(const std::vector<std::vector<double> > &_aaf,
+                                 const std::vector<std::vector<double> > &_maf,
+                                 const std::vector<std::vector<double> > &_avgCall,
+                                 const std::vector<std::vector<double> > &_rSq) {
+  if (!m_good)
+    return 1;
+
+  if (!m_groupDataWritten || !m_subjectDataWritten || !m_SNPDataWritten) {
+    m_good = false;
+    return 1;
+  }
+
+  m_outfile.seekp(m_startSNPInfo);
+  if (m_snpOptions & 0x0080) {
+    if (ProcessExtraSNPData(_aaf, m_numGroups))
+      return 1;
+  }
+  if (m_snpOptions & 0x0100) {
+    if (ProcessExtraSNPData(_maf, m_numGroups))
+      return 1;
+  }
+  if (m_snpOptions & 0x0200) {
+    if (ProcessExtraSNPData(_avgCall, m_numGroups))
+      return 1;
+  }
+  if (m_snpOptions & 0x0400) {
+    if (ProcessExtraSNPData(_rSq, m_numGroups))
+      return 1;
+  }
+  if (!m_outfile.good()) {
+    m_good = false;
+    return 1;
+  }
+
+  return 0;
+}

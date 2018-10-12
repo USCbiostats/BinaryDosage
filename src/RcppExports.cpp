@@ -128,6 +128,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// MergeBDC
+int MergeBDC(const std::string& mergeFilename, const Rcpp::StringVector& filenames, const Rcpp::List& mergeInfo, const Rcpp::List& bdInfoList, const std::string& famFilename, const std::string& mapFilename, int format, int version);
+RcppExport SEXP _BinaryDosage_MergeBDC(SEXP mergeFilenameSEXP, SEXP filenamesSEXP, SEXP mergeInfoSEXP, SEXP bdInfoListSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP, SEXP formatSEXP, SEXP versionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type mergeFilename(mergeFilenameSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type filenames(filenamesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type mergeInfo(mergeInfoSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type bdInfoList(bdInfoListSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type famFilename(famFilenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type mapFilename(mapFilenameSEXP);
+    Rcpp::traits::input_parameter< int >::type format(formatSEXP);
+    Rcpp::traits::input_parameter< int >::type version(versionSEXP);
+    rcpp_result_gen = Rcpp::wrap(MergeBDC(mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_BDConvertC", (DL_FUNC) &_BinaryDosage_BDConvertC, 6},
@@ -139,6 +157,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 9},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
+    {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 8},
     {NULL, NULL, 0}
 };
 

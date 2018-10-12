@@ -37,3 +37,7 @@ GetVCFSNPInfoC <- function(filename, startData, reserve) {
     .Call('_BinaryDosage_GetVCFSNPInfoC', PACKAGE = 'BinaryDosage', filename, startData, reserve)
 }
 
+MergeBDC <- function(mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version) {
+    .Call('_BinaryDosage_MergeBDC', PACKAGE = 'BinaryDosage', mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version)
+}
+

@@ -3,6 +3,7 @@
 export(GetBDoseInfo)
 export(GetSNPValues)
 export(GetVCFInfo)
+export(MergeBD)
 export(VCFtoBD)
 importFrom(Rcpp,evalCpp)
 importFrom(data.table,data.table)
