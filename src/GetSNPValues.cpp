@@ -21,14 +21,22 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
   std::streampos snpIndex = 0;
   Rcpp::NumericVector d, p0, p1, p2;
   Rcpp::DataFrame retVal;
+  int format, version;
   int i, j, n;
   unsigned int un;
   std::string junk;
 
   if (filetype == "BinaryDosage") {
-    miniReader = new CBDoseMiniReader4(filename);
+    if (GetBDoseFormat(filename, format, version)) {
+      Rcpp::Rcerr << "Unable to open file" << std::endl;
+      return 1;
+    }
+    if (format == 4)
+      miniReader = new CBDoseMiniReader4(filename);
+    else
+      miniReader = new CBDoseMiniReader1(filename, numSubjects, numSNPs);
     if (miniReader->P0().size() == 0 && geneProb == 1) {
-      Rcpp::Rcerr << "Gene probabilities are request but don't exist in file" << std::endl;
+      Rcpp::Rcerr << "Gene probabilities are requested but don't exist in file" << std::endl;
       delete miniReader;
       return 1;
     }

@@ -6,6 +6,12 @@
 #'
 #' @param vcfFile
 #' Name of the vcf file
+#' @param reserve
+#' Amount of space to reserve for SNP data. This should be
+#' as large as the number of SNPs in the file. If this number
+#' is less than the number of SNPs more space will be allocated
+#' as needed. However, doing this slows the function down.
+#' Default value - 1000000
 #' @return
 #' List with information about the file including subject and
 #' SNP information

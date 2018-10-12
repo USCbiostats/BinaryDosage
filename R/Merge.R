@@ -1,11 +1,32 @@
-#' Function to merge binary dosage files in format 4.2
+#' Function to merge binary dosage files
 #'
-#' Function to merge binary dosage files in format 4.2
+#' Function to merge binary dosage files
 #'
 #' @param mergeFile
 #' Name of file that will contain the merged data.
 #' @param filesToMerge
 #' A vector of strings. Names of the files to merge.
+#' @param famFilesToMerge
+#' A vector of strings. These are the names of the fam files
+#' associated with files to merge. If the files to merge are
+#' in format 4 or later, this is not needed.
+#' @param mapFilesToMerge
+#' A vector of strings. These are the names of the map files
+#' associated with files to merge. If the files to merge are
+#' in format 4 or later, this is not needed.
+#' @param mergedFamFile
+#' Name of fam file to be associated with the binary dosage
+#' file. This is only needed if format is 3 or less.
+#' @param mergedMapFile
+#' Name of map file to be associated with the binary dosage
+#' file. This is only needed if format is 3 or less.
+#' @param format
+#' Format of the merged binary dosage file. Default value is 4.
+#' It is recommended to use the default value.
+#' @param version
+#' Version of the format to use. Default value is 2. If the files
+#' being merged do not contain gene probabilities, change this
+#' value to 1.
 #' @return
 #' 0 - Successfully merged
 #' 1 - Merge failed
