@@ -47,8 +47,10 @@ GetSNPValues <- function(fileInfo, SNPs, Subjects, geneProb = TRUE) {
   if (anyNA(subVec))
     return (NULL)
 
-  if (fileInfo$version == 1)
-    geneProb <- FALSE
+  if (fileInfo$filetype == "BinaryDosage") {
+    if (fileInfo$version == 1)
+      geneProb <- FALSE
+  }
   if(geneProb == TRUE) {
     valueMatrix <- matrix(0, length(subVec), 4 * length(snpVec))
     gprob = 1

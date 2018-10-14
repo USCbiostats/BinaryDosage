@@ -69,7 +69,7 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
   numFiles = bdInfoList.length();
   bdmr.resize(numFiles);
   for (i = 0; i < numFiles; ++i) {
-    x = bdInfoList[0];
+    x = bdInfoList[i];
     bdmr[i] = OpenBDoseMiniReader(x);
     if (!(bdmr[i]->good())) {
       Rcpp::Rcout << "Failed to open file\t" << i << std::endl;
