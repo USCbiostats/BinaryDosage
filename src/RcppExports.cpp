@@ -22,7 +22,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // BDConvertVCFC
-Rcpp::List BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
+int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
 RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

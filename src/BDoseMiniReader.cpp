@@ -10,8 +10,8 @@
 
 //#define BINARYDOSAGEMINIREADER_DEBUG 1
 
-const char BDHeader[4] = { 'b', 'o', 's', 'e' };
-const int BDHeaderSize = 8;
+//const char BDHeader[4] = { 'b', 'o', 's', 'e' };
+//const int BDHeaderSize = 8;
 
 enum class Header4pos {
   header = 0,

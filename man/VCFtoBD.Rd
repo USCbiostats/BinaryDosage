@@ -21,8 +21,8 @@ VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4,
 \item{version}{Version of the format to use - default 2, can be 1}
 }
 \value{
-List with information about the file including subject and
-SNP information
+0 - Success
+1 - Failure
 }
 \description{
 Function to read in information about a vcf file.

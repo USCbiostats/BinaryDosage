@@ -139,9 +139,9 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
 }
 
 // [[Rcpp::export]]
-Rcpp::List BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const std::string &famFile,
+int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const std::string &famFile,
                          const std::string &mapFile, int newFormat, int newVersion) {
-  Rcpp::List retVal;
+  int retVal = 1;
   std::string filetype = vcfInfo["filetype"];
   std::string filename = vcfInfo["filename"];
   int numSub = vcfInfo["NumSamples"];
@@ -224,9 +224,7 @@ Rcpp::List BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, 
     return retVal;
   }
 
-  retVal = Rcpp::List::create(Rcpp::Named("SID") = sid,
-                              Rcpp::Named("SNPs") = snpID,
-                              Rcpp::Named("Dosage") = vcfmr->Dosage());
+  retVal = 0;
   if (vcfmr)
     delete vcfmr;
   if (bdw)

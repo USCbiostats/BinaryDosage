@@ -17,8 +17,8 @@
 #' @param version
 #' Version of the format to use - default 2, can be 1
 #' @return
-#' List with information about the file including subject and
-#' SNP information
+#' 0 - Success
+#' 1 - Failure
 #' @export
 VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4, version = 2) {
   if (missing(vcfFile))
