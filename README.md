@@ -82,7 +82,7 @@ For GWAS/GWIS analysis of BDose files, please refer to the
 
 ``` r
 library(devtools)
-install_github("USCbiostats/BinaryDosage", ref = "development")
+install_github("USCbiostats/BinaryDosage")
 
 library(BinaryDosage)
 ```
