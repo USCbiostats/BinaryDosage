@@ -29,6 +29,10 @@ GetSNPValuesC <- function(filename, filetype, geneProb, subVec, snpVec, indices,
     .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs)
 }
 
+GetAlleleFreqC <- function(filename, filetype, geneProb, subVec, snpVec, indices, freqVec, numSubjects, numSNPs) {
+    .Call('_BinaryDosage_GetAlleleFreqC', PACKAGE = 'BinaryDosage', filename, filetype, geneProb, subVec, snpVec, indices, freqVec, numSubjects, numSNPs)
+}
+
 GetVCFHeaderC <- function(vcfFile) {
     .Call('_BinaryDosage_GetVCFHeaderC', PACKAGE = 'BinaryDosage', vcfFile)
 }

@@ -14,6 +14,8 @@ protected:
   CBDoseMiniReader(const std::string &_filename);
 public:
   virtual ~CBDoseMiniReader() {}
+
+  virtual int OpenFile();
 };
 
 class CBDoseMiniReader1 : public CBDoseMiniReader {

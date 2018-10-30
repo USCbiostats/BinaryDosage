@@ -18,12 +18,13 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
   CMiniReader *miniReader = NULL;
   std::ifstream infile;
   std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
-  std::streampos snpIndex = 0;
+  std::vector<int>::iterator intIt;
+  std::vector<std::streampos> posIndex;
+  std::vector<std::streampos>::iterator spIt;
+  std::streampos snpIndex;
   Rcpp::NumericVector d, p0, p1, p2;
-  Rcpp::DataFrame retVal;
   int format, version;
   int i, j, n;
-  unsigned int un;
   std::string junk;
 
   if (filetype == "BinaryDosage") {
@@ -57,6 +58,15 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
     return 1;
   }
 
+  if (index.size() != 0) {
+    posIndex.resize(index.size());
+    snpIndex = 0;
+    for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
+      snpIndex += *intIt;
+      *spIt = snpIndex;
+    }
+  }
+
   for (i = 0; i < snpVec.length(); ++i) {
     n = snpVec[i];
     if (n < 1) {
@@ -64,21 +74,14 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
       delete miniReader;
       return 1;
     }
-    un = (unsigned int)n;
-
-    if (index.size() != 0) {
-      if (un > index.size()) {
-        Rcpp::Rcerr << "SNP number greater than number of SNP indices" << std::endl;
-        delete miniReader;
-        return 1;
-      }
-      snpIndex = 0;
-      for (unsigned ui = 0; ui < un; ++ui)
-        snpIndex += index[ui];
+    if ((unsigned int)n > index.size()) {
+      Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
+      delete miniReader;
+      return 1;
     }
 
     if (snpIndex > 0) {
-      if (!miniReader->GetSNP(n, snpIndex)) {
+      if (!miniReader->GetSNP(n, posIndex[n - 1])) {
         Rcpp::Rcerr << "Error reading SNP" << std::endl;
         delete miniReader;
         return 1;
@@ -105,6 +108,66 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
   }
 
   delete miniReader;
+
+  return 0;
+}
+
+// [[Rcpp::export]]
+int GetAlleleFreqC(const std::string &filename, const std::string &filetype, int geneProb,
+                   const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
+                   const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &freqVec,
+                   const int numSubjects, const int numSNPs) {
+  CMiniReader *miniReader = NULL;
+  std::ifstream infile;
+  std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
+  std::vector<int>::iterator intIt;
+  std::vector<std::streampos> posIndex;
+  std::vector<std::streampos>::iterator spIt;
+  std::streampos snpIndex;
+  Rcpp::NumericVector d, p0, p1, p2;
+  int format, version;
+  int i, j, n;
+  std::string junk;
+
+  if (filetype == "BinaryDosage") {
+    if (GetBDoseFormat(filename, format, version)) {
+      Rcpp::Rcerr << "Unable to open file" << std::endl;
+      return 1;
+    }
+    if (format == 4)
+      miniReader = new CBDoseMiniReader4(filename);
+    else
+      miniReader = new CBDoseMiniReader1(filename, numSubjects, numSNPs);
+    if (miniReader->P0().size() == 0 && geneProb == 1) {
+      Rcpp::Rcerr << "Gene probabilities are requested but don't exist in file" << std::endl;
+      delete miniReader;
+      return 1;
+    }
+  } else if (filetype == "VCF") {
+    if (index.size() == 0) {
+      Rcpp::Rcerr << "VCF files require indices" << std::endl;
+      return 1;
+    }
+    miniReader = new CVCFMiniReader(filename, numSubjects, numSNPs, index[0]);
+  } else {
+    Rcpp::Rcerr << "Unknown file type" << std::endl;
+    return 1;
+  }
+
+  if (!miniReader->good()) {
+    Rcpp::Rcerr << "Error opening file" << std::endl;
+    delete miniReader;
+    return 1;
+  }
+
+  if (index.size() != 0) {
+    posIndex.resize(index.size());
+    snpIndex = 0;
+    for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
+      snpIndex += *intIt;
+      *spIt = snpIndex;
+    }
+  }
 
   return 0;
 }

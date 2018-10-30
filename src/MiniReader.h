@@ -12,6 +12,7 @@ protected:
   std::ifstream m_infile;
   int m_numSamples, m_numSNPs;
 
+  std::streampos m_currentPos;
   std::streampos m_startDosageData;
 
   CGeneticDataReader *m_geneticDataReader;
@@ -26,6 +27,9 @@ public:
   virtual bool GetNext();
   virtual bool GetSNP(int n);
   virtual bool GetSNP(int n, std::streampos snpLoc);
+
+  virtual int CloseFile();
+  virtual int OpenFile() = 0;
 
   bool good() const { return m_good; }
   int NumSamples() const { return m_numSamples; }

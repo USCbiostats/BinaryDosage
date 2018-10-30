@@ -104,6 +104,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetAlleleFreqC
+int GetAlleleFreqC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& freqVec, const int numSubjects, const int numSNPs);
+RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP geneProbSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
+    Rcpp::traits::input_parameter< int >::type geneProb(geneProbSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type freqVec(freqVecSEXP);
+    Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, geneProb, subVec, snpVec, indices, freqVec, numSubjects, numSNPs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // GetVCFHeaderC
 Rcpp::List GetVCFHeaderC(std::string& vcfFile);
 RcppExport SEXP _BinaryDosage_GetVCFHeaderC(SEXP vcfFileSEXP) {
@@ -155,6 +174,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetBinaryDosage1Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage1Info, 4},
     {"_BinaryDosage_GetBinaryDosage4Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage4Info, 2},
     {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 9},
+    {"_BinaryDosage_GetAlleleFreqC", (DL_FUNC) &_BinaryDosage_GetAlleleFreqC, 9},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
     {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 8},
