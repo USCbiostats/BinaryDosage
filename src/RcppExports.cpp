@@ -105,7 +105,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetAlleleFreqC
-int GetAlleleFreqC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& freqVec, const int numSubjects, const int numSNPs);
+int GetAlleleFreqC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericVector& freqVec, const int numSubjects, const int numSNPs);
 RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP geneProbSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -116,7 +116,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type freqVec(freqVecSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type freqVec(freqVecSEXP);
     Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
     Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
     rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, geneProb, subVec, snpVec, indices, freqVec, numSubjects, numSNPs));

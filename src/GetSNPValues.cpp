@@ -115,7 +115,7 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
 // [[Rcpp::export]]
 int GetAlleleFreqC(const std::string &filename, const std::string &filetype, int geneProb,
                    const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
-                   const Rcpp::IntegerVector &indices, Rcpp::NumericMatrix &freqVec,
+                   const Rcpp::IntegerVector &indices, Rcpp::NumericVector &freqVec,
                    const int numSubjects, const int numSNPs) {
   CMiniReader *miniReader = NULL;
   std::ifstream infile;
