@@ -105,21 +105,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetAlleleFreqC
-int GetAlleleFreqC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericVector& freqVec, const int numSubjects, const int numSNPs);
-RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP geneProbSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
+int GetAlleleFreqC(const std::string& filename, const std::string& filetype, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericVector& freqVec, const int numSubjects, const int numSNPs, const int batchSize);
+RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP, SEXP batchSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
-    Rcpp::traits::input_parameter< int >::type geneProb(geneProbSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type freqVec(freqVecSEXP);
     Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
     Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, geneProb, subVec, snpVec, indices, freqVec, numSubjects, numSNPs));
+    Rcpp::traits::input_parameter< const int >::type batchSize(batchSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, subVec, snpVec, indices, freqVec, numSubjects, numSNPs, batchSize));
     return rcpp_result_gen;
 END_RCPP
 }

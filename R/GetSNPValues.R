@@ -71,3 +71,60 @@ GetSNPValues <- function(fileInfo, SNPs, Subjects, geneProb = TRUE) {
 
   return (valueMatrix)
 }
+
+#' Function to calculate alternate allele frequencies
+#'
+#' Function to calculate alternate allele frequencies
+#'
+#' @param fileInfo
+#' Information about the binary dosage file return from
+#' GetBDoseInfo
+#' @param SNPs
+#' Vector of either SNP names or indices in binary dosage
+#' file to calculate allele frequencies for
+#' @param Subjects
+#' Vector of either Subject IDs of indices in binary dosage
+#' file to calcualte allele for
+#' @param batchSize
+#' Number of SNPs to read in at one time.
+#' @return
+#' List with information about the file including subject and
+#' SNP information
+#' @export
+GetAlternateAlleleFrequencies <- function(fileInfo, SNPs, Subjects, batchSize = 1000) {
+  if (missing(fileInfo))
+    return (NULL)
+  if (missing(SNPs)) {
+    return (NULL)
+  } else {
+    if (is.vector(SNPs, "character")) {
+      snpVec <- match(SNPs, fileInfo$SNPs$SNPID)
+    } else if (is.vector(SNPs, "integer")) {
+      snpVec <- SNPs
+    } else {
+      return (NULL)
+    }
+  }
+  if (missing(Subjects)) {
+    subVec <- 1L:nrow(fileInfo$Samples)
+  } else {
+    if (is.vector(Subjects, "character")) {
+      subVec <- match(Subjects, fileInfo$Samples$SID)
+    } else if (is.vector(Subjects, "integer")) {
+      subVec <- Subjects
+    } else {
+      return (NULL)
+    }
+  }
+  if (anyNA(snpVec))
+    return (NULL)
+  if (anyNA(subVec))
+    return (NULL)
+
+  freqVector <- as.vector(rep(0.0, length(SNPs)), mode = "numeric")
+  if (GetAlleleFreqC(fileInfo$filename, fileInfo$filetype, subVec, snpVec,
+                    fileInfo$Indices, freqVector, fileInfo$NumSamples, fileInfo$NumSNPs, batchSize) == 1)
+    return (NULL)
+
+  return (freqVector)
+}

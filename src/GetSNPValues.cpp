@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <algorithm>
 #include <limits>
 #include "BDoseMiniReader.h"
 #include "VCFMiniReader.h"
@@ -16,16 +17,13 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
                   const int numSubjects, const int numSNPs) {
 
   CMiniReader *miniReader = NULL;
-  std::ifstream infile;
   std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
   std::vector<int>::iterator intIt;
   std::vector<std::streampos> posIndex;
   std::vector<std::streampos>::iterator spIt;
   std::streampos snpIndex;
-  Rcpp::NumericVector d, p0, p1, p2;
   int format, version;
   int i, j, n;
-  std::string junk;
 
   if (filetype == "BinaryDosage") {
     if (GetBDoseFormat(filename, format, version)) {
@@ -113,21 +111,21 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
 }
 
 // [[Rcpp::export]]
-int GetAlleleFreqC(const std::string &filename, const std::string &filetype, int geneProb,
+int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
                    const Rcpp::IntegerVector &subVec, const Rcpp::IntegerVector snpVec,
                    const Rcpp::IntegerVector &indices, Rcpp::NumericVector &freqVec,
-                   const int numSubjects, const int numSNPs) {
+                   const int numSubjects, const int numSNPs, const int batchSize) {
   CMiniReader *miniReader = NULL;
-  std::ifstream infile;
   std::vector<int> index = Rcpp::as< std::vector<int> >(indices);
   std::vector<int>::iterator intIt;
   std::vector<std::streampos> posIndex;
   std::vector<std::streampos>::iterator spIt;
   std::streampos snpIndex;
-  Rcpp::NumericVector d, p0, p1, p2;
   int format, version;
+  std::vector<std::vector<double> > dosages;
+  std::vector<std::vector<double> >::iterator ddIt, ddIt2;
+  double *d;
   int i, j, n;
-  std::string junk;
 
   if (filetype == "BinaryDosage") {
     if (GetBDoseFormat(filename, format, version)) {
@@ -138,11 +136,6 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype, int
       miniReader = new CBDoseMiniReader4(filename);
     else
       miniReader = new CBDoseMiniReader1(filename, numSubjects, numSNPs);
-    if (miniReader->P0().size() == 0 && geneProb == 1) {
-      Rcpp::Rcerr << "Gene probabilities are requested but don't exist in file" << std::endl;
-      delete miniReader;
-      return 1;
-    }
   } else if (filetype == "VCF") {
     if (index.size() == 0) {
       Rcpp::Rcerr << "VCF files require indices" << std::endl;
@@ -168,6 +161,51 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype, int
       *spIt = snpIndex;
     }
   }
+
+  dosages.resize(batchSize);
+  for (ddIt = dosages.begin(); ddIt != dosages.end(); ++ddIt)
+    ddIt->resize(subVec.size());
+
+  ddIt = dosages.begin();
+  for (i = 0; i < snpVec.length(); ++i, ++ddIt) {
+    if (ddIt == dosages.end()) {
+      for (ddIt2 = dosages.begin(); ddIt2 != dosages.end(); ++ddIt2)
+        Rcpp::Rcout << std::accumulate(ddIt2->begin(), ddIt2->end(), 0.);
+      ddIt = dosages.begin();
+    }
+    d = ddIt->data();
+    n = snpVec[i];
+    if (n < 1) {
+      Rcpp::Rcerr << "SNP number must be a postive value" << std::endl;
+      delete miniReader;
+      return 1;
+    }
+    if ((unsigned int)n > index.size()) {
+      Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
+      delete miniReader;
+      return 1;
+    }
+
+    if (snpIndex > 0) {
+      if (!miniReader->GetSNP(n, posIndex[n - 1])) {
+        Rcpp::Rcerr << "Error reading SNP" << std::endl;
+        delete miniReader;
+        return 1;
+      }
+    } else {
+      if (!miniReader->GetSNP(n)) {
+        Rcpp::Rcerr << "Error reading SNP" << std::endl;
+        delete miniReader;
+        return 1;
+      }
+    }
+    for (j = 0; j < subVec.length(); ++j, ++d)
+      *d = miniReader->Dosage()[subVec[j] - 1];
+  }
+  for (ddIt2 = dosages.begin(); ddIt2 != ddIt; ++ddIt2)
+    Rcpp::Rcout << std::accumulate(ddIt2->begin(), ddIt2->end(), 0.) / (2. * subVec.length()) << std::endl;
+
+  delete miniReader;
 
   return 0;
 }
