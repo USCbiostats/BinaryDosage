@@ -177,12 +177,16 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
   int numAdded;
   int outputLength;
 
+  std::cout << "Entering writer 3" << std::endl;
   // Check if the file can be written to.
   if (!_outfile.good())
     return 1;
+  std::cout << "Writer good" << std::endl;
   // Are vectors for the appropriate sizes?
   if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize || (int)_p2.size() != m_sampleSize)
     return 1;
+  std::cout << "Sizes good" << std::endl;
+
   _outfile.seekp(0, std::ios_base::end);
 
   // Loop over the data.
@@ -197,11 +201,15 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
 //    std::cout << *dItd << '\t' << *dItp0 << '\t' << *dItp1 << '\t' << *dItp2 << std::endl;
     if (*dItd == *dItd && *dItp0 == *dItp0 && *dItp1 == *dItp1 && *dItp2 == *dItp2) {
       // Are all the values in the required range?
-      if (*dItd < 0. || *dItd > 2. || *dItp0 < 0. || *dItp0 > 1. || *dItp1 < 0. || *dItp1 > 1. || *dItp2 < 0. || *dItp2 > 1.)
+      if (*dItd < 0. || *dItd > 2. || *dItp0 < 0. || *dItp0 > 1. || *dItp1 < 0. || *dItp1 > 1. || *dItp2 < 0. || *dItp2 > 1.) {
+        std::cout << *dItd << '\t' << *dItp0 <<'\t' << *dItp1 <<'\t' << *dItp2 << std::endl;
         return 1;
+      }
       // Do the genetic probabilies add to 1 and does p1 + 2p2 = dosage?
-      if (fabs(1. - *dItp0 - *dItp1 - *dItp2) > GeneticTolerance || fabs(*dItd - *dItp1 - *dItp2 - *dItp2) > GeneticTolerance)
+      if (fabs(1. - *dItp0 - *dItp1 - *dItp2) > GeneticTolerance || fabs(*dItd - *dItp1 - *dItp2 - *dItp2) > GeneticTolerance) {
+        std::cout << *dItd << '\t' << *dItp0 <<'\t' << *dItp1 <<'\t' << *dItp2 << std::endl;
         return 1;
+      }
       *usIt1 = ConvertToShort(*dItd);
       // Can the values be derived within tolerances from a subset of values
       if (fabs(1. - *dItp0 - *dItp1 - *dItp2) > WritingTolerance || fabs(*dItd - *dItp1 - *dItp2 - *dItp2) > WritingTolerance) {
@@ -231,17 +239,21 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
     }
     // Error - some data is missing and some is not
     else {
+      std::cout << "Bad data" << std::endl;
       return 1;
     }
   }
   // Calculate the length of the vector that needs to be writting (in bytes)
   // And write it to the file
   outputLength = (m_sampleSize + numAdded) * sizeof(short);
+  std::cout << "outputLength\t" << outputLength << std::endl;
   _outfile.write((char *)&outputLength, sizeof(int));
   // Write the data
   _outfile.write((char *)m_dataToWrite.data(), outputLength);
   // Was the data written successfully?
-  if (!_outfile.good())
+  if (!_outfile.good()) {
+    std::cout << "Write fail" << std::endl;
     return 1;
+  }
   return 0;
 }

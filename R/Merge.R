@@ -27,12 +27,15 @@
 #' Version of the format to use. Default value is 2. If the files
 #' being merged do not contain gene probabilities, change this
 #' value to 1.
+#' @param batchSize
+#' Number of SNPs to process at a time
 #' @return
 #' 0 - Successfully merged
 #' 1 - Merge failed
 #' @export
 MergeBD <- function(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
-                      mergedFamFile = "", mergeMapFile = "", format = 4, version = 2) {
+                      mergedFamFile = "", mergeMapFile = "", format = 4, version = 2, batchSize = 1000) {
+  print("Entering")
   if (length(filesToMerge) < 2) {
     print("At least two files must be specified to merge")
     return (1)
@@ -56,17 +59,20 @@ MergeBD <- function(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
     return (1)
   }
 
+  print("Before fid")
   fid <- character();
   iid <- character();
   matchList <- vector("list", length = length(filesToMerge))
   bdInfoList <- vector("list", length = length(filesToMerge))
 
   for (i in c(1:length(filesToMerge))) {
+    print("Before bdInfo")
     if (missing(famFilesToMerge) == TRUE) {
       bdInfo <- GetBDoseInfo(filesToMerge[i], index = 1)
     } else {
       bdInfo <- GetBDoseInfo(filesToMerge[i], famFilesToMerge[i], mapFilesToMerge[i])
     }
+    print("After bdInfo")
     if (bdInfo$version == 1 & version == 2) {
       print ("Cannot merge files in version 1 to a file with version 2")
       return (1)
@@ -93,6 +99,6 @@ MergeBD <- function(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
   }
 
   mergeInfo <- list(subjects = subjects, locations = snpLocations, snpsToMerge = snpsToMerge, bdInfoList = bdInfoList)
-  return (MergeBDC(mergedFile, filesToMerge, mergeInfo, bdInfoList, mergedFamFile, mergeMapFile, format, version))
+  return (MergeBDC(mergedFile, filesToMerge, mergeInfo, bdInfoList, mergedFamFile, mergeMapFile, format, version, batchSize))
 #  return (mergeInfo)
 }

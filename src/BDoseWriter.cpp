@@ -156,16 +156,21 @@ int CBDoseWriter::WriteSNPData(const std::vector<std::string> &_chromosome,
 
 // Write the genetic data by calling the geneticDataWriter - Should be same for all derived classes
 int CBDoseWriter::WriteGeneticData(const std::vector<double> &_dosage, const std::vector<double> &_p0, const std::vector<double> &_p1, const std::vector<double> &_p2) {
+  std::cout << "Start write" << std::endl;
   if (!m_good)
     return 1;
+  std::cout << "Good" << std::endl;
   if (!m_groupDataWritten || !m_subjectDataWritten || !m_SNPDataWritten) {
     m_good = false;
     return 1;
   }
+  std::cout << "Previous written" << std::endl;
   if (m_geneticDataWriter == NULL) {
     m_good = false;
     return 1;
   }
+  std::cout << "Genetic writer open" << std::endl;
+  std::cout << _dosage[0] << std::endl;
   if (m_geneticDataWriter->WriteData(m_outfile, _dosage, _p0, _p1, _p2)) {
     m_good = false;
     return 1;

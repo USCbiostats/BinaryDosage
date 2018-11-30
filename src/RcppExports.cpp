@@ -149,8 +149,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // MergeBDC
-int MergeBDC(const std::string& mergeFilename, const Rcpp::StringVector& filenames, const Rcpp::List& mergeInfo, const Rcpp::List& bdInfoList, const std::string& famFilename, const std::string& mapFilename, int format, int version);
-RcppExport SEXP _BinaryDosage_MergeBDC(SEXP mergeFilenameSEXP, SEXP filenamesSEXP, SEXP mergeInfoSEXP, SEXP bdInfoListSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP, SEXP formatSEXP, SEXP versionSEXP) {
+int MergeBDC(const std::string& mergeFilename, const Rcpp::StringVector& filenames, const Rcpp::List& mergeInfo, const Rcpp::List& bdInfoList, const std::string& famFilename, const std::string& mapFilename, int format, int version, int batchSize);
+RcppExport SEXP _BinaryDosage_MergeBDC(SEXP mergeFilenameSEXP, SEXP filenamesSEXP, SEXP mergeInfoSEXP, SEXP bdInfoListSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP, SEXP formatSEXP, SEXP versionSEXP, SEXP batchSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -162,7 +162,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type mapFilename(mapFilenameSEXP);
     Rcpp::traits::input_parameter< int >::type format(formatSEXP);
     Rcpp::traits::input_parameter< int >::type version(versionSEXP);
-    rcpp_result_gen = Rcpp::wrap(MergeBDC(mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version));
+    Rcpp::traits::input_parameter< int >::type batchSize(batchSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(MergeBDC(mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version, batchSize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -178,7 +179,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetAlleleFreqC", (DL_FUNC) &_BinaryDosage_GetAlleleFreqC, 9},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
-    {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 8},
+    {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 9},
     {NULL, NULL, 0}
 };
 
