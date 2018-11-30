@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // BDConvertVCFC
-int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
-RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP) {
+int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion, int batchSize);
+RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP, SEXP batchSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,7 +33,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type mapFile(mapFileSEXP);
     Rcpp::traits::input_parameter< int >::type newFormat(newFormatSEXP);
     Rcpp::traits::input_parameter< int >::type newVersion(newVersionSEXP);
-    rcpp_result_gen = Rcpp::wrap(BDConvertVCFC(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion));
+    Rcpp::traits::input_parameter< int >::type batchSize(batchSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(BDConvertVCFC(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -168,7 +169,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_BDConvertC", (DL_FUNC) &_BinaryDosage_BDConvertC, 6},
-    {"_BinaryDosage_BDConvertVCFC", (DL_FUNC) &_BinaryDosage_BDConvertVCFC, 6},
+    {"_BinaryDosage_BDConvertVCFC", (DL_FUNC) &_BinaryDosage_BDConvertVCFC, 7},
     {"_BinaryDosage_GetBDose4Header", (DL_FUNC) &_BinaryDosage_GetBDose4Header, 1},
     {"_BinaryDosage_GetBDoseFormatC", (DL_FUNC) &_BinaryDosage_GetBDoseFormatC, 1},
     {"_BinaryDosage_GetBinaryDosage1Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage1Info, 4},

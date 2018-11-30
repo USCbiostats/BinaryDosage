@@ -173,6 +173,17 @@ int CBDoseWriter::WriteGeneticData(const std::vector<double> &_dosage, const std
   ++m_snpsWritten;
   return 0;
 }
+
+// Reopen the file for outputing
+void CBDoseWriter::OpenFile() {
+  if (m_outfile.is_open() || !m_good)
+    return;
+
+  m_outfile.open(m_filename.c_str(), std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
+  if (!m_outfile.good())
+    m_good = false;
+}
+
 // Test if required steps have been done - Should be same for all classes
 int CBDoseWriter::Finalize() {
   const char header[4] = { 'b', 'o', 's', 'e'};

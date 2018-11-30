@@ -5,8 +5,8 @@ BDConvertC <- function(bdInfo, newFile, famFile, mapFile, newFormat, newVersion)
     .Call('_BinaryDosage_BDConvertC', PACKAGE = 'BinaryDosage', bdInfo, newFile, famFile, mapFile, newFormat, newVersion)
 }
 
-BDConvertVCFC <- function(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion) {
-    .Call('_BinaryDosage_BDConvertVCFC', PACKAGE = 'BinaryDosage', vcfInfo, newFile, famFile, mapFile, newFormat, newVersion)
+BDConvertVCFC <- function(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize) {
+    .Call('_BinaryDosage_BDConvertVCFC', PACKAGE = 'BinaryDosage', vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize)
 }
 
 GetBDose4Header <- function(filename) {

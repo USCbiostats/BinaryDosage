@@ -72,7 +72,7 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
       delete miniReader;
       return 1;
     }
-    if ((unsigned int)n > numSNPs) {
+    if (n > numSNPs) {
       Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
       delete miniReader;
       return 1;
@@ -177,7 +177,6 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
       lastSNP = snpVec.length();
       lastGroup = true;
     }
-    Rcpp::Rcout << "Batch:\t" << firstSNP + 1 << '\t' << lastSNP << std::endl;
     ddIt = dosages.begin();
     for (i = firstSNP; i < lastSNP; ++i, ++ddIt) {
       d = ddIt->data();
@@ -187,7 +186,7 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
         delete miniReader;
         return 1;
       }
-      if ((unsigned int)n > numSNPs) {
+      if (n > numSNPs) {
         Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
         delete miniReader;
         return 1;
