@@ -56,9 +56,9 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
     return 1;
   }
 
+  snpIndex = 0;
   if (index.size() != 0) {
     posIndex.resize(index.size());
-    snpIndex = 0;
     for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
       snpIndex += *intIt;
       *spIt = snpIndex;
@@ -72,7 +72,7 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
       delete miniReader;
       return 1;
     }
-    if ((unsigned int)n > index.size()) {
+    if ((unsigned int)n > numSNPs) {
       Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
       delete miniReader;
       return 1;
@@ -125,6 +125,8 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
   std::vector<std::vector<double> > dosages;
   std::vector<std::vector<double> >::iterator ddIt, ddIt2;
   double *d;
+  bool lastGroup;
+  int firstSNP, lastSNP;
   int i, j, n;
 
   if (filetype == "BinaryDosage") {
@@ -153,9 +155,9 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
     return 1;
   }
 
+  snpIndex = 0;
   if (index.size() != 0) {
     posIndex.resize(index.size());
-    snpIndex = 0;
     for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
       snpIndex += *intIt;
       *spIt = snpIndex;
@@ -166,44 +168,52 @@ int GetAlleleFreqC(const std::string &filename, const std::string &filetype,
   for (ddIt = dosages.begin(); ddIt != dosages.end(); ++ddIt)
     ddIt->resize(subVec.size());
 
-  ddIt = dosages.begin();
-  for (i = 0; i < snpVec.length(); ++i, ++ddIt) {
-    if (ddIt == dosages.end()) {
-      for (ddIt2 = dosages.begin(); ddIt2 != dosages.end(); ++ddIt2)
-        Rcpp::Rcout << std::accumulate(ddIt2->begin(), ddIt2->end(), 0.);
-      ddIt = dosages.begin();
+  lastGroup = false;
+  firstSNP = 0;
+  do {
+    miniReader->OpenFile();
+    lastSNP = firstSNP + batchSize;
+    if (lastSNP >= snpVec.length()) {
+      lastSNP = snpVec.length();
+      lastGroup = true;
     }
-    d = ddIt->data();
-    n = snpVec[i];
-    if (n < 1) {
-      Rcpp::Rcerr << "SNP number must be a postive value" << std::endl;
-      delete miniReader;
-      return 1;
-    }
-    if ((unsigned int)n > index.size()) {
-      Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
-      delete miniReader;
-      return 1;
-    }
+    Rcpp::Rcout << "Batch:\t" << firstSNP + 1 << '\t' << lastSNP << std::endl;
+    ddIt = dosages.begin();
+    for (i = firstSNP; i < lastSNP; ++i, ++ddIt) {
+      d = ddIt->data();
+      n = snpVec[i];
+      if (n < 1) {
+        Rcpp::Rcerr << "SNP number must be a postive value" << std::endl;
+        delete miniReader;
+        return 1;
+      }
+      if ((unsigned int)n > numSNPs) {
+        Rcpp::Rcerr << "SNP index greater than number of SNPs" << std::endl;
+        delete miniReader;
+        return 1;
+      }
 
-    if (snpIndex > 0) {
-      if (!miniReader->GetSNP(n, posIndex[n - 1])) {
-        Rcpp::Rcerr << "Error reading SNP" << std::endl;
-        delete miniReader;
-        return 1;
+      if (snpIndex > 0) {
+        if (!miniReader->GetSNP(n, posIndex[n - 1])) {
+          Rcpp::Rcerr << "Error reading SNP" << std::endl;
+          delete miniReader;
+          return 1;
+        }
+      } else {
+        if (!miniReader->GetSNP(n)) {
+          Rcpp::Rcerr << "Error reading SNP" << std::endl;
+          delete miniReader;
+          return 1;
+        }
       }
-    } else {
-      if (!miniReader->GetSNP(n)) {
-        Rcpp::Rcerr << "Error reading SNP" << std::endl;
-        delete miniReader;
-        return 1;
-      }
+      for (j = 0; j < subVec.length(); ++j, ++d)
+        *d = miniReader->Dosage()[subVec[j] - 1];
     }
-    for (j = 0; j < subVec.length(); ++j, ++d)
-      *d = miniReader->Dosage()[subVec[j] - 1];
-  }
-  for (ddIt2 = dosages.begin(); ddIt2 != ddIt; ++ddIt2)
-    Rcpp::Rcout << std::accumulate(ddIt2->begin(), ddIt2->end(), 0.) / (2. * subVec.length()) << std::endl;
+    miniReader->CloseFile();
+    for (ddIt2 = dosages.begin(), i = firstSNP; ddIt2 != ddIt; ++ddIt2, ++i)
+      freqVec[i] = std::accumulate(ddIt2->begin(), ddIt2->end(), 0.) / (2. * subVec.length());
+    firstSNP = lastSNP;
+  } while (!lastGroup);
 
   delete miniReader;
 
