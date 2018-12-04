@@ -163,6 +163,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
   CVCFMiniReader *vcfmr = NULL;
   CBDoseWriter *bdw = NULL;
   std::vector<int> groupSizes;
+  int i;
 
   vcfmr = new CVCFMiniReader(filename, numSub, numSNPs, startData);
   if (!vcfmr->good()) {
@@ -198,13 +199,20 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
       break;
     }
 
-    for (intIt = loc.begin(); intIt != loc.end(); ++intIt) {
+    i = 1;
+    for (intIt = loc.begin(); intIt != loc.end(); ++intIt, ++i) {
       if (intIt == loc.begin())
         vcfmr->GetFirst();
       else
         vcfmr->GetNext();
+      if (!vcfmr->good()) {
+        Rcpp::Rcerr << "Error reading VCF file for SNP:\n" << i << std::endl;
+        delete vcfmr;
+        delete bdw;
+        return retVal;
+      }
       if (bdw->WriteGeneticData(vcfmr->Dosage(), vcfmr->P0(), vcfmr->P1(), vcfmr->P2())) {
-        Rcpp::Rcerr << "Error genetic data" << std::endl;
+        Rcpp::Rcout << "Error writing genetic data for SNP:\n" << i << std::endl;
         break;
       }
     }

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cmath>
 #include <vector>
 #include <limits>
 #include <algorithm>
@@ -314,6 +315,12 @@ int CVCFDataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosag
       iss >> values;
       if (i == dsLoc) {
         *dIt = std::stod(values);
+        if (*dIt > 2.01 || *dIt < -0.01)
+          return 1;
+        if (*dIt > 2.)
+          *dIt = 2.;
+        else if (*dIt < 0.)
+          *dIt = 0;
       }
       if (i == gpLoc) {
         std::replace(values.begin(), values.end(), ',', ' ');
@@ -323,7 +330,27 @@ int CVCFDataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosag
         *p0It = p0;
         *p1It = p1;
         *p2It = p2;
+        if (*p0It > 1.01 || *p0It < -0.01 || *p1It > 1.01 || *p1It < -0.01 || *p2It > 1.01 || *p2It < -0.01)
+          return 1;
+        if (*p0It > 1.)
+          *p0It = 1.;
+        else if (*p0It < 0.)
+          *p0It = 0.;
+        if (*p1It > 1.)
+          *p1It = 1.;
+        else if (*p1It < 0.)
+          *p1It = 0.;
+        if (*p2It > 1.)
+          *p2It = 1.;
+        else if (*p2It < 0.)
+          *p2It = 0.;
+        if(fabs(1. - *p0It - *p1It - *p2It) > 0.01)
+          return 1;
       }
+    }
+    if (gpLoc != -1 && dsLoc != -1) {
+      if (fabs(*dIt - *p1It - *p2It - *p2It) > 0.01)
+        return 1;
     }
   }
 
