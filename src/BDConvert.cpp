@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <limits>
+#include <algorithm>
 #include "GetBDoseInfo.h"
 #include "BDoseMiniReader.h"
 #include "VCFMiniReader.h"
@@ -140,7 +141,7 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
 
 // [[Rcpp::export]]
 int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const std::string &famFile,
-                         const std::string &mapFile, int newFormat, int newVersion) {
+                         const std::string &mapFile, int newFormat, int newVersion, int batchSize) {
   int retVal = 1;
   std::string filetype = vcfInfo["filetype"];
   std::string filename = vcfInfo["filename"];
@@ -216,8 +217,6 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
         break;
       }
     }
-    if (intIt != loc.end())
-      break;
   } while (0);
   if (!bdw->good()) {
     Rcpp::Rcerr << "Error writing file" << std::endl;

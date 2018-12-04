@@ -26,3 +26,20 @@ CVCFMiniReader::CVCFMiniReader(const std::string &_filename, const int _numSampl
   m_geneticDataReader = new CVCFDataReader(m_numSamples);
   m_good = true;
 }
+
+int CVCFMiniReader::OpenFile() {
+  if (!m_good)
+    return 1;
+
+  if (m_infile.is_open())
+    return 0;
+
+  m_infile.open(m_filename.c_str());
+  m_infile.seekg(m_currentPos);
+  if (!m_infile.good()) {
+    m_good = false;
+    return 1;
+  }
+
+  return 0;
+}

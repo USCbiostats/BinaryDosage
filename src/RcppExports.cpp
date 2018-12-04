@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // BDConvertVCFC
-int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
-RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP) {
+int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion, int batchSize);
+RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP, SEXP batchSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,7 +33,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type mapFile(mapFileSEXP);
     Rcpp::traits::input_parameter< int >::type newFormat(newFormatSEXP);
     Rcpp::traits::input_parameter< int >::type newVersion(newVersionSEXP);
-    rcpp_result_gen = Rcpp::wrap(BDConvertVCFC(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion));
+    Rcpp::traits::input_parameter< int >::type batchSize(batchSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(BDConvertVCFC(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -104,6 +105,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetAlleleFreqC
+int GetAlleleFreqC(const std::string& filename, const std::string& filetype, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericVector& freqVec, const int numSubjects, const int numSNPs, const int batchSize);
+RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP, SEXP batchSizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type freqVec(freqVecSEXP);
+    Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< const int >::type batchSize(batchSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, subVec, snpVec, indices, freqVec, numSubjects, numSNPs, batchSize));
+    return rcpp_result_gen;
+END_RCPP
+}
 // GetVCFHeaderC
 Rcpp::List GetVCFHeaderC(std::string& vcfFile);
 RcppExport SEXP _BinaryDosage_GetVCFHeaderC(SEXP vcfFileSEXP) {
@@ -149,12 +169,13 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_BDConvertC", (DL_FUNC) &_BinaryDosage_BDConvertC, 6},
-    {"_BinaryDosage_BDConvertVCFC", (DL_FUNC) &_BinaryDosage_BDConvertVCFC, 6},
+    {"_BinaryDosage_BDConvertVCFC", (DL_FUNC) &_BinaryDosage_BDConvertVCFC, 7},
     {"_BinaryDosage_GetBDose4Header", (DL_FUNC) &_BinaryDosage_GetBDose4Header, 1},
     {"_BinaryDosage_GetBDoseFormatC", (DL_FUNC) &_BinaryDosage_GetBDoseFormatC, 1},
     {"_BinaryDosage_GetBinaryDosage1Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage1Info, 4},
     {"_BinaryDosage_GetBinaryDosage4Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage4Info, 2},
     {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 9},
+    {"_BinaryDosage_GetAlleleFreqC", (DL_FUNC) &_BinaryDosage_GetAlleleFreqC, 9},
     {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
     {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
     {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 8},

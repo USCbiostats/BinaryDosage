@@ -39,6 +39,22 @@ CBDoseMiniReader::CBDoseMiniReader(const std::string &_filename) : CMiniReader(_
   m_good = true;
 }
 
+int CBDoseMiniReader::OpenFile() {
+  if (!m_good)
+    return 1;
+
+  if (m_infile.is_open())
+    return 0;
+
+  m_infile.open(m_filename.c_str(), std::ios_base::in | std::ios_base::binary);
+  m_infile.seekg(m_currentPos);
+  if (!m_infile.good()) {
+    m_good = false;
+    return 1;
+  }
+
+  return 0;
+}
 
 CBDoseMiniReader1::CBDoseMiniReader1(const std::string &_filename, const int _numSamples, const int _numSNPs) : CBDoseMiniReader(_filename) {
   if (!m_good)

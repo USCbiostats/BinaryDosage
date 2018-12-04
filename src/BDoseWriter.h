@@ -51,6 +51,8 @@ public:
                             const std::vector<std::vector<double> > &_maf,
                             const std::vector<std::vector<double> > &_avgCall,
                             const std::vector<std::vector<double> > &_rSq) { return 0; }
+  void CloseFile() { m_outfile.close(); }
+  void OpenFile();
   int Finalize();
 
   bool good() const { return m_good; }

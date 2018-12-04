@@ -12,6 +12,7 @@ CMiniReader::CMiniReader(const std::string &_filename) {
   m_filename = _filename;
   m_numSamples = 0;
   m_numSNPs = 0;
+  m_currentPos = 0;
   m_startDosageData = 0;
   m_geneticDataReader = NULL;
   m_currentSNP = 0;
@@ -76,3 +77,14 @@ bool CMiniReader::GetSNP(int n, std::streampos snpLoc) {
   return m_good;
 }
 
+int CMiniReader::CloseFile() {
+  if (!m_good)
+    return 1;
+
+  if (m_infile.is_open()) {
+    m_currentPos = m_infile.tellg();
+    m_infile.close();
+  }
+
+  return 0;
+}

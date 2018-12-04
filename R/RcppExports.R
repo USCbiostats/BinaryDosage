@@ -5,8 +5,8 @@ BDConvertC <- function(bdInfo, newFile, famFile, mapFile, newFormat, newVersion)
     .Call('_BinaryDosage_BDConvertC', PACKAGE = 'BinaryDosage', bdInfo, newFile, famFile, mapFile, newFormat, newVersion)
 }
 
-BDConvertVCFC <- function(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion) {
-    .Call('_BinaryDosage_BDConvertVCFC', PACKAGE = 'BinaryDosage', vcfInfo, newFile, famFile, mapFile, newFormat, newVersion)
+BDConvertVCFC <- function(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize) {
+    .Call('_BinaryDosage_BDConvertVCFC', PACKAGE = 'BinaryDosage', vcfInfo, newFile, famFile, mapFile, newFormat, newVersion, batchSize)
 }
 
 GetBDose4Header <- function(filename) {
@@ -27,6 +27,10 @@ GetBinaryDosage4Info <- function(bdFilename, index) {
 
 GetSNPValuesC <- function(filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs) {
     .Call('_BinaryDosage_GetSNPValuesC', PACKAGE = 'BinaryDosage', filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs)
+}
+
+GetAlleleFreqC <- function(filename, filetype, subVec, snpVec, indices, freqVec, numSubjects, numSNPs, batchSize) {
+    .Call('_BinaryDosage_GetAlleleFreqC', PACKAGE = 'BinaryDosage', filename, filetype, subVec, snpVec, indices, freqVec, numSubjects, numSNPs, batchSize)
 }
 
 GetVCFHeaderC <- function(vcfFile) {
