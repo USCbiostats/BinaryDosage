@@ -39,7 +39,7 @@ CBDoseDosageReader::CBDoseDosageReader(const unsigned short _scale, const int _s
 // Read the data to the file. Since only dosages are being read, the
 // values of _p0, _p1, and _p2 are ignored. The data is always read from
 // the current file location.
-int CBDoseDosageReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDoseDosageReader::ReadData(std::istream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt;
   std::vector<double>::iterator dIt;
 
@@ -70,7 +70,7 @@ int CBDoseDosageReader::ReadData(std::ifstream &_infile, std::vector<double> &_d
 }
 
 // Skip over the next SNP
-int CBDoseDosageReader::SkipSNP(std::ifstream &_infile) {
+int CBDoseDosageReader::SkipSNP(std::istream &_infile) {
   // Check if stream is capable of being read from
   if (!_infile.good())
     return 1;
@@ -99,7 +99,7 @@ CBDose1DataReader::CBDose1DataReader(const unsigned short _scale, const int _sam
 // Write the values to the file. Although only the values for _p1 and _p2 are
 // written to the file, the values of _dosage and _p0 are used to check the
 // validity fo the data. The values are written to the end of the file.
-int CBDose1DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDose1DataReader::ReadData(std::istream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt1, usIt2;
   std::vector<double>::iterator dItd, dItp0, dItp1, dItp2;
 
@@ -145,7 +145,7 @@ int CBDose1DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_do
 }
 
 // Skip over the next SNP
-int CBDose1DataReader::SkipSNP(std::ifstream &_infile) {
+int CBDose1DataReader::SkipSNP(std::istream &_infile) {
   // Check if stream is capable of being read from
   if (!_infile.good())
     return 1;
@@ -172,7 +172,7 @@ CBDose3DataReader::CBDose3DataReader(const unsigned short _scale, const int _sam
   m_dataToRead.resize(4 * m_sampleSize);
 }
 
-int CBDose3DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CBDose3DataReader::ReadData(std::istream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::vector<unsigned short>::const_iterator usIt1, usIt2;
   std::vector<double>::iterator dItd, dItp0, dItp1, dItp2;
   int inputLength;
@@ -251,7 +251,7 @@ int CBDose3DataReader::ReadData(std::ifstream &_infile, std::vector<double> &_do
 }
 
 // Skip over the next SNP
-int CBDose3DataReader::SkipSNP(std::ifstream &_infile) {
+int CBDose3DataReader::SkipSNP(std::istream &_infile) {
   int snpSize;
   // Check if stream is capable of being read from
   if (!_infile.good())
@@ -265,7 +265,7 @@ int CBDose3DataReader::SkipSNP(std::ifstream &_infile) {
   return 0;
 }
 
-int CVCFDataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
+int CVCFDataReader::ReadData(std::istream &_infile, std::vector<double> &_dosage, std::vector<double> &_p0, std::vector<double> &_p1, std::vector<double> &_p2) {
   std::istringstream iss, iss2;
   std::string format;
   std::string formatVal;
@@ -357,7 +357,7 @@ int CVCFDataReader::ReadData(std::ifstream &_infile, std::vector<double> &_dosag
   return 0;
 }
 
-int CVCFDataReader::SkipSNP(std::ifstream &_infile) {
+int CVCFDataReader::SkipSNP(std::istream &_infile) {
   std::string junk;
 
   std::getline(_infile, junk);
