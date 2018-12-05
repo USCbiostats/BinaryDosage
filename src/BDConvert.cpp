@@ -164,10 +164,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
   CVCFMiniReader *vcfmr = NULL;
   CBDoseWriter *bdw = NULL;
   std::vector<int> groupSizes;
-  std::vector<std::vector<double> > dosage, p0, p1, p2;
-  std::vector<std::vector<double> >::iterator itDosage, itP0, itP1, itP2;
-  int firstSNP, lastSNP, currentBatch, i;
-  bool complete;
+  int i;
 
   vcfmr = new CVCFMiniReader(filename, numSub, numSNPs, startData);
   if (!vcfmr->good()) {
@@ -203,69 +200,23 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
       break;
     }
 
-    dosage.resize(numSNPs);
-    p0.resize(numSNPs);
-    p1.resize(numSNPs);
-    p2.resize(numSNPs);
-    for (itDosage = dosage.begin(), itP0 = p0.begin(), itP1 = p1.begin(), itP2 = p2.begin(); itDosage != dosage.end(); ++itDosage, ++itP0, ++itP1, ++itP2) {
-      itDosage->resize(numSub);
-      if (newVersion == 2) {
-        itP0->resize(numSub);
-        itP1->resize(numSub);
-        itP2->resize(numSub);
+    i = 1;
+    for (intIt = loc.begin(); intIt != loc.end(); ++intIt, ++i) {
+      if (intIt == loc.begin())
+        vcfmr->GetFirst();
+      else
+        vcfmr->GetNext();
+      if (!vcfmr->good()) {
+        Rcpp::Rcerr << "Error reading VCF file for SNP:\n" << i << std::endl;
+        delete vcfmr;
+        delete bdw;
+        return retVal;
+      }
+      if (bdw->WriteGeneticData(vcfmr->Dosage(), vcfmr->P0(), vcfmr->P1(), vcfmr->P2())) {
+        Rcpp::Rcout << "Error writing genetic data for SNP:\n" << i << std::endl;
+        break;
       }
     }
-
-    complete = false;
-    lastSNP = 0;
-    currentBatch = batchSize;
-    do {
-      firstSNP = lastSNP;
-      lastSNP = firstSNP + batchSize;
-      if (lastSNP >= numSNPs) {
-        lastSNP = numSNPs;
-        currentBatch = lastSNP - firstSNP;
-        complete = true;
-      }
-      itDosage = dosage.begin();
-      itP0 = p0.begin();
-      itP1 = p1.begin();
-      itP2 = p2.begin();
-      vcfmr->OpenFile();
-      for (i = firstSNP; i < lastSNP; ++i, ++itDosage, ++itP0, ++itP1, ++itP2) {
-        if (i == 0)
-          vcfmr->GetFirst();
-        else
-          vcfmr->GetNext();
-        if (!vcfmr->good()) {
-          Rcpp::Rcerr << "Error reading vcf file for SNP:\t" << snpID[i] << std::endl;
-          delete vcfmr;
-          delete bdw;
-          return retVal;
-        }
-        std::copy(vcfmr->Dosage().begin(), vcfmr->Dosage().end(), itDosage->begin());
-        if (newVersion == 2) {
-          std::copy(vcfmr->P0().begin(), vcfmr->P0().end(), itP0->begin());
-          std::copy(vcfmr->P1().begin(), vcfmr->P1().end(), itP1->begin());
-          std::copy(vcfmr->P2().begin(), vcfmr->P2().end(), itP2->begin());
-        }
-      }
-      vcfmr->CloseFile();
-
-      itDosage = dosage.begin();
-      itP0 = p0.begin();
-      itP1 = p1.begin();
-      itP2 = p2.begin();
-      bdw->OpenFile();
-      for (i = 0; i < currentBatch; ++i, ++itDosage, ++itP0, ++itP1, ++itP2) {
-        if (bdw->WriteGeneticData(*itDosage, *itP0, *itP1, *itP2)) {
-          Rcpp::Rcerr << "Error genetic data" << std::endl;
-          break;
-        }
-      }
-      bdw->CloseFile();
-    } while (!complete);
-    bdw->OpenFile();
   } while (0);
   if (!bdw->good()) {
     Rcpp::Rcerr << "Error writing file" << std::endl;
