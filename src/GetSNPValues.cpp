@@ -63,6 +63,7 @@ int GetSNPValuesC(const std::string &filename, const std::string &filetype, int 
       snpIndex += *intIt;
       *spIt = snpIndex;
     }
+    miniReader->ChunkIt(posIndex);
   }
 
   for (i = 0; i < snpVec.length(); ++i) {

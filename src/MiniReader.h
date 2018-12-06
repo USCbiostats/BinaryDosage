@@ -12,6 +12,17 @@ protected:
   std::ifstream m_infile;
   int m_numSamples, m_numSNPs;
 
+  bool m_chunked;
+  int m_currentChunk;
+  std::string m_readBuffer;
+//  std::vector<char> m_readBuffer;
+  std::vector<int> m_startSNP;
+  std::vector<int> m_snpChunk;
+  std::vector<std::streampos> m_filePos;
+  std::vector<std::streampos> m_stringPos;
+//  std::string m_readString;
+  std::istringstream m_iss;
+
   std::streampos m_currentPos;
   std::streampos m_startDosageData;
 
@@ -19,6 +30,8 @@ protected:
   std::vector<double> m_dosage, m_p0, m_p1, m_p2;
   int m_currentSNP;
 
+  virtual int ReadChunk(int n);
+  bool GetChunkSNP();
   CMiniReader(const std::string &_filename);
 public:
   virtual ~CMiniReader();
@@ -30,6 +43,8 @@ public:
 
   virtual int CloseFile();
   virtual int OpenFile() = 0;
+
+  void ChunkIt(const std::vector<std::streampos> &indices);
 
   bool good() const { return m_good; }
   int NumSamples() const { return m_numSamples; }

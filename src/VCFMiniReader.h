@@ -7,7 +7,6 @@
 
 class CVCFMiniReader : public CMiniReader {
 protected:
-
 public:
   CVCFMiniReader(const std::string &_filename, const int _numSamples, const int _numSNPs, const std::streampos _startData);
   virtual ~CVCFMiniReader() {}
