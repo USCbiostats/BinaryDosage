@@ -32,16 +32,13 @@ CMiniReader::~CMiniReader() {
 }
 
 bool CMiniReader::GetChunkSNP() {
-  std::fill(m_dosage.begin(), m_dosage.end(), 0.);
-  std::fill(m_p0.begin(), m_p0.end(), std::numeric_limits<double>::quiet_NaN());
-  std::fill(m_p1.begin(), m_p1.end(), std::numeric_limits<double>::quiet_NaN());
-  std::fill(m_p2.begin(), m_p2.end(), std::numeric_limits<double>::quiet_NaN());
-  std::cout << m_currentSNP << '\t' << m_snpChunk[m_currentSNP] << '\t' << m_currentChunk << std::endl;
-  if (m_snpChunk[m_currentSNP] != m_currentChunk)
-    return m_good;
+//  std::cout << m_currentSNP << '\t' << m_snpChunk[m_currentSNP] << '\t' << m_currentChunk << std::endl;
+  if (m_snpChunk[m_currentSNP] != m_currentChunk) {
+    ReadChunk(m_snpChunk[m_currentSNP]);
+  }
 
   m_iss.clear();
-  m_iss.seekg(0);
+  m_iss.seekg(m_stringPos[m_currentSNP]);
   if (m_geneticDataReader->ReadData(m_iss, m_dosage, m_p0, m_p1, m_p2))
     m_good = false;
 
