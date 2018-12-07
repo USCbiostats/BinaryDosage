@@ -6,7 +6,7 @@
 \usage{
 MergeBD(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
   mergedFamFile = "", mergeMapFile = "", format = 4, version = 2,
-  batchSize = 100)
+  batchSize = 1000)
 }
 \arguments{
 \item{filesToMerge}{A vector of strings. Names of the files to merge.}

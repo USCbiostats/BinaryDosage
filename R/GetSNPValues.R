@@ -85,13 +85,11 @@ GetSNPValues <- function(fileInfo, SNPs, Subjects, geneProb = TRUE) {
 #' @param Subjects
 #' Vector of either Subject IDs of indices in binary dosage
 #' file to calcualte allele for
-#' @param batchSize
-#' Number of SNPs to read in at one time.
 #' @return
 #' List with information about the file including subject and
 #' SNP information
 #' @export
-GetAlternateAlleleFrequencies <- function(fileInfo, SNPs, Subjects, batchSize = 1000) {
+GetAlternateAlleleFrequencies <- function(fileInfo, SNPs, Subjects) {
   if (missing(fileInfo))
     return (NULL)
   if (missing(SNPs)) {
@@ -123,7 +121,7 @@ GetAlternateAlleleFrequencies <- function(fileInfo, SNPs, Subjects, batchSize = 
 
   freqVector <- as.vector(rep(0.0, length(SNPs)), mode = "numeric")
   if (GetAlleleFreqC(fileInfo$filename, fileInfo$filetype, subVec, snpVec,
-                    fileInfo$Indices, freqVector, fileInfo$NumSamples, fileInfo$NumSNPs, batchSize) == 1)
+                    fileInfo$Indices, freqVector, fileInfo$NumSamples, fileInfo$NumSNPs) == 1)
     return (NULL)
 
   return (freqVector)

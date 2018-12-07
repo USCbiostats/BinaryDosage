@@ -4,7 +4,7 @@
 \alias{GetAlternateAlleleFrequencies}
 \title{Function to calculate alternate allele frequencies}
 \usage{
-GetAlternateAlleleFrequencies(fileInfo, SNPs, Subjects, batchSize = 1000)
+GetAlternateAlleleFrequencies(fileInfo, SNPs, Subjects)
 }
 \arguments{
 \item{fileInfo}{Information about the binary dosage file return from
@@ -15,8 +15,6 @@ file to calculate allele frequencies for}
 
 \item{Subjects}{Vector of either Subject IDs of indices in binary dosage
 file to calcualte allele for}
-
-\item{batchSize}{Number of SNPs to read in at one time.}
 }
 \value{
 List with information about the file including subject and

@@ -133,19 +133,29 @@ int CMiniReader::ReadChunk(int n) {
 
   startPos = m_filePos[n];
   endPos = m_filePos[n + 1];
+//  std::cout << n << '\t' << m_filePos.size() << std::endl;
+//  for (std::vector<std::streampos>::iterator it = m_filePos.begin(); it != m_filePos.end(); ++it)
+//    std::cout << *it << '\t';
+//  std::cout << std::endl;
   readLength = (int)endPos - startPos;
 
 //  std::cout << startPos <<'\t' << endPos << '\t' << readLength << std::endl;
+  m_infile.open(m_filename.c_str(), std::ios_base::in | std::ios_base::binary);
   m_infile.seekg(startPos);
   if (!m_infile.good()) {
     std::cerr << "Error seeking chunk" << std::endl;
+    m_infile.close();
+    m_good = false;
     return 1;
   }
   m_infile.read(x, readLength);
   if (!m_infile.good()) {
     std::cerr << "Error reading chunk" << std::endl;
+    m_infile.close();
+    m_good = false;
     return 1;
   }
+  m_infile.close();
   m_readBuffer[readLength] = 0;
   m_currentChunk = n;
   m_iss.str(m_readBuffer);
@@ -171,6 +181,10 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
     std::cerr << "Number of indices does not equal number of SNPs" << std::endl;
     return;
   }
+
+  m_infile.seekg(0, std::ios_base::end);
+  lastPos = m_infile.tellg();
+  CloseFile();
 
   m_readBuffer.resize(ReadBufferSize + 1);
   m_startSNP.resize(0);
@@ -205,8 +219,7 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
     ++index;
     ++i;
   } while (index != indices.end());
-  m_infile.seekg(0, std::ios_base::end);
-  lastPos = m_infile.tellg();
+//  std::cout << "Last pos\t" << lastPos << std::endl;
   if (lastPos - currentPos > ReadBufferSize) {
     m_startSNP.push_back(i - 1);
     m_filePos.push_back(*(index - 1));
