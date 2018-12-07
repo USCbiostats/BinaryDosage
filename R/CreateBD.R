@@ -16,13 +16,11 @@
 #' Format of binary dosage file - default 4, can be 1, 2, or 3
 #' @param version
 #' Version of the format to use - default 2, can be 1
-#' @param batchSize
-#' Size of batches of SNPs to read in before processing
 #' @return
 #' 0 - Success
 #' 1 - Failure
 #' @export
-VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4, version = 2, batchSize = 100) {
+VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4, version = 2) {
   if (missing(vcfFile))
     return (NULL)
   if (missing(bdFile))
@@ -30,5 +28,5 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4, ver
   vcfi <- GetVCFInfo(vcfFile)
   if (length(vcfi) == 0)
     return (NULL)
-  return (BDConvertVCFC(vcfi, bdFile, famFile, mapFile, format, version, batchSize))
+  return (BDConvertVCFC(vcfi, bdFile, famFile, mapFile, format, version))
 }

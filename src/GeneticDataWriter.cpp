@@ -177,15 +177,15 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
   int numAdded;
   int outputLength;
 
-  std::cout << "Entering writer 3" << std::endl;
+//  std::cout << "Entering writer 3" << std::endl;
   // Check if the file can be written to.
   if (!_outfile.good())
     return 1;
-  std::cout << "Writer good" << std::endl;
+//  std::cout << "Writer good" << std::endl;
   // Are vectors for the appropriate sizes?
   if ((int)_dosage.size() != m_sampleSize || (int)_p0.size() != m_sampleSize || (int)_p1.size() != m_sampleSize || (int)_p2.size() != m_sampleSize)
     return 1;
-  std::cout << "Sizes good" << std::endl;
+//  std::cout << "Sizes good" << std::endl;
 
   _outfile.seekp(0, std::ios_base::end);
 
@@ -246,7 +246,7 @@ int CGeneticDataWriter3::WriteData(std::fstream &_outfile, const std::vector<dou
   // Calculate the length of the vector that needs to be writting (in bytes)
   // And write it to the file
   outputLength = (m_sampleSize + numAdded) * sizeof(short);
-  std::cout << "outputLength\t" << outputLength << std::endl;
+//  std::cout << "outputLength\t" << outputLength << std::endl;
   _outfile.write((char *)&outputLength, sizeof(int));
   // Write the data
   _outfile.write((char *)m_dataToWrite.data(), outputLength);

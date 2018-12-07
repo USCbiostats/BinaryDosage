@@ -36,21 +36,36 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
   std::vector<std::vector<double> > aaf, maf, avgCall, rSq;
   std::vector<double> dblVec;
   std::vector<int>::iterator intIt;
-  CBDoseMiniReader *bdmr = NULL;
-  CBDoseWriter *bdw;
+  std::vector<int> index = Rcpp::as< std::vector<int> >(bdInfo["Indices"]);
+  std::streampos snpIndex;
+  std::vector<std::streampos> posIndex;
+  std::vector<std::streampos>::iterator spIt;
+  CBDoseMiniReader *miniReader = NULL;
+  CBDoseWriter *bdw = NULL;
 
   if (format == newFormat && newVersion == version) {
     Rcpp::Rcerr << "Old format and new format are the same" << std::endl;
     return retVal;
   }
   if (format < 4)
-    bdmr = new CBDoseMiniReader1(filename, numSub, numSNPs);
+    miniReader = new CBDoseMiniReader1(filename, numSub, numSNPs);
   else
-    bdmr = new CBDoseMiniReader4(filename);
+    miniReader = new CBDoseMiniReader4(filename);
 
-  if (!bdmr->good()) {
+  snpIndex = 0;
+  if (index.size() != 0) {
+    posIndex.resize(index.size());
+    for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
+      snpIndex += *intIt;
+      *spIt = snpIndex;
+    }
+//    Rcpp::Rcout << "Batching" << std::endl;
+    miniReader->ChunkIt(posIndex);
+  }
+
+  if (!miniReader->good()) {
     Rcpp::Rcerr << "Error opening binary dosage file" << std::endl;
-    delete bdmr;
+    delete miniReader;
     return retVal;
   }
 
@@ -61,7 +76,7 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
 
   if (!bdw->good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    delete bdmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
@@ -105,10 +120,10 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
 
     for (intIt = loc.begin(); intIt != loc.end(); ++intIt) {
       if (intIt == loc.begin())
-        bdmr->GetFirst();
+        miniReader->GetFirst();
       else
-        bdmr->GetNext();
-      if (bdw->WriteGeneticData(bdmr->Dosage(), bdmr->P0(), bdmr->P1(), bdmr->P2())) {
+        miniReader->GetNext();
+      if (bdw->WriteGeneticData(miniReader->Dosage(), miniReader->P0(), miniReader->P1(), miniReader->P2())) {
         Rcpp::Rcerr << "Error genetic data" << std::endl;
         break;
       }
@@ -118,22 +133,22 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
   } while (0);
   if (!bdw->good()) {
     Rcpp::Rcerr << "Error writing file" << std::endl;
-    delete bdmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
   if (bdw->Finalize()) {
     Rcpp::Rcerr << "Error finalizing file" << std::endl;
-    delete bdmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
 
   retVal = Rcpp::List::create(Rcpp::Named("SID") = sid,
                               Rcpp::Named("SNPs") = snpID,
-                              Rcpp::Named("Dosage") = bdmr->Dosage());
-  if (bdmr)
-    delete bdmr;
+                              Rcpp::Named("Dosage") = miniReader->Dosage());
+  if (miniReader)
+    delete miniReader;
   if (bdw)
     delete bdw;
   return retVal;
@@ -141,7 +156,7 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
 
 // [[Rcpp::export]]
 int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const std::string &famFile,
-                         const std::string &mapFile, int newFormat, int newVersion, int batchSize) {
+                         const std::string &mapFile, int newFormat, int newVersion) {
   int retVal = 1;
   std::string filetype = vcfInfo["filetype"];
   std::string filename = vcfInfo["filename"];
@@ -161,15 +176,19 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
   std::vector<std::vector<double> > aaf, maf, avgCall, rSq;
   std::vector<double> dblVec;
   std::vector<int>::iterator intIt;
-  CVCFMiniReader *vcfmr = NULL;
+  std::vector<int> index = Rcpp::as< std::vector<int> >(vcfInfo["Indices"]);
+  std::streampos snpIndex;
+  std::vector<std::streampos> posIndex;
+  std::vector<std::streampos>::iterator spIt;
+  CVCFMiniReader *miniReader = NULL;
   CBDoseWriter *bdw = NULL;
   std::vector<int> groupSizes;
   int i;
 
-  vcfmr = new CVCFMiniReader(filename, numSub, numSNPs, startData);
-  if (!vcfmr->good()) {
+  miniReader = new CVCFMiniReader(filename, numSub, numSNPs, startData);
+  if (!miniReader->good()) {
     Rcpp::Rcerr << "Error opening vcf file" << std::endl;
-    delete vcfmr;
+    delete miniReader;
     return retVal;
   }
 
@@ -178,9 +197,20 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
   else
     bdw = new CBDoseWriter4(newFile, newFormat, newVersion);
 
+  snpIndex = 0;
+  if (index.size() != 0) {
+    posIndex.resize(index.size());
+    for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
+      snpIndex += *intIt;
+      *spIt = snpIndex;
+    }
+//    Rcpp::Rcout << "Batching" << std::endl;
+    miniReader->ChunkIt(posIndex);
+  }
+
   if (!bdw->good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    delete vcfmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
@@ -203,16 +233,16 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
     i = 1;
     for (intIt = loc.begin(); intIt != loc.end(); ++intIt, ++i) {
       if (intIt == loc.begin())
-        vcfmr->GetFirst();
+        miniReader->GetFirst();
       else
-        vcfmr->GetNext();
-      if (!vcfmr->good()) {
+        miniReader->GetNext();
+      if (!miniReader->good()) {
         Rcpp::Rcerr << "Error reading VCF file for SNP:\n" << i << std::endl;
-        delete vcfmr;
+        delete miniReader;
         delete bdw;
         return retVal;
       }
-      if (bdw->WriteGeneticData(vcfmr->Dosage(), vcfmr->P0(), vcfmr->P1(), vcfmr->P2())) {
+      if (bdw->WriteGeneticData(miniReader->Dosage(), miniReader->P0(), miniReader->P1(), miniReader->P2())) {
         Rcpp::Rcout << "Error writing genetic data for SNP:\n" << i << std::endl;
         break;
       }
@@ -220,20 +250,20 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
   } while (0);
   if (!bdw->good()) {
     Rcpp::Rcerr << "Error writing file" << std::endl;
-    delete vcfmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
   if (bdw->Finalize()) {
     Rcpp::Rcerr << "Error finalizing file" << std::endl;
-    delete vcfmr;
+    delete miniReader;
     delete bdw;
     return retVal;
   }
 
   retVal = 0;
-  if (vcfmr)
-    delete vcfmr;
+  if (miniReader)
+    delete miniReader;
   if (bdw)
     delete bdw;
   return retVal;

@@ -5,7 +5,7 @@
 \title{Function to read in information about a vcf file}
 \usage{
 VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4,
-  version = 2, batchSize = 100)
+  version = 2)
 }
 \arguments{
 \item{vcfFile}{Name of the vcf file}
@@ -19,8 +19,6 @@ VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4,
 \item{format}{Format of binary dosage file - default 4, can be 1, 2, or 3}
 
 \item{version}{Version of the format to use - default 2, can be 1}
-
-\item{batchSize}{Size of batches of SNPs to read in before processing}
 }
 \value{
 0 - Success
