@@ -28,5 +28,6 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4, ver
   vcfi <- GetVCFInfo(vcfFile)
   if (length(vcfi) == 0)
     return (NULL)
+#  return (vcfi)
   return (BDConvertVCFC(vcfi, bdFile, famFile, mapFile, format, version))
 }

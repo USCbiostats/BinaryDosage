@@ -52,13 +52,16 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
   else
     miniReader = new CBDoseMiniReader4(filename);
 
+  std::cout << "Created mini readers" << std::endl;
   snpIndex = 0;
   if (index.size() != 0) {
     posIndex.resize(index.size());
     for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
       snpIndex += *intIt;
       *spIt = snpIndex;
+      std::cout << '\t' << *spIt;
     }
+    std::cout << std::endl;
 //    Rcpp::Rcout << "Batching" << std::endl;
     miniReader->ChunkIt(posIndex);
   }
@@ -118,6 +121,7 @@ Rcpp::List BDConvertC(const Rcpp::List &bdInfo, const std::string &newFile, cons
       break;
     }
 
+    std::cout << "Before writing" << std::endl;
     for (intIt = loc.begin(); intIt != loc.end(); ++intIt) {
       if (intIt == loc.begin())
         miniReader->GetFirst();
@@ -204,8 +208,9 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
       snpIndex += *intIt;
       *spIt = snpIndex;
     }
-//    Rcpp::Rcout << "Batching" << std::endl;
+    Rcpp::Rcout << "Batching\t" << posIndex.size() << std::endl;
     miniReader->ChunkIt(posIndex);
+    Rcpp::Rcout << "After batching" << std::endl;
   }
 
   if (!bdw->good()) {
@@ -214,7 +219,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
     delete bdw;
     return retVal;
   }
-
+  Rcpp::Rcout << "Before do" << std::endl;
   do {
     groupSizes.push_back(numSub);
     if (bdw->WriteGroupData(groupSizes)) {
@@ -232,6 +237,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
 
     i = 1;
     for (intIt = loc.begin(); intIt != loc.end(); ++intIt, ++i) {
+      Rcpp::Rcout << i << std::endl;
       if (intIt == loc.begin())
         miniReader->GetFirst();
       else
@@ -242,6 +248,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
         delete bdw;
         return retVal;
       }
+      Rcpp::Rcout << miniReader->Dosage()[0] << '\t' << miniReader->P0()[0] << '\t' << miniReader->P1()[0] << '\t' << miniReader->P2()[0] << std::endl;
       if (bdw->WriteGeneticData(miniReader->Dosage(), miniReader->P0(), miniReader->P1(), miniReader->P2())) {
         Rcpp::Rcout << "Error writing genetic data for SNP:\n" << i << std::endl;
         break;

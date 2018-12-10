@@ -70,7 +70,7 @@ MergeBD <- function(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
     if (missing(famFilesToMerge) == TRUE) {
       bdInfo <- GetBDoseInfo(filesToMerge[i], index = 1)
     } else {
-      bdInfo <- GetBDoseInfo(filesToMerge[i], famFilesToMerge[i], mapFilesToMerge[i])
+      bdInfo <- GetBDoseInfo(filesToMerge[i], famFilesToMerge[i], mapFilesToMerge[i], index = 1)
     }
     print("After bdInfo")
     if (bdInfo$version == 1 & version == 2) {

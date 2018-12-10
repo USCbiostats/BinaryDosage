@@ -177,6 +177,7 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
   std::streampos currentPos, lastPos;
   int i, j;
 
+  std::cout << "Entering ChunkIt" << std::endl;
   if (indices.size() != (unsigned int)m_numSNPs) {
     std::cerr << "Number of indices does not equal number of SNPs" << std::endl;
     return;
@@ -184,24 +185,35 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
 
   m_infile.seekg(0, std::ios_base::end);
   lastPos = m_infile.tellg();
+  std::cout << lastPos << std::endl;
   CloseFile();
+  std::cout << "Closed file:\t" << lastPos << std::endl;
 
   m_readBuffer.resize(ReadBufferSize + 1);
   m_startSNP.resize(0);
   m_filePos.resize(0);
+  std::cout << m_numSNPs << std::endl;
   m_snpChunk.resize(m_numSNPs);
   m_stringPos.resize(m_numSNPs);
 //  m_readString.resize(ReadBufferSize);
+  std::cout << "After sizing" << std::endl;
 
   index = indices.begin();
+  std::cout << "After index" << std::endl;
   i = 0;
   j = 0;
+  std::cout << "Before pushback" << std::endl;
+  std::cout << m_startSNP.size() << std::endl;
+  std::cout << i << std::endl;
   m_startSNP.push_back(i);
+  std::cout << "Before currentPos" << std::endl;
   currentPos = *index;
+  std::cout << currentPos << std::endl;
   m_filePos.push_back(currentPos);
   itChunk = m_snpChunk.begin();
-//  m_stringPos.push_back(*index - currentPos);
+  m_stringPos.push_back(*index - currentPos);
   itStrPos = m_stringPos.begin();
+  std::cout << *index << '\t' << currentPos << '\t' << ReadBufferSize << std::endl;
   do {
     if (*index - currentPos > ReadBufferSize) {
       m_startSNP.push_back(i - 1);
@@ -219,7 +231,7 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
     ++index;
     ++i;
   } while (index != indices.end());
-//  std::cout << "Last pos\t" << lastPos << std::endl;
+  std::cout << "Last pos\t" << lastPos << std::endl;
   if (lastPos - currentPos > ReadBufferSize) {
     m_startSNP.push_back(i - 1);
     m_filePos.push_back(*(index - 1));
@@ -233,6 +245,7 @@ void CMiniReader::ChunkIt(const std::vector<std::streampos> &indices) {
   m_chunked = true;
 
   m_currentChunk = 0;
+  std::cout << "Before ReadChunk:\t" << m_currentChunk << std::endl;
   ReadChunk(m_currentChunk);
 /*
   for (i = 0; i < 5; ++i) {

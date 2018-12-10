@@ -13,14 +13,30 @@ CBDoseMiniReader *OpenBDoseMiniReader(const Rcpp::List &bdInfo) {
   int format = bdInfo["format"];
   int numSub = bdInfo["NumSamples"];
   int numSNPs = bdInfo["NumSNPs"];
-  CBDoseMiniReader *bdmr = NULL;
+  std::vector<int> index = Rcpp::as< std::vector<int> >(bdInfo["Indices"]);
+  std::vector<int>::iterator intIt;
+  std::vector<std::streampos>::iterator spIt;
+  std::streampos snpIndex;
+  std::vector<std::streampos> posIndex;
+
+  CBDoseMiniReader *miniReader = NULL;
 
   if (format < 4)
-    bdmr = new CBDoseMiniReader1(filename, numSub, numSNPs);
+    miniReader = new CBDoseMiniReader1(filename, numSub, numSNPs);
   else
-    bdmr = new CBDoseMiniReader4(filename);
+    miniReader = new CBDoseMiniReader4(filename);
 
-  return bdmr;
+  snpIndex = 0;
+  if (index.size() != 0) {
+    posIndex.resize(index.size());
+    for(intIt = index.begin(), spIt = posIndex.begin(); intIt != index.end(); ++intIt, ++spIt) {
+      snpIndex += *intIt;
+      *spIt = snpIndex;
+    }
+    miniReader->ChunkIt(posIndex);
+  }
+
+  return miniReader;
 }
 
 // [[Rcpp::export]]
@@ -43,10 +59,9 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
   std::vector<std::string> alt = Rcpp::as<std::vector<std::string> >(snps["Alternate"]);
   std::vector<std::vector<double> > aaf, maf, avgCall, rSq;
   std::vector<std::vector<double> >::iterator vDblIt;
-  std::vector<double>::iterator dblIt1, dblIt2, dblIt3, dblIt4;
   std::vector<int> groupSizes;
-  std::vector<std::vector<double> > dosage, p0, p1, p2;
-  std::vector<std::vector<double> >::iterator itDosage, itP0, itP1, itP2;
+  std::vector<double> dosage, p0, p1, p2;
+  std::vector<double>::iterator itDosage, itP0, itP1, itP2;
 
   std::vector<CBDoseMiniReader *> bdmr;
   std::vector<CBDoseMiniReader *>::iterator bdmrIt;
@@ -102,53 +117,40 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
       break;
     }
 
-    dosage.resize(batchSize);
-    p0.resize(batchSize);
-    p1.resize(batchSize);
-    p2.resize(batchSize);
-    itDosage = dosage.begin();
-    itP0 = p0.begin();
-    itP1 = p1.begin();
-    itP2 = p2.begin();
-    for(;itDosage != dosage.end(); ++itDosage, ++itP0, ++itP1, ++itP2) {
-      itDosage->resize(subjects.nrow());
-      itP0->resize(subjects.nrow());
-      itP1->resize(subjects.nrow());
-      itP2->resize(subjects.nrow());
-    }
-    itDosage = dosage.begin();
-    itP0 = p0.begin();
-    itP1 = p1.begin();
-    itP2 = p2.begin();
+    dosage.resize(subjects.nrow());
+    p0.resize(subjects.nrow());
+    p1.resize(subjects.nrow());
+    p2.resize(subjects.nrow());
 
     for (int i = 0; i < snpsToUse.nrow() && bdmrGood; ++i) {
       Rcpp::Rcout << i << '\t';
-      dblIt1 = itDosage->begin();
-      dblIt2 = itP0->begin();
-      dblIt3 = itP1->begin();
-      dblIt4 = itP2->begin();
-
+      itDosage = dosage.begin();
+      itP0 = p0.begin();
+      itP1 = p1.begin();
+      itP2 = p2.begin();
       for (int j = 0; j < snpsToUse.ncol(); ++j) {
         if (bdmr[j]->GetSNP(snpsToUse(i, j)) == false) {
           Rcpp::Rcout << "Error reading SNP " << i << " from " << j << std::endl;
           bdmrGood = false;
           break;
         }
-        for (int k = 0; k < bdmr[j]->NumSamples(); ++k, ++dblIt1, ++dblIt2, ++dblIt3, ++dblIt4) {
-          *dblIt1 = bdmr[j]->Dosage()[k];
-          *dblIt2 = bdmr[j]->P0()[k];
-          *dblIt3 = bdmr[j]->P1()[k];
-          *dblIt4 = bdmr[j]->P2()[k];
+        for (int k = 0; k < bdmr[j]->NumSamples(); ++k, ++itDosage, ++itP0, ++itP1, ++itP1) {
+          if (k < 5)
+            Rcpp::Rcout << bdmr[j]->Dosage()[0] << '\t' << bdmr[j]->P0()[0] << '\t' << bdmr[j]->P1()[0] << '\t' << bdmr[j]->P2()[0] << std::endl;
+          *itDosage = bdmr[j]->Dosage()[k];
+          *itP0 = bdmr[j]->P0()[k];
+          *itP1 = bdmr[j]->P1()[k];
+          *itP2 = bdmr[j]->P2()[k];
         }
-        if (bdmrGood) {
-          Rcpp::Rcout << dosage[i][0] << '\t' << p0[i][0] << '\t' << p1[i][0] << '\t' << p2[i][0] << std::endl;
-          if (bdw->WriteGeneticData(dosage[i], p0[i], p1[i], p2[i])) {
-            Rcpp::Rcout << "Error writing genetic data" << std::endl;
-            bdmrGood = false;
-          }
-          else {
-            aaf[i][0] = std::accumulate(dosage[i].begin(), dosage[i].end(), 0.) / (subjects.nrow() + subjects.nrow());
-          }
+      }
+      if (bdmrGood) {
+        Rcpp::Rcout << dosage[i] << '\t' << p0[i] << '\t' << p1[i] << '\t' << p2[i] << std::endl;
+        if (bdw->WriteGeneticData(dosage, p0, p1, p2)) {
+          Rcpp::Rcout << "Error writing genetic data" << std::endl;
+          bdmrGood = false;
+        }
+        else {
+          aaf[i][0] = std::accumulate(dosage.begin(), dosage.end(), 0.) / (subjects.nrow() + subjects.nrow());
         }
       }
     }
