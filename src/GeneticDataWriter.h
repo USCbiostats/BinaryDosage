@@ -4,7 +4,7 @@
 class CGeneticDataWriter {
 protected:
   const unsigned short m_scale;
-  double m_dScale;
+  double m_dScale, m_dInvScale;
 
   const int m_sampleSize;
 

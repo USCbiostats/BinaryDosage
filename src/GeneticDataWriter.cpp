@@ -28,15 +28,22 @@ CGeneticDataWriter::CGeneticDataWriter(const unsigned short _scale, const int _s
   // execution by not having to constantly convert the short
   // value to a double every time.
   m_dScale = _scale;
+  m_dInvScale = 1. / m_dScale;
 }
 
 short CGeneticDataWriter::ConvertToShort(const double x) {
   unsigned short s1, s2;
+  double diff1, diff2;
 
-  s1 = (unsigned short)floor(x * m_dScale);
-  s2 = s1 + 1;
-  if (fabs(x - ((double)s1)*m_dScale) > fabs(x - ((double)s2)*m_dScale))
-    return s2;
+  s1 = x * m_dScale;
+  diff1 = x - ((double)s1) * m_dInvScale;
+  diff2 = diff1 - m_dInvScale;
+  if (fabs(diff1) > fabs(diff2))
+    return s1 + 1;
+  diff2 = diff1 - m_dInvScale;
+  if (fabs(diff1) > fabs(diff2))
+    return s1 - 1;
+
   return s1;
 }
 ////////////////////////////////////////////////////////////////////////////////

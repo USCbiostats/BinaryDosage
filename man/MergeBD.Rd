@@ -5,8 +5,7 @@
 \title{Function to merge binary dosage files}
 \usage{
 MergeBD(mergedFile, filesToMerge, famFilesToMerge, mapFilesToMerge,
-  mergedFamFile = "", mergeMapFile = "", format = 4, version = 2,
-  batchSize = 1000)
+  mergedFamFile = "", mergeMapFile = "", format = 4, version = 2)
 }
 \arguments{
 \item{filesToMerge}{A vector of strings. Names of the files to merge.}
@@ -28,8 +27,6 @@ It is recommended to use the default value.}
 \item{version}{Version of the format to use. Default value is 2. If the files
 being merged do not contain gene probabilities, change this
 value to 1.}
-
-\item{batchSize}{Number of SNPs to process at a time}
 
 \item{mergeFile}{Name of file that will contain the merged data.}
 

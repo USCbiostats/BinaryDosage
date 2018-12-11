@@ -208,9 +208,9 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
       snpIndex += *intIt;
       *spIt = snpIndex;
     }
-    Rcpp::Rcout << "Batching\t" << posIndex.size() << std::endl;
+//    Rcpp::Rcout << "Batching\t" << posIndex.size() << std::endl;
     miniReader->ChunkIt(posIndex);
-    Rcpp::Rcout << "After batching" << std::endl;
+//    Rcpp::Rcout << "After batching" << std::endl;
   }
 
   if (!bdw->good()) {
@@ -219,7 +219,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
     delete bdw;
     return retVal;
   }
-  Rcpp::Rcout << "Before do" << std::endl;
+//  Rcpp::Rcout << "Before do" << std::endl;
   do {
     groupSizes.push_back(numSub);
     if (bdw->WriteGroupData(groupSizes)) {
@@ -237,7 +237,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
 
     i = 1;
     for (intIt = loc.begin(); intIt != loc.end(); ++intIt, ++i) {
-      Rcpp::Rcout << i << std::endl;
+//      Rcpp::Rcout << i << std::endl;
       if (intIt == loc.begin())
         miniReader->GetFirst();
       else
@@ -248,7 +248,7 @@ int BDConvertVCFC(const Rcpp::List &vcfInfo, const std::string &newFile, const s
         delete bdw;
         return retVal;
       }
-      Rcpp::Rcout << miniReader->Dosage()[0] << '\t' << miniReader->P0()[0] << '\t' << miniReader->P1()[0] << '\t' << miniReader->P2()[0] << std::endl;
+//      Rcpp::Rcout << miniReader->Dosage()[0] << '\t' << miniReader->P0()[0] << '\t' << miniReader->P1()[0] << '\t' << miniReader->P2()[0] << std::endl;
       if (bdw->WriteGeneticData(miniReader->Dosage(), miniReader->P0(), miniReader->P1(), miniReader->P2())) {
         Rcpp::Rcout << "Error writing genetic data for SNP:\n" << i << std::endl;
         break;

@@ -43,7 +43,7 @@ CBDoseMiniReader *OpenBDoseMiniReader(const Rcpp::List &bdInfo) {
 int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenames,
              const Rcpp::List &mergeInfo, const Rcpp::List &bdInfoList,
              const std::string &famFilename, const std::string &mapFilename,
-             int format, int version, int batchSize) {
+             int format, int version) {
   int i;
   int numFiles;
 
@@ -88,7 +88,7 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
     x = bdInfoList[i];
     bdmr[i] = OpenBDoseMiniReader(x);
     if (!(bdmr[i]->good())) {
-      Rcpp::Rcout << "Failed to open file\t" << i << std::endl;
+      Rcpp::Rcerr << "Failed to open file\t" << i << std::endl;
       delete bdw;
       for (bdmrIt = bdmr.begin(); bdmrIt != bdmr.end(); ++bdmrIt) {
         if (*bdmrIt)
@@ -123,20 +123,28 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
     p2.resize(subjects.nrow());
 
     for (int i = 0; i < snpsToUse.nrow() && bdmrGood; ++i) {
-      Rcpp::Rcout << i << '\t';
       itDosage = dosage.begin();
       itP0 = p0.begin();
       itP1 = p1.begin();
       itP2 = p2.begin();
       for (int j = 0; j < snpsToUse.ncol(); ++j) {
         if (bdmr[j]->GetSNP(snpsToUse(i, j)) == false) {
-          Rcpp::Rcout << "Error reading SNP " << i << " from " << j << std::endl;
+          Rcpp::Rcerr << "Error reading SNP " << i << " from " << j << std::endl;
           bdmrGood = false;
           break;
         }
-        for (int k = 0; k < bdmr[j]->NumSamples(); ++k, ++itDosage, ++itP0, ++itP1, ++itP1) {
-          if (k < 5)
-            Rcpp::Rcout << bdmr[j]->Dosage()[0] << '\t' << bdmr[j]->P0()[0] << '\t' << bdmr[j]->P1()[0] << '\t' << bdmr[j]->P2()[0] << std::endl;
+        for (int k = 0; k < bdmr[j]->NumSamples(); ++k, ++itDosage, ++itP0, ++itP1, ++itP2) {
+          // Error-checking not really needed
+          /*
+          if (itDosage == dosage.end())
+            Rcpp::Rcout << "Dosage pointer to big" << std::endl;
+          if (itP0 == p0.end())
+            Rcpp::Rcout << "P0 pointer to big" << std::endl;
+          if (itP1 == p1.end())
+            Rcpp::Rcout << "P1 pointer to big" << std::endl;
+          if (itP2 == p2.end())
+            Rcpp::Rcout << "P2 pointer to big" << std::endl;
+          */
           *itDosage = bdmr[j]->Dosage()[k];
           *itP0 = bdmr[j]->P0()[k];
           *itP1 = bdmr[j]->P1()[k];
@@ -144,9 +152,8 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
         }
       }
       if (bdmrGood) {
-        Rcpp::Rcout << dosage[i] << '\t' << p0[i] << '\t' << p1[i] << '\t' << p2[i] << std::endl;
         if (bdw->WriteGeneticData(dosage, p0, p1, p2)) {
-          Rcpp::Rcout << "Error writing genetic data" << std::endl;
+          Rcpp::Rcerr << "Error writing genetic data" << std::endl;
           bdmrGood = false;
         }
         else {
@@ -154,7 +161,6 @@ int MergeBDC(const std::string &mergeFilename, const Rcpp::StringVector &filenam
         }
       }
     }
-    Rcpp::Rcout << std::endl;
 
     if (bdw->UpdateSNPInfo(aaf, maf, avgCall, rSq))
       bdmrGood = false;
