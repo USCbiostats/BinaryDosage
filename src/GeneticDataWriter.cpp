@@ -32,7 +32,7 @@ CGeneticDataWriter::CGeneticDataWriter(const unsigned short _scale, const int _s
 }
 
 short CGeneticDataWriter::ConvertToShort(const double x) {
-  unsigned short s1, s2;
+  unsigned short s1;
   double diff1, diff2;
 
   s1 = x * m_dScale;
