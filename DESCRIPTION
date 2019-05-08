@@ -1,18 +1,11 @@
 Package: BinaryDosage
-Type: Package
-Title: Tools for working with Binary Dosage files
-Version: 1.0
-Date: 2017-04-14
-Author: John Morrison
-Maintainer: John Morrison <jmorr@usc.edu>
-Description: A program to perform Genome-Environment wide interaction scans
-    using several one and two step procedures. An Excel spreadsheet is produced
-    showing the results of all the requested procedures. The output included
-    Manhattan and qq plots. Tools are provided to read data that are in plink
-    format.
-License: GPL-3
-Imports:
-    Rcpp (>= 0.12.9),
-LinkingTo: Rcpp
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R:
+  person(given = "First",
+    family = "Last",
+    role = c("aut", "cre"),
+    email = "first.last@example.com")
+Description: What the package does (one paragraph).
+License: What license it uses
 Encoding: UTF-8
-RoxygenNote: 6.1.0
