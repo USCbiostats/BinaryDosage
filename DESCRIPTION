@@ -1,11 +1,14 @@
 Package: BinaryDosage
-Title: What the Package Does (One Line, Title Case)
+Title: Creates, merges, and reads binary dosage files
 Version: 0.0.0.9000
-Authors@R:
-  person(given = "First",
-    family = "Last",
-    role = c("aut", "cre"),
-    email = "first.last@example.com")
-Description: What the package does (one paragraph).
-License: What license it uses
+Authors@R: 
+    person(given = "John",
+           family = "Morrison",
+           role = c("aut", "cre"),
+           email = "jmorr@usc.edu")
+Description: Tools to create binary dosage from either vcf
+    or Impute2 style text files, merge binary dosage files, and read
+    binary dosage files
+License: GPL-3
 Encoding: UTF-8
+LazyData: true
