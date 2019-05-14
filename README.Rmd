@@ -100,8 +100,8 @@ library(BinaryDosage)
 
 # Currently, must extract compressed files  
 # (vcf.gz support TBD)
-system("gzcat batch1.vcf.gz > batch1.vcf")
-system("gzcat batch2.vcf.gz > batch2.vcf")
+# system("gzcat batch1.vcf.gz > batch1.vcf")
+# system("gzcat batch2.vcf.gz > batch2.vcf")
 
 # Convert VCF Batch 1 and Batch 2 files:
 VCFtoBD("batch1.vcf", "batch1.bdose")

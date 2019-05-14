@@ -12,3 +12,9 @@ Description: Tools to create binary dosage from either vcf
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
