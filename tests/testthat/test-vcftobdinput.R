@@ -6,6 +6,9 @@ test_that("VCFtoBD input valid", {
 
   expect_error(VCFtoBD(bdFile = bdFile),
                "No VCF file specified")
+  expect_error(VCFtoBD(vcfFile = "",
+                       bdFile = bdFile),
+               "No VCF file specified")
   expect_error(VCFtoBD(vcfFile = 1,
                        bdFile = bdFile),
                "vcfFile must be a character value")
@@ -14,6 +17,9 @@ test_that("VCFtoBD input valid", {
                "vcfFile must be a single character value")
 
   expect_error(VCFtoBD(vcfFile = vcfFile),
+               "No output file specified")
+  expect_error(VCFtoBD(vcfFile = vcfFile,
+                       bdFile = ""),
                "No output file specified")
   expect_error(VCFtoBD(vcfFile = vcfFile,
                        bdFile = 1),

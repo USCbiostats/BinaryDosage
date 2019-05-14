@@ -41,6 +41,8 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L, ve
     stop("vcfFile must be a character value")
   if (length(vcfFile) != 1)
     stop("vcfFile must be a single character value")
+  if (vcfFile == "")
+    stop("No VCF file specified")
 
   if (missing(bdFile) == TRUE)
     stop("No output file specified")
@@ -48,6 +50,8 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L, ve
     stop("bdFile must be a character value")
   if (length(bdFile) != 1)
     stop("bdFile must be a single character value")
+  if (bdFile == "")
+    stop("No output file specified")
 
   if (is.numeric(format) == FALSE && is.integer(format) == FALSE)
     stop("format must be an integer value")
@@ -99,4 +103,38 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L, ve
       stop("Value or mapFile specified for format 4")
   }
   return (list());
+}
+
+#' Function to read information about a VCF file
+#'
+#' Function reads information about a VCf file. This
+#' information is used to efficiently read dosages and
+#' genetic probabilities from the VCF file using the
+#' GetSNPValues function
+#'
+#' @param vcfFile Name of the VCF file
+#' @param index Indicator if the file should be indexed
+#' for quicker reader. This is not needed if only the
+#' list of subjects and SNPs is needed. The default value
+#' is TRUE.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' # Under construction
+GetVCFInfo <- function(vcfFile, index = TRUE) {
+  if (missing(vcfFile) == TRUE)
+    stop("No VCF file specified")
+  if (is.character(vcfFile) == FALSE)
+    stop("vcfFile must be a character value")
+  if (length(vcfFile) != 1)
+    stop("vcfFile must be a single character value")
+  if (vcfFile == "")
+    stop("No VCF file specified")
+
+  if (is.logical(index) == FALSE)
+    stop("index must be a logical value")
+  if (length(index) != 1)
+    stop("index must be a single logical value")
 }
