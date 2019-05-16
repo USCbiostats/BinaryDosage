@@ -4,8 +4,8 @@
 \alias{VCFtoBD}
 \title{Function to convert a VCF file to a binary dosage file}
 \usage{
-VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4,
-  version = 2)
+VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L,
+  version = 0L)
 }
 \arguments{
 \item{vcfFile}{Name of VCF file}
@@ -29,7 +29,9 @@ binary dosage file. A value of 1 indicates that only the
 dosage value is saved. A value greater than 1 indicates
 the dosage and genetic probabilities will be output. A
 value of 0 indicates the genetic probabilities will be
-output if they are contained in the VCF file}
+output if they are contained in the VCF file. Values of
+1 and 2 are currently supported for all formats.
+The default value is 0.}
 }
 \value{
 A list containing information about the binary dosage file.

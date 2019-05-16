@@ -1,3 +1,7 @@
+#' @useDynLib BinaryDosage, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Function to convert a VCF file to a binary dosage file
 #'
 #' Function to read information from a VCF file and create
@@ -118,7 +122,9 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L, ve
 #' list of subjects and SNPs is needed. The default value
 #' is TRUE.
 #'
-#' @return
+#' @return List of subjects and SNPs in VCF file. Indices
+#' for reading the file are included if value index = TRUE
+#' was passed to function.
 #' @export
 #'
 #' @examples
@@ -137,4 +143,18 @@ GetVCFInfo <- function(vcfFile, index = TRUE) {
     stop("index must be a logical value")
   if (length(index) != 1)
     stop("index must be a single logical value")
+
+  vcfInfo <- OpenVCFFile(vcfFile)
+  if ("genetic-file-info" %in% class(vcfInfo) == FALSE)
+    stop("Error reading VCF information")
+  coltypes <- c("character", "integer", rep("character", 7),
+                rep("NULL", vcfInfo$NumSamples))
+  vcfInfo$SNPs <- read.table(filename,
+                             skip = vcfInfo$headersize,
+                             colClasses = coltypes,
+                             stringsAsFactors = FALSE)
+  colnames(vcfInfo$SNPs) <- c("Chromosome", "Location", "SNPID",
+                              "Reference", "Alternate", "Quality",
+                              "Filter", "Info", "Format")
+  return (vcfInfo)
 }
