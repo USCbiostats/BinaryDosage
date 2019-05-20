@@ -132,6 +132,7 @@ Rcpp::List GetBinaryDosage1Info(const std::string &bdFilename, const Rcpp::DataF
                               Rcpp::Named("SNPs") = SNPs,
                               Rcpp::Named("SNPInfo") = snpInfo,
                               Rcpp::Named("Indices") = bdr.Indices());
+  retVal.attr("class") = "genetic-file-info";
   return retVal;
 }
 
@@ -211,6 +212,7 @@ Rcpp::List GetBinaryDosage4Info(const std::string &bdFilename, const int index) 
                               Rcpp::Named("SNPs") = snps,
                               Rcpp::Named("SNPInfo") = snpInfo,
                               Rcpp::Named("Indices") = bdr->Indices());
+  retVal.attr("class") = "genetic-file-info";
 
   if (bdr)
     delete bdr;
