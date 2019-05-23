@@ -5,3 +5,7 @@ OpenVCFFile <- function(rFilename) {
     .Call(`_BinaryDosage_OpenVCFFile`, rFilename)
 }
 
+ReadVCFValues <- function(filename, values, snps, subjects, indices, formats) {
+    .Call(`_BinaryDosage_ReadVCFValues`, filename, values, snps, subjects, indices, formats)
+}
+

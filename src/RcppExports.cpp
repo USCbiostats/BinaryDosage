@@ -16,9 +16,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ReadVCFValues
+int ReadVCFValues(std::string& filename, Rcpp::NumericMatrix& values, Rcpp::IntegerVector& snps, Rcpp::IntegerVector& subjects, Rcpp::NumericVector& indices, Rcpp::StringVector& formats);
+RcppExport SEXP _BinaryDosage_ReadVCFValues(SEXP filenameSEXP, SEXP valuesSEXP, SEXP snpsSEXP, SEXP subjectsSEXP, SEXP indicesSEXP, SEXP formatsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type snps(snpsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type subjects(subjectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector& >::type formats(formatsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadVCFValues(filename, values, snps, subjects, indices, formats));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
+    {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
     {NULL, NULL, 0}
 };
 

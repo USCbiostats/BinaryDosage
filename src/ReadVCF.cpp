@@ -22,6 +22,7 @@ Rcpp::List OpenVCFFile(Rcpp::StringVector &rFilename) {
   Rcpp::DataFrame samples;
   int numSNPs;
   std::streampos lastPos, currentPos;
+  Rcpp::StringVector listClass(2);
   std::vector<int> indices;
   int i;
 
@@ -95,7 +96,19 @@ Rcpp::List OpenVCFFile(Rcpp::StringVector &rFilename) {
                               Rcpp::Named("NumSamples") = numSub,
                               Rcpp::Named("Samples") = samples,
                               Rcpp::Named("Indices") = indices);
-  retVal.attr("class") = "genetic-file-info";
+  listClass[0] = "genetic-file-info";
+  listClass[1] = "vcf";
+  retVal.attr("class") = listClass;
 
   return retVal;
+}
+
+// [[Rcpp::export]]
+int ReadVCFValues(std::string &filename,
+                  Rcpp::NumericMatrix &values,
+                  Rcpp::IntegerVector &snps,
+                  Rcpp::IntegerVector &subjects,
+                  Rcpp::NumericVector &indices,
+                  Rcpp::StringVector &formats) {
+  return 0;
 }

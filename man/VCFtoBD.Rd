@@ -4,8 +4,8 @@
 \alias{VCFtoBD}
 \title{Function to convert a VCF file to a binary dosage file}
 \usage{
-VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", format = 4L,
-  version = 0L)
+VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", gz = FALSE,
+  format = 4L, version = 0L)
 }
 \arguments{
 \item{vcfFile}{Name of VCF file}
@@ -19,6 +19,8 @@ The default value is ""}
 \item{mapFile}{Name of the output map information file.
 This is only used if the output format is 1, 2, or 3.
 The default value is ""}
+
+\item{gz}{Indicatator if vcf file is compressed using gzip.}
 
 \item{format}{The format of the output binary dosage file.
 Allowed values are 1, 2, 3, and 4. The default value is 4.

@@ -2,28 +2,32 @@
 % Please edit documentation in R/VCFtoBD.R
 \name{GetVCFInfo}
 \alias{GetVCFInfo}
-\title{Function to read information about a VCF file}
+\title{Function to return information about a VCF file}
 \usage{
-GetVCFInfo(vcfFile, index = TRUE)
+GetVCFInfo(filename, gz = FALSE, index = TRUE)
 }
 \arguments{
-\item{vcfFile}{Name of the VCF file}
+\item{filename}{Name of the VCF file.}
 
-\item{index}{Indicator if the file should be indexed
-for quicker reader. This is not needed if only the
-list of subjects and SNPs is needed. The default value
-is TRUE.}
+\item{gz}{Indicator if VCF file is compressed using gzip.
+Default value is FALSE.}
+
+\item{index}{Indicator if file should be indexed. This
+allows for faster reading of the file. WARNING: this is
+not guaranteed to work on systems running Windows. Default
+value is TRUE.}
 }
 \value{
-List of subjects and SNPs in VCF file. Indices
-for reading the file are included if value index = TRUE
-was passed to function.
+List containing information about the VCF file
+to include file name, subject IDs, and information about
+the SNPs. Indices for faster reading will be included
+if index is set to TRUE
 }
 \description{
-Function reads information about a VCf file. This
-information is used to efficiently read dosages and
-genetic probabilities from the VCF file using the
-GetSNPValues function
+Function to return information about a VCF file.
+This information is used by other routines to
+allow for quicker extraction of values from the
+file.
 }
 \examples{
 # Under construction
