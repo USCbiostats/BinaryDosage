@@ -90,7 +90,8 @@ Rcpp::List OpenVCFFile(Rcpp::StringVector &rFilename) {
   infile.close();
 
   samples = Rcpp::DataFrame::create(Rcpp::Named("FID") = fid,
-                                    Rcpp::Named("SID") = sid);
+                                    Rcpp::Named("SID") = sid,
+                                    Rcpp::Named("stringsAsFactors") = false);
   retVal = Rcpp::List::create(Rcpp::Named("filename") = rFilename,
                               Rcpp::Named("headersize") = subjectLine,
                               Rcpp::Named("NumSamples") = numSub,

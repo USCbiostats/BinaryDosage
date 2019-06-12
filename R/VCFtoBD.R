@@ -1,5 +1,6 @@
 #' @useDynLib BinaryDosage, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
+#' @importFrom digest digest
 NULL
 
 #' Function to return information about a VCF file
@@ -54,6 +55,7 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   } else {
     con <- gzfile(filename, "r")
   }
+
   while (TRUE) {
     currentPos <- seek(con, origin = "current")
     line <- readLines(con, n = 1)
@@ -87,24 +89,30 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
 
   Indices <- numeric(nrow(SNPs))
   if (gz == FALSE) {
-    con <- file(filename, "r")
+    con2 <- file(filename, "r")
   } else {
-    con <- gzfile(filename, "r")
+    con2 <- gzfile(filename, "r")
   }
-  currentPos <- seek(con, beginData)
+
+  currentPos <- seek(con2, 0)
+  for (i in 1:headersize)
+    line <- readLines(con2, n = 1)
+  currentPos <- 0
   for (i in 1:nrow(SNPs)) {
-    Indices[i] = seek(con) - currentPos
-    currentPos = seek(con)
-    line <- readLines(con, n = 1)
+    Indices[i] = seek(con2) - currentPos
+    currentPos = seek(con2)
+    line <- readLines(con2, n = 1)
   }
-  close(con)
+  close(con2)
 
   return (list(filename = filename,
                headersize = headersize,
                NumSamples = NumSamples,
                Samples = data.frame(FID = rep("", NumSamples),
-                                    SID = x[10:length(x)]),
+                                    SID = x[10:length(x)],
+                                    stringsAsFactors = FALSE),
                Indices = Indices,
+               NumSNPs = nrow(SNPs),
                SNPs = SNPs))
 }
 
@@ -128,7 +136,7 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
 #' @param format The format of the output binary dosage file.
 #' Allowed values are 1, 2, 3, and 4. The default value is 4.
 #' Using the default value is recommended.
-#' @param version The subversion of the format of the output
+#' @param subformat The subsubformat of the format of the output
 #' binary dosage file. A value of 1 indicates that only the
 #' dosage value is saved. A value greater than 1 indicates
 #' the dosage and genetic probabilities will be output. A
@@ -147,7 +155,7 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
 #' # Under construnction
 VCFtoBD <- function(vcfFile, bdFile, famFile = "",
                     mapFile = "", gz = FALSE,
-                    format = 4L, version = 0L) {
+                    format = 4L, subformat = 0L) {
   if (missing(vcfFile) == TRUE)
     stop("No VCF file specified")
   if (is.character(vcfFile) == FALSE)
@@ -183,17 +191,19 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "",
   if (format < 1 || format > 4)
     stop("format must be an integer value from 1 to 4")
 
-  if (is.numeric(version) == FALSE && is.integer(version) == FALSE)
-    stop("version must be an integer value")
-  if (length(version) != 1)
-    stop("version must be a single integer value")
-  if (is.numeric(version) == TRUE) {
-    if (floor(version) != version)
-      stop("version must be an integer")
-    version = floor(version)
+  if (is.numeric(subformat) == FALSE && is.integer(subformat) == FALSE)
+    stop("subformat must be an integer value")
+  if (length(subformat) != 1)
+    stop("subformat must be a single integer value")
+  if (is.numeric(subformat) == TRUE) {
+    if (floor(subformat) != subformat)
+      stop("subformat must be an integer")
+    subformat = floor(subformat)
   }
-  if (version < 0 || version > 2)
-    stop("version must be an integer value from 0 to 2")
+  if (subformat < 0 || subformat > 4)
+    stop("subformat must be an integer value from 0 to 4")
+  if (format < 3 && subformat > 2)
+    stop("subformat must be an integer value from 0 to 2 for formats 1 and 2")
 
   if (format < 4) {
     if (is.character(famFile) == FALSE)
@@ -220,7 +230,11 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "",
         length(mapFile) != 1 || mapFile != "")
       stop("Value or mapFile specified for format 4")
   }
-  return (list());
+
+  vcfInfo <- GetVCFInfo(vcfFile, gz = gz, index = FALSE)
+  WriteBinaryDosageHeader(bdFile, format, subformat)
+  WriteBDFamilyFile(bdFile, famFile, format, subformat)
+  return (vcfInfo)
 }
 
 #' Function to read information about a VCF file
@@ -271,4 +285,49 @@ GetVCFInfoC <- function(vcfFile, index = TRUE) {
                               "Reference", "Alternate", "Quality",
                               "Filter", "Info", "Format")
   return (vcfInfo)
+}
+
+WriteBDFamilyFile <- function(bdFile, famFile, famInfo, format, subformat) {
+  if (format > 3)
+    return (1)
+  if (all(famInfo[,"FID"] == "") == TRUE)
+    usesFamilyID = FALSE
+  else
+    usesFamilyID = TRUE
+  numSub = nrow(famInfo)
+  famList <- list(numsub = numSub,
+                  usesfamid = usesFamilyID,
+                  md5 = digest::digest(famInfo, "md5"),
+                  subjects = famInfo)
+  class(famList) <- "famfile"
+  saveRDS(famList, famFile)
+  return (0)
+}
+
+WriteBDMapFile <- function(bdFile, mapFile, snpInfo, format, subformat) {
+  if (format > 3)
+    return (1)
+
+  numSNPs <- nrow(snpInfo)
+  chr1 <- snpInfo$Chromosome[1]
+  oneChr <- all(snpInfo$Chromosome == chr1)
+  chrLocID <- paste(snpInfo$Chromosome, snpInfo$Location, sep = ":")
+  formattedID <- all(snpInfo$SNPID == chrLocID)
+  noQuality <- all(snpInfo$Quality == '.')
+  noInfo <- all(snpInfo$Info == '.')
+  format1 <- snpInfo$Format[1]
+  oneFormat <- all(snpInfo$Format == format1)
+  md5 <- digest::digest(snpInfo)
+
+  mapList <- list(numsnps = numSNPs,
+                  onechr = oneChr,
+                  formattedID = formattedID,
+                  noQuality = noQuality,
+                  noInfo = noInfo,
+                  oneFormat = oneFormat,
+                  md5 = md5,
+                  snps = snpInfo)
+  class(mapList) <- "mapfile"
+  saveRDS(mapList, mapFile)
+  return (0)
 }

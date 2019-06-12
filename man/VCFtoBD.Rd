@@ -5,7 +5,7 @@
 \title{Function to convert a VCF file to a binary dosage file}
 \usage{
 VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", gz = FALSE,
-  format = 4L, version = 0L)
+  format = 4L, subformat = 0L)
 }
 \arguments{
 \item{vcfFile}{Name of VCF file}
@@ -26,7 +26,7 @@ The default value is ""}
 Allowed values are 1, 2, 3, and 4. The default value is 4.
 Using the default value is recommended.}
 
-\item{version}{The subversion of the format of the output
+\item{subformat}{The subsubformat of the format of the output
 binary dosage file. A value of 1 indicates that only the
 dosage value is saved. A value greater than 1 indicates
 the dosage and genetic probabilities will be output. A
