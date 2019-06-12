@@ -86,8 +86,34 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   colnames(SNPs) <- c("Chromosome", "Location", "SNPID",
                       "Reference", "Alternate", "Quality",
                       "Filter", "Info", "Format")
+  numSNPs <- nrow(SNPs)
+  chr1 <- SNPs$Chromosome[1]
+  oneChr <- all(SNPs$Chromosome == chr1)
+  chrLocID <- paste(SNPs$Chromosome, SNPs$Location, sep = ":")
+  formattedID <- all(SNPs$SNPID == chrLocID)
+  noQuality <- all(SNPs$Quality == '.')
+  noInfo <- all(SNPs$Info == '.')
+  format1 <- SNPs$Format[1]
+  oneFormat <- all(SNPs$Format == format1)
+  if (oneFormat) {
+    formatSplit <- unlist(strsplit(format1, split = ':'))
+    dosageColumn <- rep(match("DS", formatSplit), numSNPs)
+    geneProbColumn <- rep(match("GP", formatSplit), numSNPs)
+    genotypeColumn <- rep(match("GT", formatSplit), numSNPs)
+  } else {
+    dosageColumn <- integer(numSNPs)
+    geneProbColumn <- integer(numSNPs)
+    genotypeColumn <- integer(nuumSNPs)
+    for (i in 1:numSNPs) {
+      formatSplit <- unlist(strsplit(SNPs$Format[i], split = ':'))
+      dosageColumn[i] <- match("DS", formatSplit)
+      geneProbColumn[i] <- match("GP", formatSplit)
+      genotypeColumn[i] <- match("GT", formatSplit)
+    }
+  }
+  valueColumns <- data.frame(dosage = dosageColumn, geneProb = geneProbColumn, genotype = genotypeColumn)
 
-  Indices <- numeric(nrow(SNPs))
+  Indices <- numeric(numSNPs)
   if (gz == FALSE) {
     con2 <- file(filename, "r")
   } else {
@@ -98,7 +124,7 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   for (i in 1:headersize)
     line <- readLines(con2, n = 1)
   currentPos <- 0
-  for (i in 1:nrow(SNPs)) {
+  for (i in 1:numSNPs) {
     Indices[i] = seek(con2) - currentPos
     currentPos = seek(con2)
     line <- readLines(con2, n = 1)
@@ -108,11 +134,18 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   return (list(filename = filename,
                headersize = headersize,
                NumSamples = NumSamples,
+               usesFID = FALSE,
                Samples = data.frame(FID = rep("", NumSamples),
                                     SID = x[10:length(x)],
                                     stringsAsFactors = FALSE),
                Indices = Indices,
-               NumSNPs = nrow(SNPs),
+               onechr = oneChr,
+               formattedID = formattedID,
+               noQuality = noQuality,
+               noInfo = noInfo,
+               oneFormat = oneFormat,
+               NumSNPs = numSNPs,
+               valueColumns = valueColumns,
                SNPs = SNPs))
 }
 
@@ -233,7 +266,7 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "",
 
   vcfInfo <- GetVCFInfo(vcfFile, gz = gz, index = FALSE)
   WriteBinaryDosageHeader(bdFile, format, subformat)
-  WriteBDFamilyFile(bdFile, famFile, format, subformat)
+  WriteBDFamilyFile(bdFile, famFile, vcfInfo$Samples, format, subformat)
   return (vcfInfo)
 }
 

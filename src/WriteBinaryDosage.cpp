@@ -2,14 +2,44 @@
 #include <iostream>
 #include <fstream>
 
+const int NUMFORMATS = 12;
+const int BDFORMATS[NUMFORMATS] = {
+  0x01000100,
+  0x02000100,
+  0x01000200,
+  0x02000200,
+  0x01000300,
+  0x02000300,
+  0x03000300,
+  0x04000300,
+  0x01000400,
+  0x02000400,
+  0x03000400,
+  0x04000400
+};
+// [[Rcpp::export]]
+int BinaryDosageHeaderFormat(int format, int subformat) {
+  int bdformat = 0;
+  unsigned char &cformat = *((unsigned char *)&bdformat + 1);
+  unsigned char &csubformat = *((unsigned char *)&bdformat + 3);
+
+  cformat = (unsigned char)format;
+  csubformat = (unsigned char)subformat;
+  for (int i = 0; i < NUMFORMATS; ++i) {
+    if (BDFORMATS[i] == bdformat)
+      return bdformat;
+  }
+
+  return 0;
+}
+
 // [[Rcpp::export]]
 int WriteBinaryDosageHeader(std::string &filename, int format, int subformat) {
   std::ofstream outfile;
-  const char magicWord[4] = { 'b', 'o', 's', 'e'};
-  char formatString[4] = {0x0, 0x0, 0x0, 0x0};
-  int headerSize;
-  const char zeroChar[1] = {0x0};
+  int header[2] = {0x65736f62, 0};
+  int &fileformat = header[1];
 
+// Create the file - if file already exists, truncates to size 0.
   outfile.open(filename.c_str());
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
@@ -17,6 +47,7 @@ int WriteBinaryDosageHeader(std::string &filename, int format, int subformat) {
   }
   outfile.close();
 
+  // Opens file and truncates to size 0. Should already be of size 0.
   outfile.open(filename.c_str(),
                std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::trunc);
   if (!outfile.good()) {
@@ -24,66 +55,8 @@ int WriteBinaryDosageHeader(std::string &filename, int format, int subformat) {
     return 1;
   }
 
-  switch(format) {
-  case 1:
-    headerSize = 8;
-    formatString[1] = 0x1;
-    break;
-  case 2:
-    headerSize = 8;
-    formatString[1] = 0x2;
-    break;
-  case 3:
-    formatString[1] = 0x3;
-    if (subformat < 3)
-      headerSize = 12;
-    else
-      headerSize = 40;
-    break;
-  case 4:
-    formatString[1] = 0x4;
-    if (subformat < 3)
-      headerSize = 40;
-    else
-      headerSize = 24;
-    break;
-  default:
-    Rcpp::Rcerr << "Unknown format" << std::endl;
-    outfile.close();
-    return 1;
-    break;
-  }
-  switch(subformat) {
-  case 1:
-    formatString[3] = 0x1;
-    break;
-  case 2:
-    formatString[3] = 0x2;
-    break;
-  case 3:
-    formatString[3] = 0x3;
-    break;
-  case 4:
-    formatString[3] = 0x4;
-    break;
-  default:
-    Rcpp::Rcerr << "Unknown subformat" << std::endl;
-    outfile.close();
-    return 1;
-    break;
-  }
-
-  for (int i = 0; i < headerSize; ++i)
-    outfile.write(zeroChar, 1);
-  outfile.seekp(0);
-  outfile.write(magicWord, 4);
-  outfile.write(formatString, 4);
-  if (outfile.fail()) {
-    Rcpp::Rcerr << "Error writing to ouput file" << std::endl;
-    outfile.close();
-    return 1;
-  }
-
+  fileformat = BinaryDosageHeaderFormat(format, subformat);
+  Rcpp::Rcerr << std::hex << fileformat << std::endl;
   outfile.close();
   return 0;
 }
