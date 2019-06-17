@@ -4,18 +4,17 @@
 \alias{GetVCFInfo}
 \title{Function to return information about a VCF file}
 \usage{
-GetVCFInfo(filename, gz = FALSE, index = TRUE)
+GetVCFInfo(filename, gzipped = FALSE, index = TRUE)
 }
 \arguments{
 \item{filename}{Name of the VCF file.}
 
-\item{gz}{Indicator if VCF file is compressed using gzip.
+\item{gzipped}{Indicator if VCF file is compressed using gzip.
 Default value is FALSE.}
 
 \item{index}{Indicator if file should be indexed. This
-allows for faster reading of the file. WARNING: this is
-not guaranteed to work on systems running Windows. Default
-value is TRUE.}
+allows for faster reading of the file. Indexing a gzipped
+file does not speed up access. Default value is TRUE.}
 }
 \value{
 List containing information about the VCF file

@@ -11,12 +11,11 @@ NULL
 #' file.
 #'
 #' @param filename Name of the VCF file.
-#' @param gz Indicator if VCF file is compressed using gzip.
+#' @param gzipped Indicator if VCF file is compressed using gzip.
 #' Default value is FALSE.
 #' @param index Indicator if file should be indexed. This
-#' allows for faster reading of the file. WARNING: this is
-#' not guaranteed to work on systems running Windows. Default
-#' value is TRUE.
+#' allows for faster reading of the file. Indexing a gzipped
+#' file does not speed up access. Default value is TRUE.
 #'
 #' @return List containing information about the VCF file
 #' to include file name, subject IDs, and information about
@@ -27,7 +26,7 @@ NULL
 #'
 #' @examples
 #' # Under construction
-GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
+GetVCFInfo <- function(filename, gzipped = FALSE, index = TRUE) {
   if (missing(filename) == TRUE)
     stop("No VCF file specified")
   if (is.character(filename) == FALSE)
@@ -37,38 +36,44 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   if (filename == "")
     stop("No VCF file specified")
 
-  if (is.logical(gz) == FALSE)
-    stop("gz must be a logical value")
-  if (length(gz) != 1)
-    stop("gz must be a single logical value")
+  if (is.logical(gzipped) == FALSE)
+    stop("gzipped must be a logical value")
+  if (length(gzipped) != 1)
+    stop("gzipped must be a single logical value")
 
   if (is.logical(index) == FALSE)
     stop("index must be a logical value")
   if (length(index) != 1)
     stop("index must be a single logical value")
 
-  headersize <- 1L
-  if (gz == TRUE && .Platform$OS.type == "windows" && index == TRUE)
-    print("Indexing gz files in R on Windows is not recommended.")
-  if (gz == FALSE) {
+  if (gzipped == TRUE && index == TRUE)
+    print("Indexing gzipped files is not recommended.")
+
+  if (gzipped == FALSE) {
     con <- file(filename, "r")
   } else {
     con <- gzfile(filename, "r")
   }
 
+  if (isOpen(con, "r") == FALSE)
+    stop("Unable to open VCF file")
+  fqfilename <- normalizePath(filename, winslash = '/')
+
+  headersize <- 1L
   while (TRUE) {
     currentPos <- seek(con, origin = "current")
     line <- readLines(con, n = 1)
     if (substr(line, 1, 1) != '#') {
       close(con)
-      return (-1L)
+      stop("Error process header")
     }
     if (substr(line, 2, 2) != '#') {
-      if (substr(line, 2, 6) != "CHROM") {
-        close(con)
-        return (-1L)
-      }
       x <- unlist(strsplit(line, "\t"))
+      if (x[1] != "#CHROM") {
+        close(con)
+        stop("Error processing header")
+      }
+      x[1] = "CHROM"
       beginData <- seek(con, origin = "current")
       break
     }
@@ -76,7 +81,15 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   }
   close(con)
 
+  if (all(x[1:9] == c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")) == FALSE)
+    stop("Column names incorrect")
+
   NumSamples = length(x) - 9L
+  Samples = data.frame(FID = rep("", NumSamples),
+                       SID = x[10:length(x)],
+                       stringsAsFactors = FALSE)
+  usesFID = FALSE
+
   coltypes = c("character", "integer", rep("character", 7),
                rep("NULL", NumSamples))
   SNPs <- read.table(filename,
@@ -86,6 +99,7 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   colnames(SNPs) <- c("Chromosome", "Location", "SNPID",
                       "Reference", "Alternate", "Quality",
                       "Filter", "Info", "Format")
+
   numSNPs <- nrow(SNPs)
   chr1 <- SNPs$Chromosome[1]
   oneChr <- all(SNPs$Chromosome == chr1)
@@ -98,55 +112,62 @@ GetVCFInfo <- function(filename, gz = FALSE, index = TRUE) {
   if (oneFormat) {
     formatSplit <- unlist(strsplit(format1, split = ':'))
     dosageColumn <- rep(match("DS", formatSplit), numSNPs)
-    geneProbColumn <- rep(match("GP", formatSplit), numSNPs)
+    genotypeProbColumn <- rep(match("GP", formatSplit), numSNPs)
     genotypeColumn <- rep(match("GT", formatSplit), numSNPs)
   } else {
     dosageColumn <- integer(numSNPs)
-    geneProbColumn <- integer(numSNPs)
+    genotypeProbColumn <- integer(numSNPs)
     genotypeColumn <- integer(nuumSNPs)
     for (i in 1:numSNPs) {
       formatSplit <- unlist(strsplit(SNPs$Format[i], split = ':'))
       dosageColumn[i] <- match("DS", formatSplit)
-      geneProbColumn[i] <- match("GP", formatSplit)
+      genotypeProbColumn[i] <- match("GP", formatSplit)
       genotypeColumn[i] <- match("GT", formatSplit)
     }
   }
-  valueColumns <- data.frame(dosage = dosageColumn, geneProb = geneProbColumn, genotype = genotypeColumn)
+  valueLocations <- data.frame(dosage = dosageColumn,
+                             genotypeProb = genotypeProbColumn,
+                             genotype = genotypeColumn)
 
-  Indices <- numeric(numSNPs)
-  if (gz == FALSE) {
-    con2 <- file(filename, "r")
+  if (index == TRUE) {
+    Indices <- numeric(numSNPs)
+    if (gzipped == FALSE) {
+      con2 <- file(filename, "r")
+    } else {
+      con2 <- gzfile(filename, "r")
+    }
+
+    currentPos <- seek(con2, 0)
+    for (i in 1:headersize)
+      line <- readLines(con2, n = 1)
+    currentPos <- 0
+    for (i in 1:numSNPs) {
+      Indices[i] = seek(con2) - currentPos
+      currentPos = seek(con2)
+      line <- readLines(con2, n = 1)
+    }
+    close(con2)
   } else {
-    con2 <- gzfile(filename, "r")
+    Indices <- numeric(0)
   }
 
-  currentPos <- seek(con2, 0)
-  for (i in 1:headersize)
-    line <- readLines(con2, n = 1)
-  currentPos <- 0
-  for (i in 1:numSNPs) {
-    Indices[i] = seek(con2) - currentPos
-    currentPos = seek(con2)
-    line <- readLines(con2, n = 1)
-  }
-  close(con2)
-
-  return (list(filename = filename,
-               headersize = headersize,
-               NumSamples = NumSamples,
-               usesFID = FALSE,
-               Samples = data.frame(FID = rep("", NumSamples),
-                                    SID = x[10:length(x)],
-                                    stringsAsFactors = FALSE),
-               Indices = Indices,
-               onechr = oneChr,
-               formattedID = formattedID,
-               noQuality = noQuality,
-               noInfo = noInfo,
-               oneFormat = oneFormat,
-               NumSNPs = numSNPs,
-               valueColumns = valueColumns,
-               SNPs = SNPs))
+  retVal = list(filename = fqfilename,
+                gzipped = gzipped,
+                headersize = headersize,
+                NumSamples = NumSamples,
+                usesFID = usesFID,
+                Samples = Samples,
+                onechr = oneChr,
+                formattedID = formattedID,
+                noQuality = noQuality,
+                noInfo = noInfo,
+                oneFormat = oneFormat,
+                NumSNPs = numSNPs,
+                valueLocations = valueLocations,
+                SNPs = SNPs,
+                Indices = Indices)
+  class(retVal) <- c("genetic-file-info", "vcf-file-info")
+  return (retVal)
 }
 
 #' Function to convert a VCF file to a binary dosage file
