@@ -3,6 +3,14 @@
 #' @importFrom digest digest
 NULL
 
+
+SummarizeVCFAdditionalInfo <- function(x) {
+  if (length(unique(x)) != 1)
+    return (x)
+  if (x[1] == '.')
+    return (character(0))
+  return (x[1])
+}
 #' Function to return information about a VCF file
 #'
 #' Function to return information about a VCF file.
@@ -16,6 +24,12 @@ NULL
 #' @param index Indicator if file should be indexed. This
 #' allows for faster reading of the file. Indexing a gzipped
 #' file does not speed up access. Default value is TRUE.
+#' @param snpidformat The format that the SNP ID will be saved as.
+#' 0 - same as in the VCF file
+#' 1 - <chromosome>:<location>
+#' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+#' If snpidformat is 1 and the VCF file uses format 2, an error is
+#' generated. Default value is 0.
 #'
 #' @return List containing information about the VCF file
 #' to include file name, subject IDs, and information about
@@ -26,7 +40,10 @@ NULL
 #'
 #' @examples
 #' # Under construction
-GetVCFInfo <- function(filename, gzipped = FALSE, index = TRUE) {
+GetVCFInfo <- function(filename,
+                       gzipped = FALSE,
+                       index = TRUE,
+                       snpidformat = 0L) {
   if (missing(filename) == TRUE)
     stop("No VCF file specified")
   if (is.character(filename) == FALSE)
@@ -45,6 +62,16 @@ GetVCFInfo <- function(filename, gzipped = FALSE, index = TRUE) {
     stop("index must be a logical value")
   if (length(index) != 1)
     stop("index must be a single logical value")
+
+  if (is.numeric(snpidformat) == FALSE)
+    stop("snpidformat must be an intger value")
+  if (length(snpidformat) != 1)
+    stop("snpidformat must be a singe integer value")
+  if (floor(snpidformat) != snpidformat)
+    stop("snpidformat must be an integer value")
+  snpidformat <- as.integer(snpidformat)
+  if (snpidformat < 0 || snpidformat > 2)
+    stop("snpidformat must have a value of 0, 1, or 2")
 
   if (gzipped == TRUE && index == TRUE)
     print("Indexing gzipped files is not recommended.")
@@ -97,37 +124,49 @@ GetVCFInfo <- function(filename, gzipped = FALSE, index = TRUE) {
                      colClasses = coltypes,
                      stringsAsFactors = FALSE)
   colnames(SNPs) <- c("Chromosome", "Location", "SNPID",
-                      "Reference", "Alternate", "Quality",
-                      "Filter", "Info", "Format")
+                      "Reference", "Alternate", "quality",
+                      "filter", "info", "format")
+  VCFInfo <- as.list(SNPs[,6:9])
+  SNPs <- SNPs[,1:5]
 
   numSNPs <- nrow(SNPs)
   chr1 <- SNPs$Chromosome[1]
   oneChr <- all(SNPs$Chromosome == chr1)
   chrLocID <- paste(SNPs$Chromosome, SNPs$Location, sep = ":")
-  formattedID <- all(SNPs$SNPID == chrLocID)
-  noQuality <- all(SNPs$Quality == '.')
-  noInfo <- all(SNPs$Info == '.')
-  format1 <- SNPs$Format[1]
-  oneFormat <- all(SNPs$Format == format1)
-  if (oneFormat) {
-    formatSplit <- unlist(strsplit(format1, split = ':'))
-    dosageColumn <- rep(match("DS", formatSplit), numSNPs)
-    genotypeProbColumn <- rep(match("GP", formatSplit), numSNPs)
-    genotypeColumn <- rep(match("GT", formatSplit), numSNPs)
-  } else {
-    dosageColumn <- integer(numSNPs)
-    genotypeProbColumn <- integer(numSNPs)
-    genotypeColumn <- integer(nuumSNPs)
-    for (i in 1:numSNPs) {
-      formatSplit <- unlist(strsplit(SNPs$Format[i], split = ':'))
-      dosageColumn[i] <- match("DS", formatSplit)
-      genotypeProbColumn[i] <- match("GP", formatSplit)
-      genotypeColumn[i] <- match("GT", formatSplit)
+  vcfSNPformat1 <- all(SNPs$SNPID == chrLocID)
+  chrLocRefAltID <- paste(SNPs$Chromosome, SNPs$Location,
+                          SNPs$Reference, SNPs$Alternate, sep = ":")
+  vcfSNPformat2 <- all(SNPs$SNPID == chrLocRefAltID)
+  if (snpidformat == 0) {
+    if (vcfSNPformat1 == TRUE) {
+      SNPs$SNPID <- chrLocID
+      snpidformat <- 1L
+    } else if (vcfSNPformat2 == TRUE) {
+      SNPs$SNPID <- chrLocRefAltID
+      snpidformat <- 2L
     }
+  } else if (snpidformat == 1) {
+    if (vcfSNPformat2 == TRUE)
+      stop ("snpidformat 1 specified but VCF file uses snpidformat 2")
+    if (vcfSNPformat1 == FALSE)
+      SNPs$SNPID <- chrLocID
+  } else if (snpidformat == 2) {
+    if (vcfSNPformat2 == FALSE)
+      SNPs$SNPID <- chrLocRefAltID
   }
-  valueLocations <- data.frame(dosage = dosageColumn,
-                             genotypeProb = genotypeProbColumn,
-                             genotype = genotypeColumn)
+
+  VCFInfo <- lapply(VCFInfo, SummarizeVCFAdditionalInfo)
+  VCFInfo$dataColumns <- data.frame(dosage = rep(0L, length(VCFInfo$format)),
+                                    genotypeProb = rep(0L, length(VCFInfo$format)),
+                                    genotype = rep(0L, length(VCFInfo$format)),
+                                    stringsAsFactors = FALSE)
+  for (i in 1:length(VCFInfo$format)) {
+    formatSplit <- unlist(strsplit(VCFInfo$format[i], split = ':'))
+    VCFInfo$dataColumns$dosage[i] <- match("DS", formatSplit)
+    VCFInfo$dataColumns$genotypeProb[i] <- match("GP", formatSplit)
+    VCFInfo$dataColumns$genotype[i] <- match("GT", formatSplit)
+  }
+  class(VCFInfo) <- "vcf-additional-info"
 
   if (index == TRUE) {
     Indices <- numeric(numSNPs)
@@ -158,14 +197,11 @@ GetVCFInfo <- function(filename, gzipped = FALSE, index = TRUE) {
                 usesFID = usesFID,
                 Samples = Samples,
                 onechr = oneChr,
-                formattedID = formattedID,
-                noQuality = noQuality,
-                noInfo = noInfo,
-                oneFormat = oneFormat,
+                snpidformat = snpidformat,
                 NumSNPs = numSNPs,
-                valueLocations = valueLocations,
                 SNPs = SNPs,
-                Indices = Indices)
+                Indices = Indices,
+                additionalInfo = VCFInfo)
   class(retVal) <- c("genetic-file-info", "vcf-file-info")
   return (retVal)
 }

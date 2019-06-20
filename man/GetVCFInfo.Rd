@@ -4,7 +4,7 @@
 \alias{GetVCFInfo}
 \title{Function to return information about a VCF file}
 \usage{
-GetVCFInfo(filename, gzipped = FALSE, index = TRUE)
+GetVCFInfo(filename, gzipped = FALSE, index = TRUE, snpidformat = 0L)
 }
 \arguments{
 \item{filename}{Name of the VCF file.}
@@ -15,6 +15,13 @@ Default value is FALSE.}
 \item{index}{Indicator if file should be indexed. This
 allows for faster reading of the file. Indexing a gzipped
 file does not speed up access. Default value is TRUE.}
+
+\item{snpidformat}{The format that the SNP ID will be saved as.
+0 - same as in the VCF file
+1 - <chromosome>:<location>
+2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+If snpidformat is 1 and the VCF file uses format 2, an error is
+generated. Default value is 0.}
 }
 \value{
 List containing information about the VCF file
