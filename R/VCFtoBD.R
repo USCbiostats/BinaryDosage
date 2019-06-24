@@ -156,12 +156,14 @@ GetVCFInfo <- function(filename,
   }
 
   VCFInfo <- lapply(VCFInfo, SummarizeVCFAdditionalInfo)
-  VCFInfo$dataColumns <- data.frame(dosage = rep(0L, length(VCFInfo$format)),
+  VCFInfo$dataColumns <- data.frame(numValues = rep(0L, length(VCFInfo$format)),
+                                    dosage = rep(0L, length(VCFInfo$format)),
                                     genotypeProb = rep(0L, length(VCFInfo$format)),
                                     genotype = rep(0L, length(VCFInfo$format)),
                                     stringsAsFactors = FALSE)
   for (i in 1:length(VCFInfo$format)) {
     formatSplit <- unlist(strsplit(VCFInfo$format[i], split = ':'))
+    VCFInfo$dataColumns$numValues[i] <- length(formatSplit)
     VCFInfo$dataColumns$dosage[i] <- match("DS", formatSplit)
     VCFInfo$dataColumns$genotypeProb[i] <- match("GP", formatSplit)
     VCFInfo$dataColumns$genotype[i] <- match("GT", formatSplit)
