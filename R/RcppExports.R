@@ -17,3 +17,11 @@ WriteBinaryDosageHeader <- function(filename, format, subformat) {
     .Call(`_BinaryDosage_WriteBinaryDosageHeader`, filename, format, subformat)
 }
 
+WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
+    .Call(`_BinaryDosage_WriteBinaryDosageData`, filename, dosage, usdosage, base)
+}
+
+WriteBinaryDosageP1Data <- function(filename, dosage, p1, usdosage, usp1, base) {
+    .Call(`_BinaryDosage_WriteBinaryDosageP1Data`, filename, dosage, p1, usdosage, usp1, base)
+}
+

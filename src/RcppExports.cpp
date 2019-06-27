@@ -57,12 +57,44 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// WriteBinaryDosageData
+int WriteBinaryDosageData(const std::string& filename, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& usdosage, int base);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageData(SEXP filenameSEXP, SEXP dosageSEXP, SEXP usdosageSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usdosage(usdosageSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageData(filename, dosage, usdosage, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageP1Data
+int WriteBinaryDosageP1Data(const std::string& filename, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p1, Rcpp::IntegerVector& usdosage, Rcpp::IntegerVector& usp1, int base);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageP1Data(SEXP filenameSEXP, SEXP dosageSEXP, SEXP p1SEXP, SEXP usdosageSEXP, SEXP usp1SEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usdosage(usdosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usp1(usp1SEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageP1Data(filename, dosage, p1, usdosage, usp1, base));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
     {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
     {"_BinaryDosage_BinaryDosageHeaderFormat", (DL_FUNC) &_BinaryDosage_BinaryDosageHeaderFormat, 2},
     {"_BinaryDosage_WriteBinaryDosageHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader, 3},
+    {"_BinaryDosage_WriteBinaryDosageData", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageData, 4},
+    {"_BinaryDosage_WriteBinaryDosageP1Data", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageP1Data, 6},
     {NULL, NULL, 0}
 };
 
