@@ -1,3 +1,90 @@
+WriteFamilyAndMapFiles <- function(filename, samples, snps) {
+  saveRDS(samples, filename[2])
+  saveRDS(snps, filename[3])
+  return (md5 <- c(digest(samples, "md5"), digest(snps, "md5")))
+}
+# Writes the header for the various formats of the formats
+# of the binary dosage file. These vary for all the different
+# formats.
+WriteBinaryDosageHeader <- function(format, subformat, filename, funcData) {
+  writeHeaderFunc <- list(f1 <- c(WriteBinaryDosageHeader11, WriteBinaryDosageHeader12),
+                          f2 <- c(WriteBinaryDosageHeader21, WriteBinaryDosageHeader22),
+                          f3 <- c(WriteBinaryDosageHeader31, WriteBinaryDosageHeader32, WriteBinaryDosageHeader33, WriteBinaryDosageHeader34),
+                          f4 <- c(WriteBinaryDosageHeader41, WriteBinaryDosageHeader42, WriteBinaryDosageHeader43, WriteBinaryDosageHeader44))
+  return (writeHeaderFunc[[format]][[subformat]](filename, funcData))
+}
+
+WriteBinaryDosageHeader11 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+#  return (WriteBinaryDosageHeader11C(filename))
+}
+
+WriteBinaryDosageHeader12 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+#  return (WriteBinaryDosageHeader12C(filename))
+}
+
+WriteBinaryDosageHeader21 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+#  return (WriteBinaryDosageHeader21C(filename))
+}
+
+WriteBinaryDosageHeader22 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+#  return (WriteBinaryDosageHeader22C(filename))
+}
+
+WriteBinaryDosageHeader31 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+  #  return (WriteBinaryDosageHeader21C(filename))
+}
+
+WriteBinaryDosageHeader32 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+  #  return (WriteBinaryDosageHeader22C(filename))
+}
+
+WriteBinaryDosageHeader33 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+  #  return (WriteBinaryDosageHeader21C(filename))
+}
+
+WriteBinaryDosageHeader34 <- function(filename, funcData) {
+  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  return (md5)
+  #  return (WriteBinaryDosageHeader22C(filename))
+}
+
+WriteBinaryDosageHeader41 <- function(filename, funcData) {
+  return (0)
+  #  return (WriteBinaryDosageHeader21C(filename))
+}
+
+WriteBinaryDosageHeader42 <- function(filename, funcData) {
+  return (0)
+  #  return (WriteBinaryDosageHeader22C(filename))
+}
+
+WriteBinaryDosageHeader43 <- function(filename, funcData) {
+  return (0)
+  #  return (WriteBinaryDosageHeader21C(filename))
+}
+
+WriteBinaryDosageHeader44 <- function(filename, funcData) {
+  return (0)
+  #  return (WriteBinaryDosageHeader22C(filename))
+}
+# Allocates memory needed to write binary dosage files
+# Many of the routines do the same thing. Those that are copies
+# just call the routine they are a copy of. This makes the code
+# a little easier to read.
 AllocateBinaryDosageWriteMemory <- function(format, subformat, filename, funcData) {
   allocateFunc <- list(f1 <- c(AllocateBinaryDosageWriteMemory11, AllocateBinaryDosageWriteMemory12),
                        f2 <- c(AllocateBinaryDosageWriteMemory21, AllocateBinaryDosageWriteMemory22),
@@ -8,20 +95,20 @@ AllocateBinaryDosageWriteMemory <- function(format, subformat, filename, funcDat
 
 AllocateBinaryDosageWriteMemory11 <- function(filename, funcData) {
   return(list(filename = filename,
-              dosage = numeric(funcData$numSubjects),
-              usdosage = integer(funcData$numSubjects)))
+              dosage = numeric(funcData$numSamples),
+              usdosage = integer(funcData$numSamples)))
 }
 
 AllocateBinaryDosageWriteMemory12 <- function(filename, funcData) {
   return(list(filename = filename,
-              dosage = numeric(funcData$numSubjects),
-              p0 = numeric(funcData$numSubjects),
-              p1 = numeric(funcData$numSubjects),
-              p2 = numeric(funcData$numSubjects),
-              usdosage = integer(funcData$numSubjects),
-              usp0 = integer(funcData$numSubjects),
-              usp1 = integer(funcData$numSubjects),
-              usp2 = integer(funcData$numSubjects)))
+              dosage = numeric(funcData$numSamples),
+              p0 = numeric(funcData$numSamples),
+              p1 = numeric(funcData$numSamples),
+              p2 = numeric(funcData$numSamples),
+              usdosage = integer(funcData$numSamples),
+              usp0 = integer(funcData$numSamples),
+              usp1 = integer(funcData$numSamples),
+              usp2 = integer(funcData$numSamples)))
 }
 
 AllocateBinaryDosageWriteMemory21 <- function(filename, funcData) {
@@ -50,21 +137,21 @@ AllocateBinaryDosageWriteMemory34 <- function(filename, funcData) {
 
 AllocateBinaryDosageWriteMemory41 <- function(filename, funcData) {
   return(list(filename = filename,
-              dosage = numeric(funcData$numSubjects),
-              usdosage = integer(funcData$numSubjects),
+              dosage = numeric(funcData$numSamples),
+              usdosage = integer(funcData$numSamples),
               altAlleleFreq = numeric(funcData$numSNPs)))
 }
 
 AllocateBinaryDosageWriteMemory42 <- function(filename, funcData) {
   return(list(filename = filename,
-              dosage = numeric(funcData$numSubjects),
-              p0 = numeric(funcData$numSubjects),
-              p1 = numeric(funcData$numSubjects),
-              p2 = numeric(funcData$numSubjects),
-              usdosage = integer(funcData$numSubjects),
-              usp0 = integer(funcData$numSubjects),
-              usp1 = integer(funcData$numSubjects),
-              usp2 = integer(funcData$numSubjects),
+              dosage = numeric(funcData$numSamples),
+              p0 = numeric(funcData$numSamples),
+              p1 = numeric(funcData$numSamples),
+              p2 = numeric(funcData$numSamples),
+              usdosage = integer(funcData$numSamples),
+              usp0 = integer(funcData$numSamples),
+              usp1 = integer(funcData$numSamples),
+              usp2 = integer(funcData$numSamples),
               altAlleleFreq = numeric(funcData$numSNPs)))
 }
 

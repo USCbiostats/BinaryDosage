@@ -195,14 +195,14 @@ GetVCFInfo <- function(filename,
   retVal = list(filename = fqfilename,
                 gzipped = gzipped,
                 headersize = headersize,
-                NumSamples = NumSamples,
+                numSamples = NumSamples,
                 usesFID = usesFID,
-                Samples = Samples,
+                samples = Samples,
                 onechr = oneChr,
                 snpidformat = snpidformat,
-                NumSNPs = numSNPs,
+                numSNPs = numSNPs,
                 SNPs = SNPs,
-                Indices = Indices,
+                indices = Indices,
                 additionalInfo = VCFInfo)
   class(retVal) <- c("genetic-file-info", "vcf-file-info")
   return (retVal)
