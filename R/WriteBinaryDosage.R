@@ -11,6 +11,7 @@ WriteBinaryDosageHeader <- function(format, subformat, filename, funcData) {
                           f2 <- c(WriteBinaryDosageHeader21, WriteBinaryDosageHeader22),
                           f3 <- c(WriteBinaryDosageHeader31, WriteBinaryDosageHeader32, WriteBinaryDosageHeader33, WriteBinaryDosageHeader34),
                           f4 <- c(WriteBinaryDosageHeader41, WriteBinaryDosageHeader42, WriteBinaryDosageHeader43, WriteBinaryDosageHeader44))
+  WriteBinaryDosageBaseHeader(filename[1], format - 1, subformat - 1)
   return (writeHeaderFunc[[format]][[subformat]](filename, funcData))
 }
 
@@ -40,44 +41,53 @@ WriteBinaryDosageHeader22 <- function(filename, funcData) {
 
 WriteBinaryDosageHeader31 <- function(filename, funcData) {
   md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  WriteBinaryDosageHeader3A(filename[1], funcData$numSamples)
   return (md5)
-  #  return (WriteBinaryDosageHeader21C(filename))
+  #  return (WriteBinaryDosageHeader31C(filename))
 }
 
 WriteBinaryDosageHeader32 <- function(filename, funcData) {
   md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  WriteBinaryDosageHeader3A(filename[1], funcData$numSamples)
   return (md5)
   #  return (WriteBinaryDosageHeader22C(filename))
 }
 
 WriteBinaryDosageHeader33 <- function(filename, funcData) {
   md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2])
   return (md5)
   #  return (WriteBinaryDosageHeader21C(filename))
 }
 
 WriteBinaryDosageHeader34 <- function(filename, funcData) {
   md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+  WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2])
   return (md5)
   #  return (WriteBinaryDosageHeader22C(filename))
 }
 
 WriteBinaryDosageHeader41 <- function(filename, funcData) {
+  WriteBinaryDosageHeader4A(filename[1], funcData$numSamples, funcData$numSNPs)
+  WriteBDGroups(filename[1], funcData$numSamples)
   return (0)
   #  return (WriteBinaryDosageHeader21C(filename))
 }
 
 WriteBinaryDosageHeader42 <- function(filename, funcData) {
+  WriteBinaryDosageHeader4A(filename[1], funcData$numSamples, funcData$numSNPs)
   return (0)
   #  return (WriteBinaryDosageHeader22C(filename))
 }
 
 WriteBinaryDosageHeader43 <- function(filename, funcData) {
+  WriteBinaryDosageHeader4B(filename[1])
   return (0)
   #  return (WriteBinaryDosageHeader21C(filename))
 }
 
 WriteBinaryDosageHeader44 <- function(filename, funcData) {
+  WriteBinaryDosageHeader4B(filename[1])
   return (0)
   #  return (WriteBinaryDosageHeader22C(filename))
 }
@@ -179,19 +189,19 @@ WriteBinaryDosageData11 <- function(funcData) {
 }
 
 WriteBinaryDosageData12 <- function(funcData) {
-  return (WriteBinaryDosageP1Data(funcData$filename, funcData$dosage, funcData$p1, funcData$usdosage, funcData$usp1, 0))
-}
-
-WriteBinaryDosageData21 <- function(funcData) {
-  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 1))
-}
-
-WriteBinaryDosageData22 <- function(funcData) {
   return (WriteBinaryDosageP1Data(funcData$filename, funcData$dosage, funcData$p1, funcData$usdosage, funcData$usp1, 1))
 }
 
+WriteBinaryDosageData21 <- function(funcData) {
+  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 2))
+}
+
+WriteBinaryDosageData22 <- function(funcData) {
+  return (WriteBinaryDosageP1Data(funcData$filename, funcData$dosage, funcData$p1, funcData$usdosage, funcData$usp1, 2))
+}
+
 WriteBinaryDosageData31 <- function(funcData) {
-  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 1))
+  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 2))
 }
 
 WriteBinaryDosageData32 <- function(funcData) {
@@ -199,7 +209,7 @@ WriteBinaryDosageData32 <- function(funcData) {
 }
 
 WriteBinaryDosageData33 <- function(funcData) {
-  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 1))
+  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 2))
 }
 
 WriteBinaryDosageData34 <- function(funcData) {
@@ -207,7 +217,7 @@ WriteBinaryDosageData34 <- function(funcData) {
 }
 
 WriteBinaryDosageData41 <- function(funcData) {
-  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 1))
+  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 2))
 }
 
 WriteBinaryDosageData42 <- function(funcData) {
@@ -215,7 +225,7 @@ WriteBinaryDosageData42 <- function(funcData) {
 }
 
 WriteBinaryDosageData43 <- function(funcData) {
-  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 1))
+  return (WriteBinaryDosageData(funcData$filename, funcData$dosage, funcData$usdosage, 2))
 }
 
 WriteBinaryDosageData44 <- function(funcData) {

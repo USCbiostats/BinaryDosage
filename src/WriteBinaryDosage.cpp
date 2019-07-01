@@ -1,54 +1,197 @@
 #include <Rcpp.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
-const int NUMFORMATS = 12;
-const int BDFORMATS[NUMFORMATS] = {
-  0x01000100,
-  0x02000100,
-  0x01000200,
-  0x02000200,
-  0x01000300,
-  0x02000300,
-  0x03000300,
-  0x04000300,
-  0x01000400,
-  0x02000400,
-  0x03000400,
-  0x04000400
+//***************************************************************************//
+//                        Writing the header                                 //
+//***************************************************************************//
+// These functions write the headers to the binary dosage files
+// NOTE: There is no error checking done here. It is assumed this was done
+// prior to calling these routines
+
+//  ************************ Constants **************************************//
+// Magic word for binary dosage files
+const int MAGICWORD = 0x65736f62;
+// Format ID stored in file
+const std::vector<std::vector<int> > FORMAT = {
+  { 0x01000100, 0x01000200},
+  { 0x02000100, 0x02000200},
+  { 0x03000100, 0x03000200, 0x03000300, 0x03000400},
+  { 0x04000100, 0x04000200, 0x04000300, 0x04000400}
 };
-const int HEADERSIZE[NUMFORMATS] = {
-  8, 8, 8, 8, 12, 12, 52, 52, 40, 40, 40, 40
+// Size of the header for each format in bytes
+const std::vector<std::vector<int> > HEADERSIZE = {
+  {8, 8},
+  {8, 8},
+  {12, 12, 72, 72},
+  {40, 40, 24, 24}
 };
-const int MAXHEADERSIZE = 52;
+// Largest header size in bytes
+const int MAXHEADERSIZE = 72;
 
 
 // Writes the base header for a binary dosage file
+// Parameter filename - Name of binary dosage file
+// Parameter format - Foramt of the binary dosage file
+// Parameter subformat - Subformat of the binary dosage file
+// Return - 0 successful, 1 error
 // [[Rcpp::export]]
-int WriteBinaryDosageBaseHeader(std::string &filename, int formatIndex) {
+int WriteBinaryDosageBaseHeader(std::string &filename, int format, int subformat) {
+  std::ofstream outfile;
+
+  // Open the file - if file already exists, truncates to size 0.
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.write((char *)&MAGICWORD, sizeof(int));
+  outfile.write((char *)&FORMAT[format][subformat], sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+
+// Writes the additional header info for formats 3.1 and 3.2
+// Parameter filename - Name of binary dosage file
+// Parameter numSubjects - number of subjects in data
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader3A(std::string &filename, int numSubjects) {
+  std::ofstream outfile;
+
+  // Open the file for appending
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.write((char *)&numSubjects, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+// Writes the additional header info for formats 3.3 and 3.4
+// Parameter filename - Name of binary dosage file
+// Parameter md5samples - MD5 hash for the samples data frame
+// Parameter md5SNPs - MD5 hash for the SNPs data frame
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader3B(std::string &filename,
+                              std::string &md5samples,
+                              std::string &md5SNPs) {
+  std::ofstream outfile;
+
+  // Open the file for appending
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.write(md5samples.c_str(), 32);
+  outfile.write(md5SNPs.c_str(), 32);
+
+  outfile.close();
+  return 0;
+}
+
+// Writes the additional header info for formats 4.1 and 4.2
+// Parameter filename - Name of binary dosage file
+// Parameter numSubjects - number of subjects in data
+// Parameter numSubjects - number of SNPs in data
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNPs) {
+  std::ofstream outfile;
+  const int zero = 0;
+
+  // Open the file for appending
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.write((char *)&numSubjects, sizeof(int));
+  outfile.write((char *)&numSNPs, sizeof(int));
+  // Zero out the rest of the data. It will be filled in later
+  for (int i = 0; i < 6; ++i)
+    outfile.write((char *)&zero, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+
+// Writes the additional header info for formats 4.2 and 4.3
+// Parameter filename - Name of binary dosage file
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader4B (std::string &filename, int numSubjects, int numSNPs) {
+  std::ofstream outfile;
+  const int zero = 0;
+
+  // Open the file for appending
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  // Zero out the data. It will be filled in later
+  for (int i = 0; i < 4; ++i)
+    outfile.write((char *)&zero, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
   std::fstream outfile;
-  const int magicWord = 0x65736f62;
+  int numGroups, groupsize;
+  int subjectOffset;
 
-  // Create the file - if file already exists, truncates to size 0.
-  outfile.open(filename.c_str());
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-  outfile.close();
-
-  // Opens file and truncates to size 0. Should already be of size 0.
-  outfile.open(filename.c_str(),
-               std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::trunc);
+  Rcpp::Rcout << groups.length() << std::endl;
+  // Open the file for appending
+  // Only opens for output
+  outfile.open(filename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::app);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
   }
 
-  outfile.write((char *)&magicWord, sizeof(int));
-  outfile.write((char *)(BDFORMATS + formatIndex), sizeof(int));
+  outfile.seekp(16);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  numGroups = groups.length();
+  outfile.write((char *)&numGroups, sizeof(int));
+/*
+  outfile.seekp(40);
+  for (int i = 0; i < numGroups; ++i) {
+    groupsize = groups[i];
+    outfile.write((char *)&groupsize, sizeof(int));
+  }
+  Rcpp::Rcout << outfile.tellp() << std::endl;
 
+  subjectOffset = (int)outfile.tellp();
+  Rcpp::Rcout << subjectOffset << std::endl;
+  outfile.seekp(28);
+  outfile.write((char *)&subjectOffset, sizeof(int));
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+ */
   outfile.close();
+
   return 0;
 }
 

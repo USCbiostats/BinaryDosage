@@ -9,19 +9,35 @@ ReadVCFValues <- function(filename, values, snps, subjects, indices, formats) {
     .Call(`_BinaryDosage_ReadVCFValues`, filename, values, snps, subjects, indices, formats)
 }
 
-BinaryDosageHeaderFormat <- function(format, subformat) {
-    .Call(`_BinaryDosage_BinaryDosageHeaderFormat`, format, subformat)
+WriteBinaryDosageBaseHeader <- function(filename, format, subformat) {
+    .Call(`_BinaryDosage_WriteBinaryDosageBaseHeader`, filename, format, subformat)
 }
 
-WriteBinaryDosageHeaderC <- function(filename, format, subformat) {
-    .Call(`_BinaryDosage_WriteBinaryDosageHeaderC`, filename, format, subformat)
+WriteBinaryDosageHeader3A <- function(filename, numSubjects) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader3A`, filename, numSubjects)
+}
+
+WriteBinaryDosageHeader3B <- function(filename, md5samples, md5SNPs) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader3B`, filename, md5samples, md5SNPs)
+}
+
+WriteBinaryDosageHeader4A <- function(filename, numSubjects, numSNPs) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader4A`, filename, numSubjects, numSNPs)
+}
+
+WriteBinaryDosageHeader4B <- function(filename, numSubjects, numSNPs) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader4B`, filename, numSubjects, numSNPs)
+}
+
+WriteBDGroups <- function(filename, groups) {
+    .Call(`_BinaryDosage_WriteBDGroups`, filename, groups)
 }
 
 WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
     .Call(`_BinaryDosage_WriteBinaryDosageData`, filename, dosage, usdosage, base)
 }
 
-WriteBinaryDosageP1Data <- function(filename, dosage, p1, usdosage, usp1, base) {
-    .Call(`_BinaryDosage_WriteBinaryDosageP1Data`, filename, dosage, p1, usdosage, usp1, base)
+WriteBinaryP1P2Data <- function(filename, p1, p2, usp1, usp2, base) {
+    .Call(`_BinaryDosage_WriteBinaryP1P2Data`, filename, p1, p2, usp1, usp2, base)
 }
 

@@ -32,28 +32,79 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BinaryDosageHeaderFormat
-int BinaryDosageHeaderFormat(int format, int subformat);
-RcppExport SEXP _BinaryDosage_BinaryDosageHeaderFormat(SEXP formatSEXP, SEXP subformatSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type format(formatSEXP);
-    Rcpp::traits::input_parameter< int >::type subformat(subformatSEXP);
-    rcpp_result_gen = Rcpp::wrap(BinaryDosageHeaderFormat(format, subformat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// WriteBinaryDosageHeaderC
-int WriteBinaryDosageHeaderC(std::string& filename, int format, int subformat);
-RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeaderC(SEXP filenameSEXP, SEXP formatSEXP, SEXP subformatSEXP) {
+// WriteBinaryDosageBaseHeader
+int WriteBinaryDosageBaseHeader(std::string& filename, int format, int subformat);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageBaseHeader(SEXP filenameSEXP, SEXP formatSEXP, SEXP subformatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< int >::type format(formatSEXP);
     Rcpp::traits::input_parameter< int >::type subformat(subformatSEXP);
-    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeaderC(filename, format, subformat));
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageBaseHeader(filename, format, subformat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader3A
+int WriteBinaryDosageHeader3A(std::string& filename, int numSubjects);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader3A(SEXP filenameSEXP, SEXP numSubjectsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader3A(filename, numSubjects));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader3B
+int WriteBinaryDosageHeader3B(std::string& filename, std::string& md5samples, std::string& md5SNPs);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader3B(SEXP filenameSEXP, SEXP md5samplesSEXP, SEXP md5SNPsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type md5samples(md5samplesSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type md5SNPs(md5SNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader3B(filename, md5samples, md5SNPs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader4A
+int WriteBinaryDosageHeader4A(std::string& filename, int numSubjects, int numSNPs);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader4A(SEXP filenameSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader4A(filename, numSubjects, numSNPs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader4B
+int WriteBinaryDosageHeader4B(std::string& filename, int numSubjects, int numSNPs);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader4B(SEXP filenameSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader4B(filename, numSubjects, numSNPs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBDGroups
+int WriteBDGroups(std::string& filename, Rcpp::IntegerVector& groups);
+RcppExport SEXP _BinaryDosage_WriteBDGroups(SEXP filenameSEXP, SEXP groupsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type groups(groupsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBDGroups(filename, groups));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -71,19 +122,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// WriteBinaryDosageP1Data
-int WriteBinaryDosageP1Data(const std::string& filename, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p1, Rcpp::IntegerVector& usdosage, Rcpp::IntegerVector& usp1, int base);
-RcppExport SEXP _BinaryDosage_WriteBinaryDosageP1Data(SEXP filenameSEXP, SEXP dosageSEXP, SEXP p1SEXP, SEXP usdosageSEXP, SEXP usp1SEXP, SEXP baseSEXP) {
+// WriteBinaryP1P2Data
+int WriteBinaryP1P2Data(const std::string& filename, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& usp1, Rcpp::IntegerVector& usp2, int base);
+RcppExport SEXP _BinaryDosage_WriteBinaryP1P2Data(SEXP filenameSEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usp1SEXP, SEXP usp2SEXP, SEXP baseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usdosage(usdosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usp1(usp1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usp2(usp2SEXP);
     Rcpp::traits::input_parameter< int >::type base(baseSEXP);
-    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageP1Data(filename, dosage, p1, usdosage, usp1, base));
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryP1P2Data(filename, p1, p2, usp1, usp2, base));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -91,10 +142,14 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
     {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
-    {"_BinaryDosage_BinaryDosageHeaderFormat", (DL_FUNC) &_BinaryDosage_BinaryDosageHeaderFormat, 2},
-    {"_BinaryDosage_WriteBinaryDosageHeaderC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeaderC, 3},
+    {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
+    {"_BinaryDosage_WriteBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3A, 2},
+    {"_BinaryDosage_WriteBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3B, 3},
+    {"_BinaryDosage_WriteBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader4A, 3},
+    {"_BinaryDosage_WriteBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader4B, 3},
+    {"_BinaryDosage_WriteBDGroups", (DL_FUNC) &_BinaryDosage_WriteBDGroups, 2},
     {"_BinaryDosage_WriteBinaryDosageData", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageData, 4},
-    {"_BinaryDosage_WriteBinaryDosageP1Data", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageP1Data, 6},
+    {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 6},
     {NULL, NULL, 0}
 };
 
