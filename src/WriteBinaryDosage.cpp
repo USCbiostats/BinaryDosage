@@ -3,6 +3,9 @@
 #include <fstream>
 #include <vector>
 
+const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::ate;
+const std::ios_base::openmode WRITEBINARY = std::ios_base::out | std::ios_base::binary | std::ios_base::app;
+
 //***************************************************************************//
 //                        Writing the header                                 //
 //***************************************************************************//
@@ -12,9 +15,9 @@
 
 //  ************************ Constants **************************************//
 // Magic word for binary dosage files
-const int MAGICWORD = 0x65736f62;
+extern const int MAGICWORD = 0x65736f62;
 // Format ID stored in file
-const std::vector<std::vector<int> > FORMAT = {
+extern const std::vector<std::vector<int> > FORMAT = {
   { 0x01000100, 0x01000200},
   { 0x02000100, 0x02000200},
   { 0x03000100, 0x03000200, 0x03000300, 0x03000400},
@@ -27,9 +30,6 @@ const std::vector<std::vector<int> > HEADERSIZE = {
   {12, 12, 72, 72},
   {40, 40, 24, 24}
 };
-// Largest header size in bytes
-const int MAXHEADERSIZE = 72;
-
 
 // Writes the base header for a binary dosage file
 // Parameter filename - Name of binary dosage file
@@ -66,7 +66,7 @@ int WriteBinaryDosageHeader3A(std::string &filename, int numSubjects) {
 
   // Open the file for appending
   // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  outfile.open(filename.c_str(), WRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
@@ -91,7 +91,7 @@ int WriteBinaryDosageHeader3B(std::string &filename,
 
   // Open the file for appending
   // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  outfile.open(filename.c_str(), WRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
@@ -111,12 +111,12 @@ int WriteBinaryDosageHeader3B(std::string &filename,
 // Return - 0 successful, 1 error
 // [[Rcpp::export]]
 int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNPs) {
-  std::ofstream outfile;
+  std::fstream outfile;
   const int zero = 0;
 
   // Open the file for appending
   // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  outfile.open(filename.c_str(), READWRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
@@ -143,7 +143,7 @@ int WriteBinaryDosageHeader4B (std::string &filename, int numSubjects, int numSN
 
   // Open the file for appending
   // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  outfile.open(filename.c_str(), WRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
@@ -163,33 +163,28 @@ int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
   int numGroups, groupsize;
   int subjectOffset;
 
-  Rcpp::Rcout << groups.length() << std::endl;
   // Open the file for appending
-  // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+  // Only opens for input and output
+  outfile.open(filename.c_str(), READWRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
   }
 
   outfile.seekp(16);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   numGroups = groups.length();
   outfile.write((char *)&numGroups, sizeof(int));
-/*
+
   outfile.seekp(40);
   for (int i = 0; i < numGroups; ++i) {
     groupsize = groups[i];
     outfile.write((char *)&groupsize, sizeof(int));
   }
-  Rcpp::Rcout << outfile.tellp() << std::endl;
 
   subjectOffset = (int)outfile.tellp();
-  Rcpp::Rcout << subjectOffset << std::endl;
   outfile.seekp(28);
   outfile.write((char *)&subjectOffset, sizeof(int));
-  Rcpp::Rcout << outfile.tellp() << std::endl;
- */
+
   outfile.close();
 
   return 0;
@@ -283,7 +278,7 @@ int WriteBinaryDosageData(const std::string &filename,
 
   // Opens file and truncates to size 0. Should already be of size 0.
   outfile.open(filename.c_str(),
-               std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+               std::ios_base::out | std::ios_base::binary | std::ios_base::ate);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
@@ -315,7 +310,7 @@ int WriteBinaryP1P2Data(const std::string &filename,
 
   // Opens file and truncates to size 0. Should already be of size 0.
   outfile.open(filename.c_str(),
-               std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+               std::ios_base::out | std::ios_base::binary | std::ios_base::ate);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
