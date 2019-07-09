@@ -1,16 +1,24 @@
+# Formats 1, 2, and 3 all have a separate family and map file
+# This routine saves the data frames in RDS format
 WriteFamilyAndMapFiles <- function(filename, samples, snps) {
   saveRDS(samples, filename[2])
   saveRDS(snps, filename[3])
   return (md5 <- c(digest(samples, "md5"), digest(snps, "md5")))
 }
 
+# Format 4 has the family data in the binary dosage file
 WriteBDFamilyInfo <- function(filename, funcData, suboffset, snpoffset) {
   sid <- paste(funcData$samples$SID, collapse = '\t')
   if (funcData$usesFID == TRUE)
     fid <- paste(funcData$samples$FID, collapse = '\t')
   else
     fid <- ""
-  WriteBDFamilyInfoC(filename[1], sid[1], fid[1], suboffset, snpoffset)
+  return (WriteBDFamilyInfoC(filename[1], sid[1], fid[1], suboffset, snpoffset))
+}
+
+# Format 4 has the SNP data in the binary dosage file
+WriteBDSNPInfo <- function(filename, funcData, snpoffset, nextoffset) {
+
 }
 # Writes the header for the various formats of the formats
 # of the binary dosage file. These vary for all the different
