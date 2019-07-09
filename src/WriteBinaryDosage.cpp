@@ -3,8 +3,9 @@
 #include <fstream>
 #include <vector>
 
-const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::ate;
-const std::ios_base::openmode WRITEBINARY = std::ios_base::out | std::ios_base::binary | std::ios_base::app;
+extern const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::ate;
+extern const std::ios_base::openmode READBINARY = std::ios_base::in | std::ios_base::binary;
+extern const std::ios_base::openmode WRITEBINARY = std::ios_base::out | std::ios_base::binary | std::ios_base::app;
 
 //***************************************************************************//
 //                        Writing the header                                 //
@@ -122,6 +123,7 @@ int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNP
     return 1;
   }
 
+  outfile.seekp(8);
   outfile.write((char *)&numSubjects, sizeof(int));
   outfile.write((char *)&numSNPs, sizeof(int));
   // Zero out the rest of the data. It will be filled in later
@@ -190,6 +192,82 @@ int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
   return 0;
 }
 
+// [[Rcpp::export]]
+int WriteBDGroups2(std::string &filename, Rcpp::IntegerVector &groups) {
+  std::fstream outfile;
+  int numGroups, groupsize;
+  int subjectOffset;
+
+  // Open the file for appending
+  // Only opens for input and output
+  outfile.open(filename.c_str(), READWRITEBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.seekp(24);
+  numGroups = groups.length();
+  outfile.write((char *)&numGroups, sizeof(int));
+
+  for (int i = 0; i < numGroups; ++i) {
+    groupsize = groups[i];
+    outfile.write((char *)&groupsize, sizeof(int));
+  }
+
+  subjectOffset = (int)outfile.tellp();
+  outfile.seekp(8);
+  outfile.write((char *)&subjectOffset, sizeof(int));
+
+  outfile.close();
+
+  return 0;
+}
+
+// [[Rcpp::export]]
+int WriteBDFamilyInfoC(std::string &filename,
+                       std::string &sid,
+                       std::string &fid,
+                       int suboffsetLoc,
+                       int snpoffsetLoc) {
+  std::fstream outfile;
+  int sidsize, fidsize;
+  int suboffset, snpoffset;
+  char zero = 0x0;
+
+  // Open the file for appending
+  // Only opens for input and output
+  outfile.open(filename.c_str(), READWRITEBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.seekg(suboffsetLoc);
+  outfile.read((char *)&suboffset, sizeof(int));
+
+  sidsize = sid.length() + 1;
+  fidsize = fid.length();
+  if (fidsize > 0)
+    ++fidsize;
+
+  outfile.seekp(suboffset);
+  outfile.write((char *)&sidsize, sizeof(int));
+  outfile.write((char *)&fidsize, sizeof(int));
+  outfile.write(sid.c_str(), sidsize - 1);
+  outfile.write(&zero, 1);
+  if (fidsize > 0) {
+    outfile.write(fid.c_str(), fidsize - 1);
+    outfile.write(&zero, 1);
+  }
+
+  snpoffset = outfile.tellp();
+  outfile.seekp(snpoffsetLoc);
+  outfile.write((char *)&snpoffset, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
 //***************************************************************************//
 //                        Writing the data                                   //
 //***************************************************************************//

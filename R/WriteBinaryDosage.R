@@ -3,6 +3,15 @@ WriteFamilyAndMapFiles <- function(filename, samples, snps) {
   saveRDS(snps, filename[3])
   return (md5 <- c(digest(samples, "md5"), digest(snps, "md5")))
 }
+
+WriteBDFamilyInfo <- function(filename, funcData, suboffset, snpoffset) {
+  sid <- paste(funcData$samples$SID, collapse = '\t')
+  if (funcData$usesFID == TRUE)
+    fid <- paste(funcData$samples$FID, collapse = '\t')
+  else
+    fid <- ""
+  WriteBDFamilyInfoC(filename[1], sid[1], fid[1], suboffset, snpoffset)
+}
 # Writes the header for the various formats of the formats
 # of the binary dosage file. These vary for all the different
 # formats.
@@ -70,27 +79,25 @@ WriteBinaryDosageHeader34 <- function(filename, funcData) {
 WriteBinaryDosageHeader41 <- function(filename, funcData) {
   WriteBinaryDosageHeader4A(filename[1], funcData$numSamples, funcData$numSNPs)
   WriteBDGroups(filename[1], funcData$numSamples)
+  WriteBDFamilyInfo(filename, funcData, 28, 32)
   return (0)
-  #  return (WriteBinaryDosageHeader21C(filename))
 }
 
 WriteBinaryDosageHeader42 <- function(filename, funcData) {
-  WriteBinaryDosageHeader4A(filename[1], funcData$numSamples, funcData$numSNPs)
-  return (0)
-  #  return (WriteBinaryDosageHeader22C(filename))
+  return (WriteBinaryDosageHeader41(filename, funcData))
 }
 
 WriteBinaryDosageHeader43 <- function(filename, funcData) {
-  WriteBinaryDosageHeader4B(filename[1])
+  WriteBinaryDosageHeader4B(filename[1], funcData$numSamples, funcData$numSNPs)
+  WriteBDGroups2(filename[1], funcData$numSamples)
+  WriteBDFamilyInfo(filename, funcData, 8, 12)
   return (0)
-  #  return (WriteBinaryDosageHeader21C(filename))
 }
 
 WriteBinaryDosageHeader44 <- function(filename, funcData) {
-  WriteBinaryDosageHeader4B(filename[1])
-  return (0)
-  #  return (WriteBinaryDosageHeader22C(filename))
+  return (WriteBinaryDosageHeader43(filename, funcData))
 }
+
 # Allocates memory needed to write binary dosage files
 # Many of the routines do the same thing. Those that are copies
 # just call the routine they are a copy of. This makes the code

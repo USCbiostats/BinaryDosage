@@ -53,6 +53,14 @@ WriteBDGroups <- function(filename, groups) {
     .Call(`_BinaryDosage_WriteBDGroups`, filename, groups)
 }
 
+WriteBDGroups2 <- function(filename, groups) {
+    .Call(`_BinaryDosage_WriteBDGroups2`, filename, groups)
+}
+
+WriteBDFamilyInfoC <- function(filename, sid, fid, suboffsetLoc, snpoffsetLoc) {
+    .Call(`_BinaryDosage_WriteBDFamilyInfoC`, filename, sid, fid, suboffsetLoc, snpoffsetLoc)
+}
+
 WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
     .Call(`_BinaryDosage_WriteBinaryDosageData`, filename, dosage, usdosage, base)
 }
