@@ -43,7 +43,8 @@ SummarizeVCFAdditionalInfo <- function(x) {
 GetVCFInfo <- function(filename,
                        gzipped = FALSE,
                        index = TRUE,
-                       snpidformat = 0L) {
+                       snpidformat = 0L,
+                       infofile = "") {
   if (missing(filename) == TRUE)
     stop("No VCF file specified")
   if (is.character(filename) == FALSE)
@@ -72,6 +73,11 @@ GetVCFInfo <- function(filename,
   snpidformat <- as.integer(snpidformat)
   if (snpidformat < 0 || snpidformat > 2)
     stop("snpidformat must have a value of 0, 1, or 2")
+
+  if (is.character(infofile) == FALSE)
+    stop("infofile must be a chracter value")
+  if (length(infofile) != 1)
+    stop("infofile must be a single character value")
 
   if (gzipped == TRUE && index == TRUE)
     print("Indexing gzipped files is not recommended.")
@@ -191,6 +197,7 @@ GetVCFInfo <- function(filename,
   } else {
     Indices <- numeric(0)
   }
+  snpInfo <- data.frame()
 
   retVal = list(filename = fqfilename,
                 gzipped = gzipped,
@@ -202,6 +209,7 @@ GetVCFInfo <- function(filename,
                 snpidformat = snpidformat,
                 numSNPs = numSNPs,
                 SNPs = SNPs,
+                snpInfo = snpInfo,
                 indices = Indices,
                 additionalInfo = VCFInfo)
   class(retVal) <- c("genetic-file-info", "vcf-file-info")
