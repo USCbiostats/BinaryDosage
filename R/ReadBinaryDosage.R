@@ -100,7 +100,64 @@ ReadBinaryDosageHeader34 <- function(filename) {
 }
 
 ReadBinaryDosageHeader41 <- function(filename) {
-  return (ReadBinaryDosageHeader4A(filename[1]))
+  header <- ReadBinaryDosageHeader4A(filename[1])
+
+  SID <- unlist(strsplit(header$samples$sidstring, '\t'))
+  if (header$samples$fidsize == 0) {
+    usesFID <- FALSE
+    FID = rep("", header$numsub)
+  } else {
+    usesFID <- TRUE
+    FID <- unlist(strsplit(header$samples$fidstring, '\t'))
+  }
+  samples <- data.frame(FID, SID, stringsAsFactors = FALSE)
+
+  if (header$snps$chrsize == 0) {
+    onechr <- FALSE
+    Chromosome <- rep("", header$numSNPs)
+  } else {
+    if (length(header$snps$chrsting) == 1) {
+      onechr <- TRUE
+      Chromosome <- rep(header$snps$chrstring, header$numSNPs)
+    } else {
+      onechr <- FALSE
+      Chromosome <- unlist(strsplit(header$snps$chrstring, '\t'))
+    }
+  }
+  if (length(header$snps$location) == 0)
+    Location <- rep(0L, header$numSNPs)
+  else
+    Location <- header$snps$location
+  if (header$snps$refsize == 0)
+    Reference <- rep("", header$numSNPs)
+  else
+    Reference <- unlist(strsplit(header$snps$refstring, '\t'))
+  if (header$snps$altsize == 0)
+    Alternate <- rep("", header$numSNPs)
+  else
+    Alternate <- unlist(strsplit(header$snps$altstring, '\t'))
+  if (header$snps$snpsize == 0)
+    SNPID <- paste(Chromosome, Location, Reference, Alternate, sep = ':')
+  else
+    SNPID <- unlist(strsplit(header$snps$snpstring))
+  SNPs <- data.frame(Chromosome, Location, SNPID, Reference, Alternate, stringsAsFactors = FALSE)
+
+  snpInfoCol <- match(c("aaf", "maf", "avgcall", "rsq"), names(header$snps))
+  snpInfoCol <- snpInfoCol[sapply(header$snps, function(x) length(x) != 0)[snpInfoCol]]
+#  snpinfo <- header$snps[x]
+  snpinfo <- lapply(header$snps[snpInfoCol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
+
+  return (list(filename = normalizePath(filename[1]),
+               headersize = header$dosageoffset,
+               numGroups = header$numgroups,
+               groups = header$groups,
+               numSamples = header$numsub,
+               usesFID = usesFID,
+               samples = samples,
+               onechr = onechr,
+               numSNPs = header$numSNPs,
+               SNPs = SNPs,
+               snpinfo = snpinfo))
 }
 
 ReadBinaryDosageHeader42 <- function(filename) {

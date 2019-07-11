@@ -390,6 +390,37 @@ int WriteBDSNPInfoC(std::string &filename,
   return 0;
 }
 
+// [[Rcpp::export]]
+int WriteBDIndexArray(std::string &filename,
+                      int numSNPs,
+                      int indexoffsetLoc,
+                      int dosageoffsetloc) {
+  std::fstream outfile;
+  int indexoffset, dosageoffset;
+  const int zero = 0.;
+
+  // Open the file for appending
+  // Only opens for input and output
+  outfile.open(filename.c_str(), READWRITEBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  outfile.seekg(indexoffsetLoc);
+  outfile.read((char *)&indexoffset, sizeof(int));
+
+  outfile.seekp(indexoffset);
+  for (int i = 0; i < numSNPs; ++i)
+    outfile.write((char *)&zero, sizeof(int));
+
+  dosageoffset = outfile.tellp();
+  outfile.seekp(dosageoffsetloc);
+  outfile.write((char *)&dosageoffset, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
 //***************************************************************************//
 //                        Writing the data                                   //
 //***************************************************************************//

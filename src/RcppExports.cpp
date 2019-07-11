@@ -217,6 +217,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// WriteBDIndexArray
+int WriteBDIndexArray(std::string& filename, int numSNPs, int indexoffsetLoc, int dosageoffsetloc);
+RcppExport SEXP _BinaryDosage_WriteBDIndexArray(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexoffsetLocSEXP, SEXP dosageoffsetlocSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type indexoffsetLoc(indexoffsetLocSEXP);
+    Rcpp::traits::input_parameter< int >::type dosageoffsetloc(dosageoffsetlocSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBDIndexArray(filename, numSNPs, indexoffsetLoc, dosageoffsetloc));
+    return rcpp_result_gen;
+END_RCPP
+}
 // WriteBinaryDosageData
 int WriteBinaryDosageData(const std::string& filename, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& usdosage, int base);
 RcppExport SEXP _BinaryDosage_WriteBinaryDosageData(SEXP filenameSEXP, SEXP dosageSEXP, SEXP usdosageSEXP, SEXP baseSEXP) {
@@ -265,6 +279,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_WriteBDGroups2", (DL_FUNC) &_BinaryDosage_WriteBDGroups2, 2},
     {"_BinaryDosage_WriteBDFamilyInfoC", (DL_FUNC) &_BinaryDosage_WriteBDFamilyInfoC, 7},
     {"_BinaryDosage_WriteBDSNPInfoC", (DL_FUNC) &_BinaryDosage_WriteBDSNPInfoC, 15},
+    {"_BinaryDosage_WriteBDIndexArray", (DL_FUNC) &_BinaryDosage_WriteBDIndexArray, 4},
     {"_BinaryDosage_WriteBinaryDosageData", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageData, 4},
     {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 6},
     {NULL, NULL, 0}

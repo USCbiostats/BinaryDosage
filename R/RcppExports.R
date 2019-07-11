@@ -65,6 +65,10 @@ WriteBDSNPInfoC <- function(filename, numSNPs, snpid, chromosome, location, refe
     .Call(`_BinaryDosage_WriteBDSNPInfoC`, filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc)
 }
 
+WriteBDIndexArray <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
+    .Call(`_BinaryDosage_WriteBDIndexArray`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
+}
+
 WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
     .Call(`_BinaryDosage_WriteBinaryDosageData`, filename, dosage, usdosage, base)
 }

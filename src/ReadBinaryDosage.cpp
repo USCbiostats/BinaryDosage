@@ -166,7 +166,8 @@ Rcpp::List ReadBDSubjects(std::ifstream &infile) {
                             Rcpp::Named("sidstring") = sidString,
                             Rcpp::Named("fidstring") = fidString);
 }
-Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int snpoptions) {
+
+Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int numGroups, int snpoptions) {
   int snpSize, chrSize, refSize, altSize;
   std::string snpString, chrString, refString, altString;
   std::vector<int> location;
@@ -179,18 +180,19 @@ Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int snpoptions) {
 
   snpString = ReadBDString(infile, snpSize);
   chrString = ReadBDString(infile, chrSize);
-  location = ReadBDInteger(infile, numSNPs);
+  if ((snpoptions & 0x0010) != 0)
+    location = ReadBDInteger(infile, numSNPs);
   refString = ReadBDString(infile, refSize);
   altString = ReadBDString(infile, altSize);
 
   if ((snpoptions & 0x0080) != 0)
-    aaf = ReadBDNumeric(infile, numSNPs);
+    aaf = ReadBDNumeric(infile, numSNPs * numGroups);
   if ((snpoptions & 0x0100) != 0)
-    maf = ReadBDNumeric(infile, numSNPs);
+    maf = ReadBDNumeric(infile, numSNPs * numGroups);
   if ((snpoptions & 0x0200) != 0)
-    avgCall = ReadBDNumeric(infile, numSNPs);
+    avgCall = ReadBDNumeric(infile, numSNPs * numGroups);
   if ((snpoptions & 0x0400) != 0)
-    rsq = ReadBDNumeric(infile, numSNPs);
+    rsq = ReadBDNumeric(infile, numSNPs * numGroups);
 
   return Rcpp::List::create(Rcpp::Named("snpsize") = snpSize,
                             Rcpp::Named("chrsize") = chrSize,
@@ -206,6 +208,7 @@ Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int snpoptions) {
                             Rcpp::Named("avgcall") = avgCall,
                             Rcpp::Named("rsq") = rsq);
 }
+
 // Writes the additional header info for formats 4.1 and 4.2
 // Parameter filename - Name of binary dosage file
 // Return - list of values in header
@@ -247,9 +250,10 @@ Rcpp::List ReadBinaryDosageHeader4A(std::string &filename) {
   infile.read((char *)groupSizes.data(), numGroups * sizeof(int));
 
   samples = ReadBDSubjects(infile);
-  snps = ReadBDSNPs(infile, numSNPs, snpOptions);
+  snps = ReadBDSNPs(infile, numSNPs, numGroups, snpOptions);
 
   infile.close();
+
   return Rcpp::List::create(Rcpp::Named("numsub") = numSubjects,
                             Rcpp::Named("numSNPs") = numSNPs,
                             Rcpp::Named("numgroups") = numGroups,
@@ -259,7 +263,7 @@ Rcpp::List ReadBinaryDosageHeader4A(std::string &filename) {
                             Rcpp::Named("snpoffset") = snpOffset,
                             Rcpp::Named("dosageoffset") = dosageOffset,
                             Rcpp::Named("groups") = groupSizes,
-                            Rcpp::Named("sidsize") = samples,
+                            Rcpp::Named("samples") = samples,
                             Rcpp::Named("snps") = snps);
 }
 
@@ -306,7 +310,7 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
 
   infile.read((char *)&numSNPs, sizeof(int));
   infile.read((char *)&snpOptions, sizeof(int));
-  snps = ReadBDSNPs(infile, numSNPs, snpOptions);
+  snps = ReadBDSNPs(infile, numSNPs, numGroups, snpOptions);
 
   infile.close();
 

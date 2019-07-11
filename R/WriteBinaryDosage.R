@@ -144,8 +144,8 @@ WriteBinaryDosageHeader34 <- function(filename, funcData, bdoptions) {
 WriteBinaryDosageHeader41 <- function(filename, funcData, bdoptions) {
   WriteBinaryDosageHeader4A(filename[1], funcData$numSamples, funcData$numSNPs)
   WriteBDGroups(filename[1], funcData$numSamples)
-  WriteBDFamilyInfo(filename, funcData, 8, 28, 32)
-  WriteBDSNPInfo(filename, funcData, 12, 24, 32, 36, bdoptions)
+  WriteBDFamilyInfo(filename[1], funcData, 8, 28, 32)
+  WriteBDSNPInfo(filename[1], funcData, 12, 24, 32, 36, bdoptions)
   return (0)
 }
 
@@ -156,8 +156,9 @@ WriteBinaryDosageHeader42 <- function(filename, funcData, bdoptions) {
 WriteBinaryDosageHeader43 <- function(filename, funcData, bdoptions) {
   WriteBinaryDosageHeader4B(filename[1], funcData$numSamples, funcData$numSNPs)
   WriteBDGroups2(filename[1], funcData$numSamples)
-  WriteBDFamilyInfo(filename, funcData, -1, 8, 12)
-  WriteBDSNPInfo(filename, funcData, -1, -1, 12, 16, bdoptions)
+  WriteBDFamilyInfo(filename[1], funcData, -1, 8, 12)
+  WriteBDSNPInfo(filename[1], funcData, -1, -1, 12, 16, bdoptions)
+  WriteBDIndexArray(filename[1], funcData$numSNPs, 16, 20)
   return (0)
 }
 
