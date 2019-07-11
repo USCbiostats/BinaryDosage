@@ -57,8 +57,12 @@ WriteBDGroups2 <- function(filename, groups) {
     .Call(`_BinaryDosage_WriteBDGroups2`, filename, groups)
 }
 
-WriteBDFamilyInfoC <- function(filename, sid, fid, suboffsetLoc, snpoffsetLoc) {
-    .Call(`_BinaryDosage_WriteBDFamilyInfoC`, filename, sid, fid, suboffsetLoc, snpoffsetLoc)
+WriteBDFamilyInfoC <- function(filename, numSub, sid, fid, numSubLoc, suboffsetLoc, snpoffsetLoc) {
+    .Call(`_BinaryDosage_WriteBDFamilyInfoC`, filename, numSub, sid, fid, numSubLoc, suboffsetLoc, snpoffsetLoc)
+}
+
+WriteBDSNPInfoC <- function(filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc) {
+    .Call(`_BinaryDosage_WriteBDSNPInfoC`, filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc)
 }
 
 WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {

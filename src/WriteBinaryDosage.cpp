@@ -124,10 +124,8 @@ int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNP
   }
 
   outfile.seekp(8);
-  outfile.write((char *)&numSubjects, sizeof(int));
-  outfile.write((char *)&numSNPs, sizeof(int));
   // Zero out the rest of the data. It will be filled in later
-  for (int i = 0; i < 6; ++i)
+  for (int i = 0; i < 8; ++i)
     outfile.write((char *)&zero, sizeof(int));
 
   outfile.close();
@@ -224,16 +222,36 @@ int WriteBDGroups2(std::string &filename, Rcpp::IntegerVector &groups) {
   return 0;
 }
 
+
+int WriteBDString(std::fstream &outfile, std::string &outstring) {
+  char zero = 0x0;
+
+  if (outstring.length() > 0) {
+    outfile.write(outstring.c_str(), outstring.length());
+    outfile.write(&zero, 1);
+  }
+
+  return 0;
+}
+
+int WriteBDInteger(std::fstream &outfile, Rcpp::IntegerVector &outvector) {
+
+  if (outvector.length() > 0)
+    outfile.write((char *)&outvector[0], outvector.length() * sizeof(int));
+
+  return 0;
+}
 // [[Rcpp::export]]
 int WriteBDFamilyInfoC(std::string &filename,
+                       int numSub,
                        std::string &sid,
                        std::string &fid,
+                       int numSubLoc,
                        int suboffsetLoc,
                        int snpoffsetLoc) {
   std::fstream outfile;
   int sidsize, fidsize;
   int suboffset, snpoffset;
-  char zero = 0x0;
 
   // Open the file for appending
   // Only opens for input and output
@@ -251,15 +269,19 @@ int WriteBDFamilyInfoC(std::string &filename,
   if (fidsize > 0)
     ++fidsize;
 
-  outfile.seekp(suboffset);
+  if (numSubLoc < 0) {
+    outfile.seekp(suboffset);
+    outfile.write((char *)&numSub, sizeof(int));
+  } else {
+    outfile.seekp(numSubLoc);
+    outfile.write((char *)&numSub, sizeof(int));
+    outfile.seekp(suboffset);
+  }
+
   outfile.write((char *)&sidsize, sizeof(int));
   outfile.write((char *)&fidsize, sizeof(int));
-  outfile.write(sid.c_str(), sidsize - 1);
-  outfile.write(&zero, 1);
-  if (fidsize > 0) {
-    outfile.write(fid.c_str(), fidsize - 1);
-    outfile.write(&zero, 1);
-  }
+  WriteBDString(outfile, sid);
+  WriteBDString(outfile, fid);
 
   snpoffset = outfile.tellp();
   outfile.seekp(snpoffsetLoc);
@@ -268,6 +290,93 @@ int WriteBDFamilyInfoC(std::string &filename,
   outfile.close();
   return 0;
 }
+
+// [[Rcpp::export]]
+int WriteBDSNPInfoC(std::string &filename,
+                    int numSNPs,
+                    std::string &snpid,
+                    std::string &chromosome,
+                    Rcpp::IntegerVector &location,
+                    std::string &reference,
+                    std::string &alternate,
+                    Rcpp::NumericVector &aaf,
+                    Rcpp::NumericVector &maf,
+                    Rcpp::NumericVector &avgCall,
+                    Rcpp::NumericVector &rsq,
+                    int numSNPloc,
+                    int snpOptionsLoc,
+                    int snpOffsetLoc,
+                    int nextOffsetLoc) {
+  std::fstream outfile;
+  int snpoffset, nextoffset;
+  int stringSize[4];
+  int snpOptions = 0;
+
+  // Open the file for appending
+  // Only opens for input and output
+  outfile.open(filename.c_str(), READWRITEBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return 1;
+  }
+
+  if (snpid.length() != 0)
+    snpOptions |= 0x02;
+  if (chromosome.size() !=  0) {
+    snpOptions |= 0x04;
+    if (chromosome.find('\t') == std::string::npos)
+      snpOptions |= 0x08;
+  }
+  if (location.length() != 0)
+    snpOptions |= 0x10;
+  if (reference.length() != 0)
+    snpOptions |= 0x20;
+  if (alternate.length() != 0)
+    snpOptions |= 0x40;
+  if (aaf.length() != 0)
+    snpOptions |= 0x80;
+  if (maf.length() != 0)
+    snpOptions |= 0x100;
+  if (avgCall.length() != 0)
+    snpOptions |= 0x200;
+  if (rsq.length() != 0)
+    snpOptions |= 0x400;
+
+  outfile.seekg(snpOffsetLoc);
+  outfile.read((char *)&snpoffset, sizeof(int));
+
+  if (snpOptionsLoc < 0) {
+    outfile.seekp(snpoffset);
+    outfile.write((char *)&numSNPs, sizeof(int));
+    outfile.write((char *)&snpOptions, sizeof(int));
+  } else {
+    outfile.seekp(numSNPloc);
+    outfile.write((char *)&numSNPs, sizeof(int));
+    outfile.seekp(snpOptionsLoc);
+    outfile.write((char *)&snpOptions, sizeof(int));
+    outfile.seekp(snpoffset);
+  }
+
+  stringSize[0] = snpid.length() == 0 ? 0 : snpid.length() + 1;
+  stringSize[1] = chromosome.length() == 0 ? 0 : chromosome.length() + 1;
+  stringSize[2] = reference.length() == 0 ? 0 : reference.length() + 1;
+  stringSize[3] = alternate.length()  == 0 ? 0 : alternate.length() + 1;
+  outfile.write((char *)&stringSize[0], sizeof(stringSize));
+
+  WriteBDString(outfile, snpid);
+  WriteBDString(outfile, chromosome);
+  WriteBDInteger(outfile, location);
+  WriteBDString(outfile, reference);
+  WriteBDString(outfile, alternate);
+
+  nextoffset = outfile.tellp();
+  outfile.seekp(nextOffsetLoc);
+  outfile.write((char *)&nextoffset, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
 //***************************************************************************//
 //                        Writing the data                                   //
 //***************************************************************************//

@@ -117,6 +117,71 @@ Rcpp::List ReadBinaryDosageHeader3B(std::string &filename) {
   return Rcpp::List::create(Rcpp::Named("md5") = md5);
 }
 
+std::string ReadBDString(std::ifstream &infile, int length) {
+  char *stringRead = NULL;
+  std::string outString = "";
+
+  if (length != 0) {
+    stringRead = new char[length];
+    infile.read(stringRead, length);
+    outString = stringRead;
+  }
+  return outString;
+}
+
+std::vector<int> ReadBDInteger(std::ifstream &infile, int length) {
+  std::vector<int> retVal;
+
+  if (length > 0) {
+    retVal.resize(length);
+    infile.read((char *)retVal.data(), length * sizeof(int));
+  }
+  return retVal;
+}
+
+Rcpp::List ReadBDSubjects(std::ifstream &infile) {
+  int sidsize;
+  int fidsize;
+  std::string sidString;
+  std::string fidString;
+
+  infile.read((char *)&sidsize, sizeof(int));
+  infile.read((char *)&fidsize, sizeof(int));
+
+  sidString = ReadBDString(infile, sidsize);
+  fidString = ReadBDString(infile, fidsize);
+
+  return Rcpp::List::create(Rcpp::Named("sidsize") = sidsize,
+                            Rcpp::Named("fidsize") = fidsize,
+                            Rcpp::Named("sidstring") = sidString,
+                            Rcpp::Named("fidstring") = fidString);
+}
+Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs) {
+  int snpSize, chrSize, refSize, altSize;
+  std::string snpString, chrString, refString, altString;
+  std::vector<int> location;
+
+  infile.read((char *)&snpSize, sizeof(int));
+  infile.read((char *)&chrSize, sizeof(int));
+  infile.read((char *)&refSize, sizeof(int));
+  infile.read((char *)&altSize, sizeof(int));
+
+  snpString = ReadBDString(infile, snpSize);
+  chrString = ReadBDString(infile, chrSize);
+  location = ReadBDInteger(infile, numSNPs);
+  refString = ReadBDString(infile, refSize);
+  altString = ReadBDString(infile, altSize);
+
+  return Rcpp::List::create(Rcpp::Named("snpsize") = snpSize,
+                            Rcpp::Named("chrsize") = chrSize,
+                            Rcpp::Named("refsize") = refSize,
+                            Rcpp::Named("altsize") = altSize,
+                            Rcpp::Named("snpstring") = snpString,
+                            Rcpp::Named("chrstring") = chrString,
+                            Rcpp::Named("location") = location,
+                            Rcpp::Named("refstring") = refString,
+                            Rcpp::Named("altstring") = altString);
+}
 // Writes the additional header info for formats 4.1 and 4.2
 // Parameter filename - Name of binary dosage file
 // Return - list of values in header
@@ -132,12 +197,8 @@ Rcpp::List ReadBinaryDosageHeader4A(std::string &filename) {
   int snpOffset;
   int dosageOffset;
   std::vector<int> groupSizes;
-  int sidsize;
-  int fidsize;
-  int readSize;
-  char *stringRead = NULL;
-  std::string sidString;
-  std::string fidString;
+  Rcpp::List samples;
+  Rcpp::List snps;
   Rcpp::List retVal;
 
   // Open the file for appending
@@ -161,35 +222,21 @@ Rcpp::List ReadBinaryDosageHeader4A(std::string &filename) {
   groupSizes.resize(numGroups);
   infile.read((char *)groupSizes.data(), numGroups * sizeof(int));
 
-  infile.read((char *)&sidsize, sizeof(int));
-  infile.read((char *)&fidsize, sizeof(int));
-
-  readSize = sidsize > fidsize ? sidsize : fidsize;
-  stringRead = new char[readSize];
-  infile.read(stringRead, sidsize);
-  sidString = stringRead;
-  if (fidsize > 0) {
-    infile.read(stringRead, sidsize);
-    fidString = stringRead;
-  } else {
-    fidString = "";
-  }
-  delete [] stringRead;
+  samples = ReadBDSubjects(infile);
+  snps = ReadBDSNPs(infile, numSNPs);
 
   infile.close();
-  return (Rcpp::List::create(Rcpp::Named("numsub") = numSubjects,
-                             Rcpp::Named("numSNPs") = numSNPs,
-                             Rcpp::Named("numgroups") = numGroups,
-                             Rcpp::Named("suboptions") = subjectOptions,
-                             Rcpp::Named("snpOptions") = snpOptions,
-                             Rcpp::Named("subjectoffset") = subjectOffset,
-                             Rcpp::Named("snpoffset") = snpOffset,
-                             Rcpp::Named("dosageoffset") = dosageOffset,
-                             Rcpp::Named("groups") = groupSizes,
-                             Rcpp::Named("sidsize") = sidsize,
-                             Rcpp::Named("fidsize") = fidsize,
-                             Rcpp::Named("sidstring") = sidString,
-                             Rcpp::Named("fidstring") = fidString));
+  return Rcpp::List::create(Rcpp::Named("numsub") = numSubjects,
+                            Rcpp::Named("numSNPs") = numSNPs,
+                            Rcpp::Named("numgroups") = numGroups,
+                            Rcpp::Named("suboptions") = subjectOptions,
+                            Rcpp::Named("snpoptions") = snpOptions,
+                            Rcpp::Named("subjectoffset") = subjectOffset,
+                            Rcpp::Named("snpoffset") = snpOffset,
+                            Rcpp::Named("dosageoffset") = dosageOffset,
+                            Rcpp::Named("groups") = groupSizes,
+                            Rcpp::Named("sidsize") = samples,
+                            Rcpp::Named("snps") = snps);
 }
 
 
@@ -205,12 +252,11 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
   int dosageOffset;
   int numGroups;
   std::vector<int> groupSizes;
-  int sidsize;
-  int fidsize;
-  int readSize;
-  char *stringRead = NULL;
-  std::string sidString;
-  std::string fidString;
+  int snpOptions;
+  int numSub;
+  Rcpp::List samples;
+  int numSNPs;
+  Rcpp::List snps;
   Rcpp::List retVal;
 
   // Open the file for appending
@@ -231,21 +277,13 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
   groupSizes.resize(numGroups);
   infile.read((char *)groupSizes.data(), numGroups * sizeof(int));
 
-  infile.read((char *)&sidsize, sizeof(int));
-  infile.read((char *)&fidsize, sizeof(int));
+  infile.read((char *)&numSub, sizeof(int));
+  samples = ReadBDSubjects(infile);
 
-  readSize = sidsize > fidsize ? sidsize : fidsize;
-  stringRead = new char[readSize];
-  infile.read(stringRead, sidsize);
-  sidString = stringRead;
-  if (fidsize > 0) {
-    infile.read(stringRead, sidsize);
-    fidString = stringRead;
-  } else {
-    fidString = "";
-  }
+  infile.read((char *)&numSNPs, sizeof(int));
+  infile.read((char *)&snpOptions, sizeof(int));
+  snps = ReadBDSNPs(infile, numSNPs);
 
-  delete [] stringRead;
   infile.close();
 
   return Rcpp::List::create(Rcpp::Named("suboffset") = subjectOffset,
@@ -253,8 +291,9 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
                             Rcpp::Named("indexoffset") = indexOffset,
                             Rcpp::Named("dosageoffset") = dosageOffset,
                             Rcpp::Named("groups") = groupSizes,
-                            Rcpp::Named("sidsize") = sidsize,
-                            Rcpp::Named("fidsize") = fidsize,
-                            Rcpp::Named("sidstring") = sidString,
-                            Rcpp::Named("fidstring") = fidString);
+                            Rcpp::Named("numSamples") = numSub,
+                            Rcpp::Named("samples") = samples,
+                            Rcpp::Named("numSNPs") = numSNPs,
+                            Rcpp::Named("snpoptions") = snpOptions,
+                            Rcpp::Named("snps") = snps);
 }
