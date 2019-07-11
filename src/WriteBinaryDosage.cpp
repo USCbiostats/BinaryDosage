@@ -241,6 +241,15 @@ int WriteBDInteger(std::fstream &outfile, Rcpp::IntegerVector &outvector) {
 
   return 0;
 }
+
+int WriteBDNumeric(std::fstream &outfile, Rcpp::NumericVector &outvector) {
+
+  if (outvector.length() > 0)
+    outfile.write((char *)&outvector[0], outvector.length() * sizeof(double));
+
+  return 0;
+}
+
 // [[Rcpp::export]]
 int WriteBDFamilyInfoC(std::string &filename,
                        int numSub,
@@ -368,6 +377,10 @@ int WriteBDSNPInfoC(std::string &filename,
   WriteBDInteger(outfile, location);
   WriteBDString(outfile, reference);
   WriteBDString(outfile, alternate);
+  WriteBDNumeric(outfile, aaf);
+  WriteBDNumeric(outfile, maf);
+  WriteBDNumeric(outfile, avgCall);
+  WriteBDNumeric(outfile, rsq);
 
   nextoffset = outfile.tellp();
   outfile.seekp(nextOffsetLoc);
