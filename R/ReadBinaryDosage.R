@@ -47,6 +47,105 @@ ReadFamAndMapFiles <- function(filename, format, subformat, headersize) {
                SNPs = snps))
 }
 
+# This routine sets up the indices when only the dosages are
+# in the binary dosage file. This is simple because the size
+# is fixed 2 bytes per subject per SNP
+ReadIndices1 <- function(numSNPs, dosageoffset) {
+  indices <- numeric(numSNPs)
+  indices[1] <- dosageoffset
+  for (i in 2:numSNPs)
+    indices[i] = indices[i - 1] + 2 * numSNPs
+  return (indices)
+}
+
+# This routine sets up the indices when reading formats 1 and 2
+# when there is both dosage and genetic probability data. This
+# is also simple because the size is fixed to 4 bytes per subject
+# per SNP
+ReadIndices2 <- function(numSNPs, dosageoffset) {
+  indices <- numeric(numSNPs)
+  indices[1] <- dosageoffset
+  for (i in 2:numSNPs)
+    indices[i] = indices[i - 1] + 4 * numSNPs
+  return (indices)
+}
+
+# This routine sets up the indices when reading formats 3 and 4,
+# subformat 2. The inidices are stored at the start of each SNP's
+# dosage data. This is a time consuming operation.
+ReadIndices3 <- function(numSNPs, dosageoffset) {
+  indices <- numeric(numSNPs)
+  indices[1] <- dosageoffset
+  for (i in 2:numSNPs)
+    indices[i] = indices[i - 1] + 4 * numSNPs
+  return (indices)
+}
+
+# This routine sets up the indices when reading formats 3 and 4,
+# subformat 4. The inidices are stored in the header are easy to
+# read in.
+ReadIndices4 <- function(filename, numSNPs, indexStart) {
+  return (ReadBDIndicesS4(filename, numSNPs, indexStart))
+}
+
+Convert4HeaderToBDInfo <- function(filename, header) {
+  SID <- unlist(strsplit(header$samples$sidstring, '\t'))
+  if (header$samples$fidsize == 0) {
+    usesFID <- FALSE
+    FID = rep("", header$numsub)
+  } else {
+    usesFID <- TRUE
+    FID <- unlist(strsplit(header$samples$fidstring, '\t'))
+  }
+  samples <- data.frame(FID, SID, stringsAsFactors = FALSE)
+
+  if (header$snps$chrsize == 0) {
+    onechr <- FALSE
+    Chromosome <- rep("", header$numSNPs)
+  } else {
+    if (length(header$snps$chrsting) == 1) {
+      onechr <- TRUE
+      Chromosome <- rep(header$snps$chrstring, header$numSNPs)
+    } else {
+      onechr <- FALSE
+      Chromosome <- unlist(strsplit(header$snps$chrstring, '\t'))
+    }
+  }
+  if (length(header$snps$location) == 0)
+    Location <- rep(0L, header$numSNPs)
+  else
+    Location <- header$snps$location
+  if (header$snps$refsize == 0)
+    Reference <- rep("", header$numSNPs)
+  else
+    Reference <- unlist(strsplit(header$snps$refstring, '\t'))
+  if (header$snps$altsize == 0)
+    Alternate <- rep("", header$numSNPs)
+  else
+    Alternate <- unlist(strsplit(header$snps$altstring, '\t'))
+  if (header$snps$snpsize == 0)
+    SNPID <- paste(Chromosome, Location, Reference, Alternate, sep = ':')
+  else
+    SNPID <- unlist(strsplit(header$snps$snpstring))
+  SNPs <- data.frame(Chromosome, Location, SNPID, Reference, Alternate, stringsAsFactors = FALSE)
+
+  snpInfoCol <- match(c("aaf", "maf", "avgcall", "rsq"), names(header$snps))
+  snpInfoCol <- snpInfoCol[sapply(header$snps, function(x) length(x) != 0)[snpInfoCol]]
+  snpinfo <- lapply(header$snps[snpInfoCol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
+
+  return (list(filename = normalizePath(filename[1], winslash = "/"),
+               headersize = header$dosageoffset,
+               numGroups = header$numgroups,
+               groups = header$groups,
+               numSamples = header$numsub,
+               usesFID = usesFID,
+               samples = samples,
+               onechr = onechr,
+               numSNPs = header$numSNPs,
+               SNPs = SNPs,
+               snpinfo = snpinfo))
+}
+
 ReadBinaryDosageHeader11 <- function(filename) {
   return (ReadFamAndMapFiles(filename, 1, 1, 8))
 }
@@ -96,68 +195,13 @@ ReadBinaryDosageHeader34 <- function(filename) {
     stop("Subject file does not line up with binary dosage file")
   if (digest(bdInfo$SNPs) != additionalInfo$md5[2])
     stop("Map file does not line up with binary dosage file")
+  bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, 72)
   return (bdInfo)
 }
 
 ReadBinaryDosageHeader41 <- function(filename) {
   header <- ReadBinaryDosageHeader4A(filename[1])
-
-  SID <- unlist(strsplit(header$samples$sidstring, '\t'))
-  if (header$samples$fidsize == 0) {
-    usesFID <- FALSE
-    FID = rep("", header$numsub)
-  } else {
-    usesFID <- TRUE
-    FID <- unlist(strsplit(header$samples$fidstring, '\t'))
-  }
-  samples <- data.frame(FID, SID, stringsAsFactors = FALSE)
-
-  if (header$snps$chrsize == 0) {
-    onechr <- FALSE
-    Chromosome <- rep("", header$numSNPs)
-  } else {
-    if (length(header$snps$chrsting) == 1) {
-      onechr <- TRUE
-      Chromosome <- rep(header$snps$chrstring, header$numSNPs)
-    } else {
-      onechr <- FALSE
-      Chromosome <- unlist(strsplit(header$snps$chrstring, '\t'))
-    }
-  }
-  if (length(header$snps$location) == 0)
-    Location <- rep(0L, header$numSNPs)
-  else
-    Location <- header$snps$location
-  if (header$snps$refsize == 0)
-    Reference <- rep("", header$numSNPs)
-  else
-    Reference <- unlist(strsplit(header$snps$refstring, '\t'))
-  if (header$snps$altsize == 0)
-    Alternate <- rep("", header$numSNPs)
-  else
-    Alternate <- unlist(strsplit(header$snps$altstring, '\t'))
-  if (header$snps$snpsize == 0)
-    SNPID <- paste(Chromosome, Location, Reference, Alternate, sep = ':')
-  else
-    SNPID <- unlist(strsplit(header$snps$snpstring))
-  SNPs <- data.frame(Chromosome, Location, SNPID, Reference, Alternate, stringsAsFactors = FALSE)
-
-  snpInfoCol <- match(c("aaf", "maf", "avgcall", "rsq"), names(header$snps))
-  snpInfoCol <- snpInfoCol[sapply(header$snps, function(x) length(x) != 0)[snpInfoCol]]
-#  snpinfo <- header$snps[x]
-  snpinfo <- lapply(header$snps[snpInfoCol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
-
-  return (list(filename = normalizePath(filename[1]),
-               headersize = header$dosageoffset,
-               numGroups = header$numgroups,
-               groups = header$groups,
-               numSamples = header$numsub,
-               usesFID = usesFID,
-               samples = samples,
-               onechr = onechr,
-               numSNPs = header$numSNPs,
-               SNPs = SNPs,
-               snpinfo = snpinfo))
+  return (Convert4HeaderToBDInfo(filename, header))
 }
 
 ReadBinaryDosageHeader42 <- function(filename) {
@@ -165,9 +209,14 @@ ReadBinaryDosageHeader42 <- function(filename) {
 }
 
 ReadBinaryDosageHeader43 <- function(filename) {
-  return (ReadBinaryDosageHeader4B(filename[1]))
+  header <- ReadBinaryDosageHeader4B(filename[1])
+  bdInfo <- Convert4HeaderToBDInfo(filename, header)
+  return (bdInfo)
 }
 
 ReadBinaryDosageHeader44 <- function(filename) {
-  return (ReadBinaryDosageHeader4B(filename[1]))
+  header <- ReadBinaryDosageHeader4B(filename[1])
+  bdInfo <- Convert4HeaderToBDInfo(filename, header)
+  bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, header$indexoffset)
+  return (bdInfo)
 }

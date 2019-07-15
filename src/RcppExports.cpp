@@ -60,6 +60,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ReadBDIndicesS4
+Rcpp::IntegerVector ReadBDIndicesS4(std::string filename, int numSNPs, int indexStart);
+RcppExport SEXP _BinaryDosage_ReadBDIndicesS4(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexStartSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type indexStart(indexStartSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBDIndicesS4(filename, numSNPs, indexStart));
+    return rcpp_result_gen;
+END_RCPP
+}
 // OpenVCFFile
 Rcpp::List OpenVCFFile(Rcpp::StringVector& rFilename);
 RcppExport SEXP _BinaryDosage_OpenVCFFile(SEXP rFilenameSEXP) {
@@ -217,9 +230,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// WriteBDIndexArray
-int WriteBDIndexArray(std::string& filename, int numSNPs, int indexoffsetLoc, int dosageoffsetloc);
-RcppExport SEXP _BinaryDosage_WriteBDIndexArray(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexoffsetLocSEXP, SEXP dosageoffsetlocSEXP) {
+// WriteBDIndexArray3_4
+int WriteBDIndexArray3_4(std::string& filename, int numSNPs);
+RcppExport SEXP _BinaryDosage_WriteBDIndexArray3_4(SEXP filenameSEXP, SEXP numSNPsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBDIndexArray3_4(filename, numSNPs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBDIndexArray4_4
+int WriteBDIndexArray4_4(std::string& filename, int numSNPs, int indexoffsetLoc, int dosageoffsetloc);
+RcppExport SEXP _BinaryDosage_WriteBDIndexArray4_4(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexoffsetLocSEXP, SEXP dosageoffsetlocSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -227,7 +252,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
     Rcpp::traits::input_parameter< int >::type indexoffsetLoc(indexoffsetLocSEXP);
     Rcpp::traits::input_parameter< int >::type dosageoffsetloc(dosageoffsetlocSEXP);
-    rcpp_result_gen = Rcpp::wrap(WriteBDIndexArray(filename, numSNPs, indexoffsetLoc, dosageoffsetloc));
+    rcpp_result_gen = Rcpp::wrap(WriteBDIndexArray4_4(filename, numSNPs, indexoffsetLoc, dosageoffsetloc));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -268,6 +293,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3B, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4A, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
+    {"_BinaryDosage_ReadBDIndicesS4", (DL_FUNC) &_BinaryDosage_ReadBDIndicesS4, 3},
     {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
     {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
     {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
@@ -279,7 +305,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_WriteBDGroups2", (DL_FUNC) &_BinaryDosage_WriteBDGroups2, 2},
     {"_BinaryDosage_WriteBDFamilyInfoC", (DL_FUNC) &_BinaryDosage_WriteBDFamilyInfoC, 7},
     {"_BinaryDosage_WriteBDSNPInfoC", (DL_FUNC) &_BinaryDosage_WriteBDSNPInfoC, 15},
-    {"_BinaryDosage_WriteBDIndexArray", (DL_FUNC) &_BinaryDosage_WriteBDIndexArray, 4},
+    {"_BinaryDosage_WriteBDIndexArray3_4", (DL_FUNC) &_BinaryDosage_WriteBDIndexArray3_4, 2},
+    {"_BinaryDosage_WriteBDIndexArray4_4", (DL_FUNC) &_BinaryDosage_WriteBDIndexArray4_4, 4},
     {"_BinaryDosage_WriteBinaryDosageData", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageData, 4},
     {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 6},
     {NULL, NULL, 0}

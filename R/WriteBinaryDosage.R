@@ -137,6 +137,7 @@ WriteBinaryDosageHeader33 <- function(filename, funcData, bdoptions) {
 WriteBinaryDosageHeader34 <- function(filename, funcData, bdoptions) {
   md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
   WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2])
+  WriteBDIndexArray3_4(filename[1], funcData$numSNPs)
   return (0)
   #  return (WriteBinaryDosageHeader22C(filename))
 }
@@ -153,17 +154,23 @@ WriteBinaryDosageHeader42 <- function(filename, funcData, bdoptions) {
   return (WriteBinaryDosageHeader41(filename, funcData, bdoptions))
 }
 
-WriteBinaryDosageHeader43 <- function(filename, funcData, bdoptions) {
+WriteBinaryDosageHeader4_3_4 <- function(filename, funcData, bdoptions) {
   WriteBinaryDosageHeader4B(filename[1], funcData$numSamples, funcData$numSNPs)
   WriteBDGroups2(filename[1], funcData$numSamples)
   WriteBDFamilyInfo(filename[1], funcData, -1, 8, 12)
   WriteBDSNPInfo(filename[1], funcData, -1, -1, 12, 16, bdoptions)
-  WriteBDIndexArray(filename[1], funcData$numSNPs, 16, 20)
+  return (0)
+}
+
+WriteBinaryDosageHeader43 <- function(filename, funcData, bdoptions) {
+  WriteBinaryDosageHeader4_3_4(filename, funcData, bdoptions)
   return (0)
 }
 
 WriteBinaryDosageHeader44 <- function(filename, funcData, bdoptions) {
-  return (WriteBinaryDosageHeader43(filename, funcData, bdoptions))
+  WriteBinaryDosageHeader4_3_4(filename, funcData, bdoptions)
+  WriteBDIndexArray4_4(filename[1], funcData$numSNPs, 16, 20)
+  return (0)
 }
 
 # Allocates memory needed to write binary dosage files

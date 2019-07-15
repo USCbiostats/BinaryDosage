@@ -42,7 +42,7 @@ Rcpp::List ReadBinaryDosageBaseHeader(std::string &filename) {
   infile.read((char *)&magicWord, sizeof(int));
   infile.read((char *)&formatInt, sizeof(int));
   if (magicWord != MAGICWORD) {
-    Rcpp::Rcout << "File does not appear to be a binary dosage file" << std::endl;
+    Rcpp::Rcerr << "File does not appear to be a binary dosage file" << std::endl;
     return retVal;
   }
 
@@ -318,10 +318,32 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
                             Rcpp::Named("snpoffset") = snpOffset,
                             Rcpp::Named("indexoffset") = indexOffset,
                             Rcpp::Named("dosageoffset") = dosageOffset,
+                            Rcpp::Named("numgroups") = numGroups,
                             Rcpp::Named("groups") = groupSizes,
-                            Rcpp::Named("numSamples") = numSub,
+                            Rcpp::Named("numsub") = numSub,
                             Rcpp::Named("samples") = samples,
                             Rcpp::Named("numSNPs") = numSNPs,
                             Rcpp::Named("snpoptions") = snpOptions,
                             Rcpp::Named("snps") = snps);
+}
+
+// [[Rcpp::export]]
+Rcpp::IntegerVector ReadBDIndicesS4(std::string filename,
+                                    int numSNPs,
+                                    int indexStart) {
+  std::ifstream infile;
+  Rcpp::IntegerVector retVal(numSNPs);
+
+  infile.open(filename.c_str(), READBINARY);
+  if (!infile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return retVal;
+  }
+
+  infile.seekg(indexStart);
+  infile.read((char *)&retVal[0], numSNPs * sizeof(int));
+
+  infile.close();
+
+  return retVal;
 }

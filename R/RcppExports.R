@@ -21,6 +21,10 @@ ReadBinaryDosageHeader4B <- function(filename) {
     .Call(`_BinaryDosage_ReadBinaryDosageHeader4B`, filename)
 }
 
+ReadBDIndicesS4 <- function(filename, numSNPs, indexStart) {
+    .Call(`_BinaryDosage_ReadBDIndicesS4`, filename, numSNPs, indexStart)
+}
+
 OpenVCFFile <- function(rFilename) {
     .Call(`_BinaryDosage_OpenVCFFile`, rFilename)
 }
@@ -65,8 +69,12 @@ WriteBDSNPInfoC <- function(filename, numSNPs, snpid, chromosome, location, refe
     .Call(`_BinaryDosage_WriteBDSNPInfoC`, filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc)
 }
 
-WriteBDIndexArray <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
-    .Call(`_BinaryDosage_WriteBDIndexArray`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
+WriteBDIndexArray3_4 <- function(filename, numSNPs) {
+    .Call(`_BinaryDosage_WriteBDIndexArray3_4`, filename, numSNPs)
+}
+
+WriteBDIndexArray4_4 <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
+    .Call(`_BinaryDosage_WriteBDIndexArray4_4`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
 }
 
 WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
