@@ -73,6 +73,41 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ReadBinaryData11
+int ReadBinaryData11(std::string& filename, int headersize, int snp, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& usdosage, int base);
+RcppExport SEXP _BinaryDosage_ReadBinaryData11(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP usdosageSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    Rcpp::traits::input_parameter< int >::type snp(snpSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type usdosage(usdosageSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryData11(filename, headersize, snp, dosage, usdosage, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryData12
+int ReadBinaryData12(std::string& filename, int headersize, int snp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& us, int base);
+RcppExport SEXP _BinaryDosage_ReadBinaryData12(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    Rcpp::traits::input_parameter< int >::type snp(snpSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryData12(filename, headersize, snp, dosage, p0, p1, p2, us, base));
+    return rcpp_result_gen;
+END_RCPP
+}
 // OpenVCFFile
 Rcpp::List OpenVCFFile(Rcpp::StringVector& rFilename);
 RcppExport SEXP _BinaryDosage_OpenVCFFile(SEXP rFilenameSEXP) {
@@ -294,6 +329,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4A, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
     {"_BinaryDosage_ReadBDIndicesS4", (DL_FUNC) &_BinaryDosage_ReadBDIndicesS4, 3},
+    {"_BinaryDosage_ReadBinaryData11", (DL_FUNC) &_BinaryDosage_ReadBinaryData11, 6},
+    {"_BinaryDosage_ReadBinaryData12", (DL_FUNC) &_BinaryDosage_ReadBinaryData12, 9},
     {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
     {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
     {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},

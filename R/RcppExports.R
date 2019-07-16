@@ -25,6 +25,14 @@ ReadBDIndicesS4 <- function(filename, numSNPs, indexStart) {
     .Call(`_BinaryDosage_ReadBDIndicesS4`, filename, numSNPs, indexStart)
 }
 
+ReadBinaryData11 <- function(filename, headersize, snp, dosage, usdosage, base) {
+    .Call(`_BinaryDosage_ReadBinaryData11`, filename, headersize, snp, dosage, usdosage, base)
+}
+
+ReadBinaryData12 <- function(filename, headersize, snp, dosage, p0, p1, p2, us, base) {
+    .Call(`_BinaryDosage_ReadBinaryData12`, filename, headersize, snp, dosage, p0, p1, p2, us, base)
+}
+
 OpenVCFFile <- function(rFilename) {
     .Call(`_BinaryDosage_OpenVCFFile`, rFilename)
 }

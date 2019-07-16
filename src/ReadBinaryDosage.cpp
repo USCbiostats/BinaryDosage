@@ -7,6 +7,9 @@ extern const std::ios_base::openmode READWRITEBINARY;
 extern const std::ios_base::openmode READBINARY;
 extern const std::ios_base::openmode WRITEBINARY;
 
+extern const int NUMBEROFBASES;
+extern const unsigned short USBASE[];
+extern const double DBASE[];
 
 //***************************************************************************//
 //                        Reading the header                                 //
@@ -346,4 +349,83 @@ Rcpp::IntegerVector ReadBDIndicesS4(std::string filename,
   infile.close();
 
   return retVal;
+}
+
+// Routine to convert short values to double
+// Parameter us - is the vector of shorts to convert
+// Parameter x - vector of unsigned doubles to store converted values
+// Parameter base - Index of USBASE to use as base
+// NOTE: missing values are coded as 0xffff for shorts
+void UShortToDouble(Rcpp::IntegerVector &us,
+                    Rcpp::NumericVector &x,
+                    const int base) {
+  unsigned short *ps1;
+  double *d;
+  int i;
+
+  ps1 = (unsigned short *)&us[0];
+  d = (double *)&x[0];
+  for (i = 0; i < x.size(); ++i, ++ps1, ++d) {
+    if (*ps1 == 0xffff) {
+      // Missing
+      *d = NA_REAL;
+    } else {
+      *d = DBASE[base] * *ps1;
+    }
+  }
+}
+
+// [[Rcpp::export]]
+int ReadBinaryData11(std::string &filename,
+                     int headersize,
+                     int snp,
+                     Rcpp::NumericVector &dosage,
+                     Rcpp::IntegerVector &usdosage,
+                     int base) {
+  std::ifstream infile;
+  std::streampos loc;
+
+  infile.open(filename.c_str(), READBINARY);
+  if (!infile.good()) {
+    Rcpp::Rcerr << "Unable to open input file" << std::endl;
+    return 1;
+  }
+
+  loc = headersize + 2 * (snp - 1) * dosage.size();
+  infile.seekg(loc);
+  infile.read((char *)&usdosage[0], usdosage.size() * sizeof(short));
+  UShortToDouble(usdosage, dosage, base - 1);
+  infile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int ReadBinaryData12(std::string &filename,
+                     int headersize,
+                     int snp,
+                     Rcpp::NumericVector &dosage,
+                     Rcpp::NumericVector &p0,
+                     Rcpp::NumericVector &p1,
+                     Rcpp::NumericVector &p2,
+                     Rcpp::IntegerVector &us,
+                     int base) {
+  std::ifstream infile;
+  std::streampos loc;
+
+  infile.open(filename.c_str(), READBINARY);
+  if (!infile.good()) {
+    Rcpp::Rcerr << "Unable to open input file" << std::endl;
+    return 1;
+  }
+
+  loc = headersize + 4 * (snp - 1) * dosage.size();
+  infile.seekg(loc);
+  infile.read((char *)&us[0], us.size() * sizeof(short));
+  UShortToDouble(us, p1, base - 1);
+  infile.read((char *)&us[0], us.size() * sizeof(short));
+  UShortToDouble(us, p2, base - 1);
+  dosage = p1 + p2 + p2;
+  p0 = 1. - p1 - p2;
+  infile.close();
+  return 0;
 }

@@ -88,7 +88,7 @@ ReadIndices4 <- function(filename, numSNPs, indexStart) {
   return (ReadBDIndicesS4(filename, numSNPs, indexStart))
 }
 
-Convert4HeaderToBDInfo <- function(filename, header) {
+Convert4HeaderToBDInfo <- function(filename, header, format, subformat) {
   SID <- unlist(strsplit(header$samples$sidstring, '\t'))
   if (header$samples$fidsize == 0) {
     usesFID <- FALSE
@@ -134,6 +134,8 @@ Convert4HeaderToBDInfo <- function(filename, header) {
   snpinfo <- lapply(header$snps[snpInfoCol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
 
   return (list(filename = normalizePath(filename[1], winslash = "/"),
+               format = format,
+               subformat = subformat,
                headersize = header$dosageoffset,
                numGroups = header$numgroups,
                groups = header$groups,
@@ -201,7 +203,7 @@ ReadBinaryDosageHeader34 <- function(filename) {
 
 ReadBinaryDosageHeader41 <- function(filename) {
   header <- ReadBinaryDosageHeader4A(filename[1])
-  return (Convert4HeaderToBDInfo(filename, header))
+  return (Convert4HeaderToBDInfo(filename, header, 4, 1))
 }
 
 ReadBinaryDosageHeader42 <- function(filename) {
@@ -210,13 +212,13 @@ ReadBinaryDosageHeader42 <- function(filename) {
 
 ReadBinaryDosageHeader43 <- function(filename) {
   header <- ReadBinaryDosageHeader4B(filename[1])
-  bdInfo <- Convert4HeaderToBDInfo(filename, header)
+  bdInfo <- Convert4HeaderToBDInfo(filename, header, 4, 3)
   return (bdInfo)
 }
 
 ReadBinaryDosageHeader44 <- function(filename) {
   header <- ReadBinaryDosageHeader4B(filename[1])
-  bdInfo <- Convert4HeaderToBDInfo(filename, header)
+  bdInfo <- Convert4HeaderToBDInfo(filename, header, 4, 4)
   bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, header$indexoffset)
   return (bdInfo)
 }

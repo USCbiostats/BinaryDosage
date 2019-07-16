@@ -32,6 +32,8 @@ const std::vector<std::vector<int> > HEADERSIZE = {
   {40, 40, 24, 24}
 };
 
+//  ************** Write the base header for all formats*********************//
+
 // Writes the base header for a binary dosage file
 // Parameter filename - Name of binary dosage file
 // Parameter format - Foramt of the binary dosage file
@@ -56,6 +58,7 @@ int WriteBinaryDosageBaseHeader(std::string &filename, int format, int subformat
   return 0;
 }
 
+//  ********** Write the additional information for headers 3.1 and 3.2 *****//
 
 // Writes the additional header info for formats 3.1 and 3.2
 // Parameter filename - Name of binary dosage file
@@ -79,7 +82,8 @@ int WriteBinaryDosageHeader3A(std::string &filename, int numSubjects) {
   return 0;
 }
 
-// Writes the additional header info for formats 3.3 and 3.4
+//  ********** Write the additional information for headers 3.3 and 3.4 *****//
+
 // Parameter filename - Name of binary dosage file
 // Parameter md5samples - MD5 hash for the samples data frame
 // Parameter md5SNPs - MD5 hash for the SNPs data frame
@@ -104,6 +108,8 @@ int WriteBinaryDosageHeader3B(std::string &filename,
   outfile.close();
   return 0;
 }
+
+//  ********** Write the additional information for headers 4.1 and 4.2 *****//
 
 // Writes the additional header info for formats 4.1 and 4.2
 // Parameter filename - Name of binary dosage file
@@ -132,8 +138,9 @@ int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNP
   return 0;
 }
 
+//  ********** Write the additional information for headers 4.3 and 4.4 *****//
 
-// Writes the additional header info for formats 4.2 and 4.3
+// Writes the additional header info for formats 4.3 and 4.4
 // Parameter filename - Name of binary dosage file
 // Return - 0 successful, 1 error
 // [[Rcpp::export]]
@@ -156,6 +163,8 @@ int WriteBinaryDosageHeader4B (std::string &filename, int numSubjects, int numSN
   outfile.close();
   return 0;
 }
+
+//  ********** Write group information for formats 4.1 and 4.2 **************//
 
 // [[Rcpp::export]]
 int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
@@ -190,6 +199,8 @@ int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
   return 0;
 }
 
+//  ********** Write group information for formats 4.3 and 4.4 **************//
+
 // [[Rcpp::export]]
 int WriteBDGroups2(std::string &filename, Rcpp::IntegerVector &groups) {
   std::fstream outfile;
@@ -222,6 +233,7 @@ int WriteBDGroups2(std::string &filename, Rcpp::IntegerVector &groups) {
   return 0;
 }
 
+//  ********** Write a string to the header for format 4 ********************//
 
 int WriteBDString(std::fstream &outfile, std::string &outstring) {
   char zero = 0x0;
@@ -234,6 +246,8 @@ int WriteBDString(std::fstream &outfile, std::string &outstring) {
   return 0;
 }
 
+//  ********** Write a integer vector to the header for format 4 ************//
+
 int WriteBDInteger(std::fstream &outfile, Rcpp::IntegerVector &outvector) {
 
   if (outvector.length() > 0)
@@ -242,6 +256,8 @@ int WriteBDInteger(std::fstream &outfile, Rcpp::IntegerVector &outvector) {
   return 0;
 }
 
+//  ********** Write a numeric vector to the header for format 4 ************//
+
 int WriteBDNumeric(std::fstream &outfile, Rcpp::NumericVector &outvector) {
 
   if (outvector.length() > 0)
@@ -249,6 +265,8 @@ int WriteBDNumeric(std::fstream &outfile, Rcpp::NumericVector &outvector) {
 
   return 0;
 }
+
+//  ********** Write a the family information for format 4 ******************//
 
 // [[Rcpp::export]]
 int WriteBDFamilyInfoC(std::string &filename,
@@ -299,6 +317,8 @@ int WriteBDFamilyInfoC(std::string &filename,
   outfile.close();
   return 0;
 }
+
+//  ********** Write a the SNP information for format 4 *********************//
 
 // [[Rcpp::export]]
 int WriteBDSNPInfoC(std::string &filename,
@@ -390,6 +410,8 @@ int WriteBDSNPInfoC(std::string &filename,
   return 0;
 }
 
+//  ********** Write a the index information for format 3.4 *****************//
+
 // [[Rcpp::export]]
 int WriteBDIndexArray3_4(std::string &filename,
                          int numSNPs) {
@@ -412,6 +434,8 @@ int WriteBDIndexArray3_4(std::string &filename,
   outfile.close();
   return 0;
 }
+
+//  ********** Write a the index information for format 4.4 *****************//
 
 // [[Rcpp::export]]
 int WriteBDIndexArray4_4(std::string &filename,
@@ -457,11 +481,11 @@ int WriteBDIndexArray4_4(std::string &filename,
 // Values that dosages and genetic probabilities are multiplied by to change
 // them to short integers
 
-const int NUMBEROFBASES = 3;
+extern const int NUMBEROFBASES = 3;
 // 0x7ffe is 32,767 or 2^16 - 1
 // 0xfff3 is 65,534 or 2^32 - 1
 // 0x2710 is 10,000
-const unsigned short USBASE[NUMBEROFBASES] = {
+extern const unsigned short USBASE[NUMBEROFBASES] = {
   0x7ffe, // Used for format 1.1
   0xfffe, // Used for format 1.2
   0x2710  // Used for all other formats
@@ -469,7 +493,7 @@ const unsigned short USBASE[NUMBEROFBASES] = {
 
 // Values the short integers are multiplied by to get dosage and genetic
 // probabilities
-const double DBASE[NUMBEROFBASES] = {
+extern const double DBASE[NUMBEROFBASES] = {
   1. / USBASE[0],
   1. / USBASE[1],
   1. / USBASE[2]
@@ -508,13 +532,13 @@ void DoubleToUShort(Rcpp::NumericVector &x,
 
       *ps1 = (fabs(x[i] - x1) < fabs(x[i] - x2)) ? r1 : r2;
     }
-    if (i < 10)
-      Rcpp::Rcout << x[1] << '\t'
-                  << *ps1 << '\t'
-                  << r1 << '\t'
-                  << x1 << '\t'
-                  << r2 << '\t'
-                  << x2 << std::endl;
+//    if (i < 10)
+//      Rcpp::Rcout << x[i] << '\t'
+//                  << *ps1 << '\t'
+//                  << r1 << '\t'
+//                  << x1 << '\t'
+//                  << r2 << '\t'
+//                  << x2 << std::endl;
   }
 }
 
@@ -531,15 +555,15 @@ int WriteBinaryDosageData(const std::string &filename,
                           int base) {
   std::ofstream outfile;
 
-  // Opens file and truncates to size 0. Should already be of size 0.
-  outfile.open(filename.c_str(),
-               std::ios_base::out | std::ios_base::binary | std::ios_base::ate);
+  // Opens file for writing binary data by appending
+  outfile.open(filename.c_str(), WRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
   }
 
   DoubleToUShort(dosage, usdosage, base);
+  outfile.write((char *)&usdosage[0], usdosage.size() * sizeof(short));
 
   outfile.close();
   return 0;
@@ -563,16 +587,17 @@ int WriteBinaryP1P2Data(const std::string &filename,
                             int base) {
   std::ofstream outfile;
 
-  // Opens file and truncates to size 0. Should already be of size 0.
-  outfile.open(filename.c_str(),
-               std::ios_base::out | std::ios_base::binary | std::ios_base::ate);
+  // Opens file for writing binary data by appending
+  outfile.open(filename.c_str(), WRITEBINARY);
   if (!outfile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
     return 1;
   }
 
   DoubleToUShort(p1, usp1, base);
+  outfile.write((char *)&usp1[0], usp1.size() * sizeof(short));
   DoubleToUShort(p2, usp2, base);
+  outfile.write((char *)&usp2[0], usp2.size() * sizeof(short));
 
   outfile.close();
   return 0;

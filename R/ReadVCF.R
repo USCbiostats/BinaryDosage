@@ -1,13 +1,13 @@
 VCFApply <- function(vcfInfo, func, funcdata) {
   if (vcfInfo$gzipped == FALSE) {
     con <- file(vcfInfo$filename, "r")
-    seek(con, sum(vcfInfo$Indices[1]))
+    seek(con, sum(vcfInfo$indices[1]))
   } else {
     con <- gzfile(vcfInfo$filename, "r")
     line <- readLines(con, n = vcfInfo$headersize)
   }
 
-  for (i in 1:vcfInfo$NumSNPs) {
+  for (i in 1:vcfInfo$numSNPs) {
     line <- readLines(con, n = 1)
     x <- unlist(strsplit(line, "\t"))
     y <- unlist(strsplit(x[10:length(x)], ":"))
@@ -16,9 +16,9 @@ VCFApply <- function(vcfInfo, func, funcdata) {
       gpCol <- vcfInfo$additionalInfo$dataColumns$genotypeProb
       numValues <- vcfInfo$additionalInfo$dataColumns$numValues
     } else {
-      dosageCol <- vcfInfo$additionalInfo$dataColumns$dosage[firstSNP]
-      gpCol <- vcfInfo$additionalInfo$dataColumns$genotypeProb[firstSNP]
-      numValues <- vcfInfo$additionalInfo$dataColumns$numValues[firstSNP]
+      dosageCol <- vcfInfo$additionalInfo$dataColumns$dosage[i]
+      gpCol <- vcfInfo$additionalInfo$dataColumns$genotypeProb[i]
+      numValues <- vcfInfo$additionalInfo$dataColumns$numValues[i]
     }
     if(is.na(dosageCol) == FALSE) {
       dosage <- as.numeric(y[seq(dosageCol, length(y) - numValues + dosageCol, numValues)])
