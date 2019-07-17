@@ -376,12 +376,12 @@ void UShortToDouble(Rcpp::IntegerVector &us,
 }
 
 // [[Rcpp::export]]
-int ReadBinaryData11(std::string &filename,
-                     int headersize,
-                     int snp,
-                     Rcpp::NumericVector &dosage,
-                     Rcpp::IntegerVector &usdosage,
-                     int base) {
+int ReadBinaryDosageDataC(std::string &filename,
+                          int headersize,
+                          int snp,
+                          Rcpp::NumericVector &dosage,
+                          Rcpp::IntegerVector &usdosage,
+                          int base) {
   std::ifstream infile;
   std::streampos loc;
 
@@ -400,15 +400,15 @@ int ReadBinaryData11(std::string &filename,
 }
 
 // [[Rcpp::export]]
-int ReadBinaryData12(std::string &filename,
-                     int headersize,
-                     int snp,
-                     Rcpp::NumericVector &dosage,
-                     Rcpp::NumericVector &p0,
-                     Rcpp::NumericVector &p1,
-                     Rcpp::NumericVector &p2,
-                     Rcpp::IntegerVector &us,
-                     int base) {
+int ReadBinaryDosageDataP1P2(std::string &filename,
+                             int headersize,
+                             int snp,
+                             Rcpp::NumericVector &dosage,
+                             Rcpp::NumericVector &p0,
+                             Rcpp::NumericVector &p1,
+                             Rcpp::NumericVector &p2,
+                             Rcpp::IntegerVector &us,
+                             int base) {
   std::ifstream infile;
   std::streampos loc;
 

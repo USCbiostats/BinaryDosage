@@ -198,6 +198,7 @@ ReadBinaryDosageHeader34 <- function(filename) {
   if (digest(bdInfo$SNPs) != additionalInfo$md5[2])
     stop("Map file does not line up with binary dosage file")
   bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, 72)
+  bdInfo$headersize <- 72 + 4 * bdInfo$numSNPs
   return (bdInfo)
 }
 
@@ -207,7 +208,8 @@ ReadBinaryDosageHeader41 <- function(filename) {
 }
 
 ReadBinaryDosageHeader42 <- function(filename) {
-  return (ReadBinaryDosageHeader4A(filename[1]))
+  header <- ReadBinaryDosageHeader4A(filename[1])
+  return (Convert4HeaderToBDInfo(filename, header, 4, 2))
 }
 
 ReadBinaryDosageHeader43 <- function(filename) {
@@ -221,4 +223,67 @@ ReadBinaryDosageHeader44 <- function(filename) {
   bdInfo <- Convert4HeaderToBDInfo(filename, header, 4, 4)
   bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, header$indexoffset)
   return (bdInfo)
+}
+
+# Reads a SNP form the various formats
+# of the binary dosage file.
+ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  ReadHeaderFunc <- list(f1 <- c(ReadBinaryDosageData11, ReadBinaryDosageData12),
+                         f2 <- c(ReadBinaryDosageData21, ReadBinaryDosageData22),
+                         f3 <- c(ReadBinaryDosageData31, ReadBinaryDosageData32, ReadBinaryDosageData33, ReadBinaryDosageData34),
+                         f4 <- c(ReadBinaryDosageData41, ReadBinaryDosageData42, ReadBinaryDosageData43, ReadBinaryDosageData44))
+  return (ReadHeaderFunc[[bdInfo$format]][[bdInfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
+}
+
+ReadBinaryDosageData11 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 1)
+
+}
+
+ReadBinaryDosageData12 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 2)
+}
+
+ReadBinaryDosageData21 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+
+}
+
+ReadBinaryDosageData22 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 3)
+}
+
+ReadBinaryDosageData31 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+
+}
+
+ReadBinaryDosageData32 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (0)
+}
+
+ReadBinaryDosageData33 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+}
+
+ReadBinaryDosageData34 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (0)
+}
+
+ReadBinaryDosageData41 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+
+}
+
+ReadBinaryDosageData42 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (0)
+}
+
+ReadBinaryDosageData43 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+
+}
+
+ReadBinaryDosageData44 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (0)
 }

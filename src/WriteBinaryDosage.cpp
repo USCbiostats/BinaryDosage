@@ -438,7 +438,7 @@ int WriteBDIndexArray3_4(std::string &filename,
 //  ********** Write a the index information for format 4.4 *****************//
 
 // [[Rcpp::export]]
-int WriteBDIndexArray4_4(std::string &filename,
+int WriteBDIndexArray4(std::string &filename,
                       int numSNPs,
                       int indexoffsetLoc,
                       int dosageoffsetloc) {
@@ -460,7 +460,6 @@ int WriteBDIndexArray4_4(std::string &filename,
 
   for (int i = 0; i < numSNPs; ++i)
     outfile.write((char *)&zero, sizeof(int));
-
 
   dosageoffset = outfile.tellp();
   outfile.seekp(dosageoffsetloc);
@@ -549,9 +548,9 @@ void DoubleToUShort(Rcpp::NumericVector &x,
 //                      is passed to avoid allocating and dealllocating memory
 // Parameter base - Index of USBASE to use as base
 // [[Rcpp::export]]
-int WriteBinaryDosageData(const std::string &filename,
+int WriteBinaryDosageDataC(const std::string &filename,
                           Rcpp::NumericVector &dosage,
-                          Rcpp::IntegerVector &usdosage,
+                          Rcpp::IntegerVector &us,
                           int base) {
   std::ofstream outfile;
 
@@ -562,8 +561,8 @@ int WriteBinaryDosageData(const std::string &filename,
     return 1;
   }
 
-  DoubleToUShort(dosage, usdosage, base);
-  outfile.write((char *)&usdosage[0], usdosage.size() * sizeof(short));
+  DoubleToUShort(dosage, us, base - 1);
+  outfile.write((char *)&us[0], dosage.size() * sizeof(short));
 
   outfile.close();
   return 0;
@@ -573,17 +572,14 @@ int WriteBinaryDosageData(const std::string &filename,
 // Paramater filename - name of bindary dosage file
 // Parameter p1 - vector of P(g=1) to write
 // Parameter p2 - vector of P(g=2) to write
-// Parameter usp1 - vector used to store the converted p1 values. This
-//                  is passed to avoid allocating and dealllocating memory
-// Parameter usp2 - vector used to store the converted p1 values. This
-//                  is passed to avoid allocating and dealllocating memory
+// Parameter us - vector used to store the converted values. This
+//                is passed to avoid allocating and dealllocating memory
 // Parameter base - Index of USBASE to use as base
 // [[Rcpp::export]]
 int WriteBinaryP1P2Data(const std::string &filename,
                             Rcpp::NumericVector &p1,
                             Rcpp::NumericVector &p2,
-                            Rcpp::IntegerVector &usp1,
-                            Rcpp::IntegerVector &usp2,
+                            Rcpp::IntegerVector &us,
                             int base) {
   std::ofstream outfile;
 
@@ -594,10 +590,10 @@ int WriteBinaryP1P2Data(const std::string &filename,
     return 1;
   }
 
-  DoubleToUShort(p1, usp1, base);
-  outfile.write((char *)&usp1[0], usp1.size() * sizeof(short));
-  DoubleToUShort(p2, usp2, base);
-  outfile.write((char *)&usp2[0], usp2.size() * sizeof(short));
+  DoubleToUShort(p1, us, base - 1);
+  outfile.write((char *)&us[0], p1.size() * sizeof(short));
+  DoubleToUShort(p2, us, base - 1);
+  outfile.write((char *)&us[0], p2.size() * sizeof(short));
 
   outfile.close();
   return 0;

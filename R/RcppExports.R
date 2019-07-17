@@ -25,12 +25,12 @@ ReadBDIndicesS4 <- function(filename, numSNPs, indexStart) {
     .Call(`_BinaryDosage_ReadBDIndicesS4`, filename, numSNPs, indexStart)
 }
 
-ReadBinaryData11 <- function(filename, headersize, snp, dosage, usdosage, base) {
-    .Call(`_BinaryDosage_ReadBinaryData11`, filename, headersize, snp, dosage, usdosage, base)
+ReadBinaryDosageDataC <- function(filename, headersize, snp, dosage, usdosage, base) {
+    .Call(`_BinaryDosage_ReadBinaryDosageDataC`, filename, headersize, snp, dosage, usdosage, base)
 }
 
-ReadBinaryData12 <- function(filename, headersize, snp, dosage, p0, p1, p2, us, base) {
-    .Call(`_BinaryDosage_ReadBinaryData12`, filename, headersize, snp, dosage, p0, p1, p2, us, base)
+ReadBinaryDosageDataP1P2 <- function(filename, headersize, snp, dosage, p0, p1, p2, us, base) {
+    .Call(`_BinaryDosage_ReadBinaryDosageDataP1P2`, filename, headersize, snp, dosage, p0, p1, p2, us, base)
 }
 
 OpenVCFFile <- function(rFilename) {
@@ -81,15 +81,15 @@ WriteBDIndexArray3_4 <- function(filename, numSNPs) {
     .Call(`_BinaryDosage_WriteBDIndexArray3_4`, filename, numSNPs)
 }
 
-WriteBDIndexArray4_4 <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
-    .Call(`_BinaryDosage_WriteBDIndexArray4_4`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
+WriteBDIndexArray4 <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
+    .Call(`_BinaryDosage_WriteBDIndexArray4`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
 }
 
-WriteBinaryDosageData <- function(filename, dosage, usdosage, base) {
-    .Call(`_BinaryDosage_WriteBinaryDosageData`, filename, dosage, usdosage, base)
+WriteBinaryDosageDataC <- function(filename, dosage, us, base) {
+    .Call(`_BinaryDosage_WriteBinaryDosageDataC`, filename, dosage, us, base)
 }
 
-WriteBinaryP1P2Data <- function(filename, p1, p2, usp1, usp2, base) {
-    .Call(`_BinaryDosage_WriteBinaryP1P2Data`, filename, p1, p2, usp1, usp2, base)
+WriteBinaryP1P2Data <- function(filename, p1, p2, us, base) {
+    .Call(`_BinaryDosage_WriteBinaryP1P2Data`, filename, p1, p2, us, base)
 }
 
