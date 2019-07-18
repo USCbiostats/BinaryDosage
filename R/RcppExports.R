@@ -49,40 +49,12 @@ WriteBinaryDosageHeader3A <- function(filename, numSubjects) {
     .Call(`_BinaryDosage_WriteBinaryDosageHeader3A`, filename, numSubjects)
 }
 
-WriteBinaryDosageHeader3B <- function(filename, md5samples, md5SNPs) {
-    .Call(`_BinaryDosage_WriteBinaryDosageHeader3B`, filename, md5samples, md5SNPs)
+WriteBinaryDosageHeader3B <- function(filename, md5samples, md5SNPs, numIndices) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader3B`, filename, md5samples, md5SNPs, numIndices)
 }
 
-WriteBinaryDosageHeader4A <- function(filename, numSubjects, numSNPs) {
-    .Call(`_BinaryDosage_WriteBinaryDosageHeader4A`, filename, numSubjects, numSNPs)
-}
-
-WriteBinaryDosageHeader4B <- function(filename, numSubjects, numSNPs) {
-    .Call(`_BinaryDosage_WriteBinaryDosageHeader4B`, filename, numSubjects, numSNPs)
-}
-
-WriteBDGroups <- function(filename, groups) {
-    .Call(`_BinaryDosage_WriteBDGroups`, filename, groups)
-}
-
-WriteBDGroups2 <- function(filename, groups) {
-    .Call(`_BinaryDosage_WriteBDGroups2`, filename, groups)
-}
-
-WriteBDFamilyInfoC <- function(filename, numSub, sid, fid, numSubLoc, suboffsetLoc, snpoffsetLoc) {
-    .Call(`_BinaryDosage_WriteBDFamilyInfoC`, filename, numSub, sid, fid, numSubLoc, suboffsetLoc, snpoffsetLoc)
-}
-
-WriteBDSNPInfoC <- function(filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc) {
-    .Call(`_BinaryDosage_WriteBDSNPInfoC`, filename, numSNPs, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, numSNPloc, snpOptionsLoc, snpOffsetLoc, nextOffsetLoc)
-}
-
-WriteBDIndexArray3_4 <- function(filename, numSNPs) {
-    .Call(`_BinaryDosage_WriteBDIndexArray3_4`, filename, numSNPs)
-}
-
-WriteBDIndexArray4 <- function(filename, numSNPs, indexoffsetLoc, dosageoffsetloc) {
-    .Call(`_BinaryDosage_WriteBDIndexArray4`, filename, numSNPs, indexoffsetLoc, dosageoffsetloc)
+WriteBinaryDosageHeader4A <- function(filename, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader4A`, filename, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices)
 }
 
 WriteBinaryDosageDataC <- function(filename, dosage, us, base) {

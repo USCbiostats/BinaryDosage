@@ -3,18 +3,19 @@
 #include <fstream>
 #include <vector>
 
-extern const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::ate;
-extern const std::ios_base::openmode READBINARY = std::ios_base::in | std::ios_base::binary;
-extern const std::ios_base::openmode WRITEBINARY = std::ios_base::out | std::ios_base::binary | std::ios_base::app;
-
 //***************************************************************************//
+//                                                                           //
 //                        Writing the header                                 //
+//                                                                           //
 //***************************************************************************//
 // These functions write the headers to the binary dosage files
 // NOTE: There is no error checking done here. It is assumed this was done
 // prior to calling these routines
 
-//  ************************ Constants **************************************//
+//***************************************************************************//
+//                           Constants                                       //
+//***************************************************************************//
+
 // Magic word for binary dosage files
 extern const int MAGICWORD = 0x65736f62;
 // Format ID stored in file
@@ -24,330 +25,141 @@ extern const std::vector<std::vector<int> > FORMAT = {
   { 0x03000100, 0x03000200, 0x03000300, 0x03000400},
   { 0x04000100, 0x04000200, 0x04000300, 0x04000400}
 };
-// Size of the header for each format in bytes
-const std::vector<std::vector<int> > HEADERSIZE = {
-  {8, 8},
-  {8, 8},
-  {12, 12, 72, 72},
-  {40, 40, 24, 24}
+// Various modes of opening the binary dosage file
+extern const std::ios_base::openmode NEWBINARY = std::ios_base::out | std::ios_base::binary;
+extern const std::ios_base::openmode READBINARY = std::ios_base::in | std::ios_base::binary;
+extern const std::ios_base::openmode APPENDBINARY = std::ios_base::out | std::ios_base::binary | std::ios_base::app;
+extern const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::ate;
+// zero values for filling initial values of binary dosage file to 0
+const char CHARZERO = 0x0;
+const int INTZERO = 0;
+const double DOUBLEZERO = 0.;
+
+struct OFFSETS {
+  enum offsets { numsubjects, numsnps, numgroups, suboptions, snpoptions,
+                 subjectoffset, snpoffset, indexoffset, dosageoffset};
 };
 
-//  ************** Write the base header for all formats*********************//
+//***************************************************************************//
+//                      Support function                                     //
+//***************************************************************************//
 
-// Writes the base header for a binary dosage file
-// Parameter filename - Name of binary dosage file
-// Parameter format - Foramt of the binary dosage file
-// Parameter subformat - Subformat of the binary dosage file
-// Return - 0 successful, 1 error
-// [[Rcpp::export]]
-int WriteBinaryDosageBaseHeader(std::string &filename, int format, int subformat) {
-  std::ofstream outfile;
+// ******************** Writing vectors *************************************//
 
-  // Open the file - if file already exists, truncates to size 0.
-  // Only opens for output
-  outfile.open(filename.c_str(), std::ios_base::out | std::ios_base::binary);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.write((char *)&MAGICWORD, sizeof(int));
-  outfile.write((char *)&FORMAT[format][subformat], sizeof(int));
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write the additional information for headers 3.1 and 3.2 *****//
-
-// Writes the additional header info for formats 3.1 and 3.2
-// Parameter filename - Name of binary dosage file
-// Parameter numSubjects - number of subjects in data
-// Return - 0 successful, 1 error
-// [[Rcpp::export]]
-int WriteBinaryDosageHeader3A(std::string &filename, int numSubjects) {
-  std::ofstream outfile;
-
-  // Open the file for appending
-  // Only opens for output
-  outfile.open(filename.c_str(), WRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.write((char *)&numSubjects, sizeof(int));
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write the additional information for headers 3.3 and 3.4 *****//
-
-// Parameter filename - Name of binary dosage file
-// Parameter md5samples - MD5 hash for the samples data frame
-// Parameter md5SNPs - MD5 hash for the SNPs data frame
-// Return - 0 successful, 1 error
-// [[Rcpp::export]]
-int WriteBinaryDosageHeader3B(std::string &filename,
-                              std::string &md5samples,
-                              std::string &md5SNPs) {
-  std::ofstream outfile;
-
-  // Open the file for appending
-  // Only opens for output
-  outfile.open(filename.c_str(), WRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.write(md5samples.c_str(), 32);
-  outfile.write(md5SNPs.c_str(), 32);
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write the additional information for headers 4.1 and 4.2 *****//
-
-// Writes the additional header info for formats 4.1 and 4.2
-// Parameter filename - Name of binary dosage file
-// Parameter numSubjects - number of subjects in data
-// Parameter numSubjects - number of SNPs in data
-// Return - 0 successful, 1 error
-// [[Rcpp::export]]
-int WriteBinaryDosageHeader4A(std::string &filename, int numSubjects, int numSNPs) {
-  std::fstream outfile;
-  const int zero = 0;
-
-  // Open the file for appending
-  // Only opens for output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekp(8);
-  // Zero out the rest of the data. It will be filled in later
-  for (int i = 0; i < 8; ++i)
-    outfile.write((char *)&zero, sizeof(int));
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write the additional information for headers 4.3 and 4.4 *****//
-
-// Writes the additional header info for formats 4.3 and 4.4
-// Parameter filename - Name of binary dosage file
-// Return - 0 successful, 1 error
-// [[Rcpp::export]]
-int WriteBinaryDosageHeader4B (std::string &filename, int numSubjects, int numSNPs) {
-  std::ofstream outfile;
-  const int zero = 0;
-
-  // Open the file for appending
-  // Only opens for output
-  outfile.open(filename.c_str(), WRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  // Zero out the data. It will be filled in later
-  for (int i = 0; i < 4; ++i)
-    outfile.write((char *)&zero, sizeof(int));
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write group information for formats 4.1 and 4.2 **************//
-
-// [[Rcpp::export]]
-int WriteBDGroups(std::string &filename, Rcpp::IntegerVector &groups) {
-  std::fstream outfile;
-  int numGroups, groupsize;
-  int subjectOffset;
-
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekp(16);
-  numGroups = groups.length();
-  outfile.write((char *)&numGroups, sizeof(int));
-
-  outfile.seekp(40);
-  for (int i = 0; i < numGroups; ++i) {
-    groupsize = groups[i];
-    outfile.write((char *)&groupsize, sizeof(int));
-  }
-
-  subjectOffset = (int)outfile.tellp();
-  outfile.seekp(28);
-  outfile.write((char *)&subjectOffset, sizeof(int));
-
-  outfile.close();
-
-  return 0;
-}
-
-//  ********** Write group information for formats 4.3 and 4.4 **************//
-
-// [[Rcpp::export]]
-int WriteBDGroups2(std::string &filename, Rcpp::IntegerVector &groups) {
-  std::fstream outfile;
-  int numGroups, groupsize;
-  int subjectOffset;
-
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekp(24);
-  numGroups = groups.length();
-  outfile.write((char *)&numGroups, sizeof(int));
-
-  for (int i = 0; i < numGroups; ++i) {
-    groupsize = groups[i];
-    outfile.write((char *)&groupsize, sizeof(int));
-  }
-
-  subjectOffset = (int)outfile.tellp();
-  outfile.seekp(8);
-  outfile.write((char *)&subjectOffset, sizeof(int));
-
-  outfile.close();
-
-  return 0;
-}
-
-//  ********** Write a string to the header for format 4 ********************//
-
+// Write a NULL terminated string to the header
 int WriteBDString(std::fstream &outfile, std::string &outstring) {
-  char zero = 0x0;
-
   if (outstring.length() > 0) {
     outfile.write(outstring.c_str(), outstring.length());
-    outfile.write(&zero, 1);
+    outfile.write(&CHARZERO, 1);
   }
-
   return 0;
 }
 
-//  ********** Write a integer vector to the header for format 4 ************//
-
+// Write a integer vector to the header
 int WriteBDInteger(std::fstream &outfile, Rcpp::IntegerVector &outvector) {
-
   if (outvector.length() > 0)
     outfile.write((char *)&outvector[0], outvector.length() * sizeof(int));
-
   return 0;
 }
 
-//  ********** Write a numeric vector to the header for format 4 ************//
-
+// Write a numeric vector
 int WriteBDNumeric(std::fstream &outfile, Rcpp::NumericVector &outvector) {
-
   if (outvector.length() > 0)
     outfile.write((char *)&outvector[0], outvector.length() * sizeof(double));
+  return 0;
+}
+
+//  ********** Writing addition information for formats 4.x *****************//
+
+// Write the group size information
+int WriteBDGroups(std::fstream &outfile,
+                  Rcpp::IntegerVector &groups,
+                  int numGroupLoc,
+                  int subjectOffsetLoc) {
+  int numGroups;
+  int subjectOffset;
+
+  numGroups = groups.size();
+  if (numGroupLoc >= 0)
+    outfile.seekp(numGroupLoc);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  outfile.write((char *)&numGroups, sizeof(int));
+
+  outfile.seekp(0, std::ios_base::end);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  outfile.write((char *)&groups[0], numGroups * sizeof(int));
+
+  subjectOffset = (int)outfile.tellp();
+  outfile.seekp(subjectOffsetLoc);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  outfile.write((char *)&subjectOffset, sizeof(int));
 
   return 0;
 }
 
-//  ********** Write a the family information for format 4 ******************//
-
-// [[Rcpp::export]]
-int WriteBDFamilyInfoC(std::string &filename,
-                       int numSub,
-                       std::string &sid,
-                       std::string &fid,
-                       int numSubLoc,
-                       int suboffsetLoc,
-                       int snpoffsetLoc) {
-  std::fstream outfile;
+// Write a the family information
+int WriteBDFamilyInfo(std::fstream &outfile,
+                      int numSub,
+                      std::string &sid,
+                      std::string &fid,
+                      int numSubLoc,
+                      int suboffsetLoc,
+                      int snpoffsetLoc) {
   int sidsize, fidsize;
   int suboffset, snpoffset;
-
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekg(suboffsetLoc);
-  outfile.read((char *)&suboffset, sizeof(int));
 
   sidsize = sid.length() + 1;
   fidsize = fid.length();
   if (fidsize > 0)
     ++fidsize;
 
+  outfile.seekg(suboffsetLoc);
+  outfile.read((char *)&suboffset, sizeof(int));
   if (numSubLoc < 0) {
     outfile.seekp(suboffset);
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSub, sizeof(int));
   } else {
     outfile.seekp(numSubLoc);
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSub, sizeof(int));
     outfile.seekp(suboffset);
   }
 
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&sidsize, sizeof(int));
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&fidsize, sizeof(int));
   WriteBDString(outfile, sid);
   WriteBDString(outfile, fid);
 
   snpoffset = outfile.tellp();
   outfile.seekp(snpoffsetLoc);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&snpoffset, sizeof(int));
 
-  outfile.close();
   return 0;
 }
 
-//  ********** Write a the SNP information for format 4 *********************//
-
-// [[Rcpp::export]]
-int WriteBDSNPInfoC(std::string &filename,
-                    int numSNPs,
-                    std::string &snpid,
-                    std::string &chromosome,
-                    Rcpp::IntegerVector &location,
-                    std::string &reference,
-                    std::string &alternate,
-                    Rcpp::NumericVector &aaf,
-                    Rcpp::NumericVector &maf,
-                    Rcpp::NumericVector &avgCall,
-                    Rcpp::NumericVector &rsq,
-                    int numSNPloc,
-                    int snpOptionsLoc,
-                    int snpOffsetLoc,
-                    int nextOffsetLoc) {
-  std::fstream outfile;
+// Write a the SNP information for format 4
+int WriteBDSNPInfo(std::fstream &outfile,
+                  int numSNPs,
+                  std::string &snpid,
+                  std::string &chromosome,
+                  Rcpp::IntegerVector &location,
+                  std::string &reference,
+                  std::string &alternate,
+                  Rcpp::NumericVector &aaf,
+                  Rcpp::NumericVector &maf,
+                  Rcpp::NumericVector &avgCall,
+                  Rcpp::NumericVector &rsq,
+                  int numSNPloc,
+                  int snpOptionsLoc,
+                  int snpOffsetLoc,
+                  int nextOffsetLoc) {
   int snpoffset, nextoffset;
   int stringSize[4];
   int snpOptions = 0;
-
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
 
   if (snpid.length() != 0)
     snpOptions |= 0x02;
@@ -376,12 +188,17 @@ int WriteBDSNPInfoC(std::string &filename,
 
   if (snpOptionsLoc < 0) {
     outfile.seekp(snpoffset);
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSNPs, sizeof(int));
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&snpOptions, sizeof(int));
   } else {
     outfile.seekp(numSNPloc);
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSNPs, sizeof(int));
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.seekp(snpOptionsLoc);
+    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&snpOptions, sizeof(int));
     outfile.seekp(snpoffset);
   }
@@ -390,86 +207,238 @@ int WriteBDSNPInfoC(std::string &filename,
   stringSize[1] = chromosome.length() == 0 ? 0 : chromosome.length() + 1;
   stringSize[2] = reference.length() == 0 ? 0 : reference.length() + 1;
   stringSize[3] = alternate.length()  == 0 ? 0 : alternate.length() + 1;
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&stringSize[0], sizeof(stringSize));
 
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, snpid);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, chromosome);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDInteger(outfile, location);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, reference);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, alternate);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, aaf);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, maf);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, avgCall);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, rsq);
 
   nextoffset = outfile.tellp();
   outfile.seekp(nextOffsetLoc);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&nextoffset, sizeof(int));
 
-  outfile.close();
   return 0;
 }
 
-//  ********** Write a the index information for format 3.4 *****************//
-
-// [[Rcpp::export]]
-int WriteBDIndexArray3_4(std::string &filename,
-                         int numSNPs) {
-  std::fstream outfile;
-  const int zero = 0;
-
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekg(72);
-
-  for (int i = 0; i < numSNPs; ++i)
-    outfile.write((char *)&zero, sizeof(int));
-
-  outfile.close();
-  return 0;
-}
-
-//  ********** Write a the index information for format 4.4 *****************//
-
-// [[Rcpp::export]]
-int WriteBDIndexArray4(std::string &filename,
-                      int numSNPs,
-                      int indexoffsetLoc,
-                      int dosageoffsetloc) {
-  std::fstream outfile;
+// Write the initial indices values of 0
+int WriteBDIndices(std::fstream &outfile, int numIndices,
+                   int indexOffsetLoc, int dosageOffsetLoc) {
   int indexoffset, dosageoffset;
-  const int zero = 0;
 
-  // Open the file for appending
-  // Only opens for input and output
-  outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return 1;
-  }
-
-  outfile.seekg(indexoffsetLoc);
+  outfile.seekg(indexOffsetLoc);
   outfile.read((char *)&indexoffset, sizeof(int));
   outfile.seekp(indexoffset);
-
-  for (int i = 0; i < numSNPs; ++i)
-    outfile.write((char *)&zero, sizeof(int));
-
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  for (int i = 0; i < numIndices; ++i)
+    outfile.write((char *)&INTZERO, sizeof(int));
   dosageoffset = outfile.tellp();
-  outfile.seekp(dosageoffsetloc);
+  outfile.seekp(dosageOffsetLoc);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&dosageoffset, sizeof(int));
+  return 0;
+}
+
+//***************************************************************************//
+//                 Open the binary dosage file                               //
+//***************************************************************************//
+
+// Open a new file for writing
+// If file already exists, data is lost
+int OpenBDFileNewWrite(std::ofstream &outfile, std::string &filename) {
+  outfile.open(filename.c_str(), NEWBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to create output file" << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
+// Open a file for appending
+// The file is opened for writing with the initial writing pointer
+// set to the end of the file.
+int OpenBDFileAppend(std::ofstream &outfile, std::string &filename) {
+  outfile.open(filename.c_str(), APPENDBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open file for appending" << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
+// Open a file for reading and writing
+int OpenBDFileReadWrite(std::fstream &outfile, std::string &filename) {
+  outfile.open(filename.c_str(), READWRITEBINARY);
+  if (!outfile.good()) {
+    Rcpp::Rcerr << "Unable to open file for read/write" << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
+//***************************************************************************//
+//                 Writing the header                                        //
+//***************************************************************************//
+
+//  ************** Write the base header for all formats*********************//
+
+// Writes the base header for a binary dosage file
+// This is the complete header for formats 1.x and 2.x
+// Parameter filename - Name of binary dosage file
+// Parameter format - Foramt of the binary dosage file
+// Parameter subformat - Subformat of the binary dosage file
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageBaseHeader(std::string &filename, int format, int subformat) {
+  std::ofstream outfile;
+
+  if (OpenBDFileNewWrite(outfile, filename) != 0)
+    return 1;
+
+  outfile.write((char *)&MAGICWORD, sizeof(int));
+  outfile.write((char *)&FORMAT[format][subformat], sizeof(int));
 
   outfile.close();
   return 0;
 }
+
+// Write the header for formats 3.1 and 3.2
+// Parameter filename - Name of binary dosage file
+// Parameter numSubjects - number of subjects in data
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader3A(std::string &filename,
+                              int numSubjects) {
+  std::ofstream outfile;
+
+  // Open the file for appending
+  if (OpenBDFileAppend(outfile, filename) != 0)
+    return 1;
+
+  outfile.write((char *)&numSubjects, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+// Write header for formats 3.3 and 3.4
+// Parameter filename - Name of binary dosage file
+// Parameter md5samples - MD5 hash for the samples data frame
+// Parameter md5SNPs - MD5 hash for the SNPs data frame
+// Paramter numIndices - Number of indices to write
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader3B(std::string &filename,
+                              std::string &md5samples,
+                              std::string &md5SNPs,
+                              int numIndices) {
+  std::ofstream outfile;
+
+  // Open the file for appending
+  if (OpenBDFileAppend(outfile, filename) != 0)
+    return 1;
+
+  outfile.write(md5samples.c_str(), 32);
+  outfile.write(md5SNPs.c_str(), 32);
+  for (int i = 0; i < numIndices; ++i)
+    outfile.write((char *)&INTZERO, sizeof(int));
+
+  outfile.close();
+  return 0;
+}
+
+// Write the header for formats 4.1 and 4.2
+// Parameter filename - Name of binary dosage file
+// Parameter numSubjects - number of subjects in data
+// Parameter numSubjects - number of SNPs in data
+// Return - 0 successful, 1 error
+// [[Rcpp::export]]
+int WriteBinaryDosageHeader4A(std::string &filename,
+                              int numSubjects,
+                              int numSNPs,
+                              Rcpp::IntegerVector &groups,
+                              std::string &sid,
+                              std::string &fid,
+                              std::string &snpid,
+                              std::string &chromosome,
+                              Rcpp::IntegerVector &location,
+                              std::string &reference,
+                              std::string &alternate,
+                              Rcpp::NumericVector &aaf,
+                              Rcpp::NumericVector &maf,
+                              Rcpp::NumericVector &avgCall,
+                              Rcpp::NumericVector &rsq,
+                              Rcpp::IntegerVector &offsets,
+                              int numIndices) {
+  std::fstream outfile;
+
+  if (OpenBDFileReadWrite(outfile, filename) != 0)
+    return 1;
+  outfile.seekp(8);
+
+  // Zero out the rest of the data. It will be filled in later
+  for (int i = 0; i < 8; ++i)
+    outfile.write((char *)&INTZERO, sizeof(int));
+
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  WriteBDGroups(outfile,
+                groups,
+                offsets[OFFSETS::offsets::numgroups],
+                offsets[OFFSETS::offsets::subjectoffset]);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  WriteBDFamilyInfo(outfile,
+                    numSubjects,
+                    sid,
+                    fid,
+                    offsets[OFFSETS::offsets::numsubjects],
+                    offsets[OFFSETS::offsets::snpoffset],
+                    offsets[OFFSETS::offsets::snpoffset]);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  WriteBDSNPInfo(outfile,
+                numSNPs,
+                snpid,
+                chromosome,
+                location,
+                reference,
+                alternate,
+                aaf,
+                maf,
+                avgCall,
+                rsq,
+                offsets[OFFSETS::offsets::numsnps],
+                offsets[OFFSETS::offsets::snpoptions],
+                offsets[OFFSETS::offsets::snpoffset],
+                offsets[OFFSETS::offsets::indexoffset]);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  WriteBDIndices(outfile,
+                 numIndices,
+                 offsets[OFFSETS::offsets::indexoffset],
+                 offsets[OFFSETS::offsets::dosageoffset]);
+  Rcpp::Rcout << outfile.tellp() << std::endl;
+  outfile.close();
+  return 0;
+}
+
 //***************************************************************************//
+//                                                                           //
 //                        Writing the data                                   //
+//                                                                           //
 //***************************************************************************//
 // These functions appends data to the end of the binary dosage file
 // NOTE: There is no error checking done here. It is assumed this was done
@@ -548,18 +517,15 @@ void DoubleToUShort(Rcpp::NumericVector &x,
 //                      is passed to avoid allocating and dealllocating memory
 // Parameter base - Index of USBASE to use as base
 // [[Rcpp::export]]
-int WriteBinaryDosageDataC(const std::string &filename,
+int WriteBinaryDosageDataC(std::string &filename,
                           Rcpp::NumericVector &dosage,
                           Rcpp::IntegerVector &us,
                           int base) {
   std::ofstream outfile;
 
-  // Opens file for writing binary data by appending
-  outfile.open(filename.c_str(), WRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+  // Opens file for appending
+  if (OpenBDFileAppend(outfile, filename) != 0)
     return 1;
-  }
 
   DoubleToUShort(dosage, us, base - 1);
   outfile.write((char *)&us[0], dosage.size() * sizeof(short));
@@ -576,19 +542,17 @@ int WriteBinaryDosageDataC(const std::string &filename,
 //                is passed to avoid allocating and dealllocating memory
 // Parameter base - Index of USBASE to use as base
 // [[Rcpp::export]]
-int WriteBinaryP1P2Data(const std::string &filename,
-                            Rcpp::NumericVector &p1,
-                            Rcpp::NumericVector &p2,
-                            Rcpp::IntegerVector &us,
-                            int base) {
+int WriteBinaryP1P2Data(std::string &filename,
+                        Rcpp::NumericVector &p1,
+                        Rcpp::NumericVector &p2,
+                        Rcpp::IntegerVector &us,
+                        int base) {
   std::ofstream outfile;
 
   // Opens file for writing binary data by appending
-  outfile.open(filename.c_str(), WRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+  // Opens file for appending
+  if (OpenBDFileAppend(outfile, filename) != 0)
     return 1;
-  }
 
   DoubleToUShort(p1, us, base - 1);
   outfile.write((char *)&us[0], p1.size() * sizeof(short));
