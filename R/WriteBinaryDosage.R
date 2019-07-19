@@ -44,9 +44,9 @@ FindSNPInfoString <- function(toFind, snpInfo, numSNPs) {
 FindSNPInfoNumeric <- function(toFind, snpInfo, numSNPs, bdoptions) {
   if (is.na(match(toFind, bdoptions)) == FALSE)
     return (numeric(numSNPs))
-  infocol <- match(toFind, colnames(snpInfo))
+  infocol <- match(toFind, names(snpInfo))
   if (is.na(infocol) == FALSE)
-    return (snpInfo[,infocol])
+    return (snpInfo[infocol])
   return (numeric(0))
 }
 
@@ -124,10 +124,11 @@ WriteBinaryDosageHeader34 <- function(filename, funcData, bdoptions) {
 }
 
 WriteBinaryDosageHeader4 <- function(filename, funcData, bdoptions,
-                                     offsets, numIndices) {
+                                     headerEntries, offsets, numIndices) {
   subInfo <- SIDandFID4(funcData)
   snpInfo <- FindBDSNPInfo(funcData, bdoptions)
   WriteBinaryDosageHeader4A(filename[1],
+                            headerEntries,
                             funcData$numSamples,
                             funcData$numSNPs,
                             FindGroups(funcData),
@@ -148,21 +149,24 @@ WriteBinaryDosageHeader4 <- function(filename, funcData, bdoptions,
 }
 
 WriteBinaryDosageHeader41 <- function(filename, funcData, bdoptions) {
+  headerEntries <- 8
   offsets <- c(seq(8L, 36L, 4L), 36L)
   return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
-                                   offsets, 0))
+                                   headerEntries, offsets, 0))
 }
 
 WriteBinaryDosageHeader43 <- function(filename, funcData, bdoptions) {
+  headerEntries <- 4
   offsets <- c(rep(-1L, 5), seq(8L, 20L, 4L))
   return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
-                                   offsets, 0))
+                                   headerEntries, offsets, 0))
 }
 
 WriteBinaryDosageHeader44 <- function(filename, funcData, bdoptions) {
+  headerEntries <- 4
   offsets <- c(rep(-1L, 5), seq(8L, 20L, 4L))
   return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
-                                   offsets, funcData$numSNPs))
+                                   headEntries, offsets, funcData$numSNPs))
 }
 
 # Allocates memory needed to write binary dosage files

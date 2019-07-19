@@ -82,16 +82,13 @@ int WriteBDGroups(std::fstream &outfile,
   numGroups = groups.size();
   if (numGroupLoc >= 0)
     outfile.seekp(numGroupLoc);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&numGroups, sizeof(int));
 
   outfile.seekp(0, std::ios_base::end);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&groups[0], numGroups * sizeof(int));
 
   subjectOffset = (int)outfile.tellp();
   outfile.seekp(subjectOffsetLoc);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&subjectOffset, sizeof(int));
 
   return 0;
@@ -117,25 +114,20 @@ int WriteBDFamilyInfo(std::fstream &outfile,
   outfile.read((char *)&suboffset, sizeof(int));
   if (numSubLoc < 0) {
     outfile.seekp(suboffset);
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSub, sizeof(int));
   } else {
     outfile.seekp(numSubLoc);
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSub, sizeof(int));
     outfile.seekp(suboffset);
   }
 
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&sidsize, sizeof(int));
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&fidsize, sizeof(int));
   WriteBDString(outfile, sid);
   WriteBDString(outfile, fid);
 
   snpoffset = outfile.tellp();
   outfile.seekp(snpoffsetLoc);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&snpoffset, sizeof(int));
 
   return 0;
@@ -188,17 +180,12 @@ int WriteBDSNPInfo(std::fstream &outfile,
 
   if (snpOptionsLoc < 0) {
     outfile.seekp(snpoffset);
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSNPs, sizeof(int));
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&snpOptions, sizeof(int));
   } else {
     outfile.seekp(numSNPloc);
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&numSNPs, sizeof(int));
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.seekp(snpOptionsLoc);
-    Rcpp::Rcout << outfile.tellp() << std::endl;
     outfile.write((char *)&snpOptions, sizeof(int));
     outfile.seekp(snpoffset);
   }
@@ -207,31 +194,20 @@ int WriteBDSNPInfo(std::fstream &outfile,
   stringSize[1] = chromosome.length() == 0 ? 0 : chromosome.length() + 1;
   stringSize[2] = reference.length() == 0 ? 0 : reference.length() + 1;
   stringSize[3] = alternate.length()  == 0 ? 0 : alternate.length() + 1;
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&stringSize[0], sizeof(stringSize));
 
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, snpid);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, chromosome);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDInteger(outfile, location);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, reference);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDString(outfile, alternate);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, aaf);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, maf);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, avgCall);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDNumeric(outfile, rsq);
 
   nextoffset = outfile.tellp();
   outfile.seekp(nextOffsetLoc);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&nextoffset, sizeof(int));
 
   return 0;
@@ -245,12 +221,10 @@ int WriteBDIndices(std::fstream &outfile, int numIndices,
   outfile.seekg(indexOffsetLoc);
   outfile.read((char *)&indexoffset, sizeof(int));
   outfile.seekp(indexoffset);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   for (int i = 0; i < numIndices; ++i)
     outfile.write((char *)&INTZERO, sizeof(int));
   dosageoffset = outfile.tellp();
   outfile.seekp(dosageOffsetLoc);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.write((char *)&dosageoffset, sizeof(int));
   return 0;
 }
@@ -370,6 +344,7 @@ int WriteBinaryDosageHeader3B(std::string &filename,
 // Return - 0 successful, 1 error
 // [[Rcpp::export]]
 int WriteBinaryDosageHeader4A(std::string &filename,
+                              int headerEntries,
                               int numSubjects,
                               int numSNPs,
                               Rcpp::IntegerVector &groups,
@@ -393,23 +368,20 @@ int WriteBinaryDosageHeader4A(std::string &filename,
   outfile.seekp(8);
 
   // Zero out the rest of the data. It will be filled in later
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < headerEntries; ++i)
     outfile.write((char *)&INTZERO, sizeof(int));
 
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDGroups(outfile,
                 groups,
                 offsets[OFFSETS::offsets::numgroups],
                 offsets[OFFSETS::offsets::subjectoffset]);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDFamilyInfo(outfile,
                     numSubjects,
                     sid,
                     fid,
                     offsets[OFFSETS::offsets::numsubjects],
-                    offsets[OFFSETS::offsets::snpoffset],
+                    offsets[OFFSETS::offsets::subjectoffset],
                     offsets[OFFSETS::offsets::snpoffset]);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDSNPInfo(outfile,
                 numSNPs,
                 snpid,
@@ -425,12 +397,10 @@ int WriteBinaryDosageHeader4A(std::string &filename,
                 offsets[OFFSETS::offsets::snpoptions],
                 offsets[OFFSETS::offsets::snpoffset],
                 offsets[OFFSETS::offsets::indexoffset]);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   WriteBDIndices(outfile,
                  numIndices,
                  offsets[OFFSETS::offsets::indexoffset],
                  offsets[OFFSETS::offsets::dosageoffset]);
-  Rcpp::Rcout << outfile.tellp() << std::endl;
   outfile.close();
   return 0;
 }

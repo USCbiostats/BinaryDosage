@@ -103,7 +103,7 @@ Convert4HeaderToBDInfo <- function(filename, header, format, subformat) {
     onechr <- FALSE
     Chromosome <- rep("", header$numSNPs)
   } else {
-    if (length(header$snps$chrsting) == 1) {
+    if (length(header$snps$chrstring) == 1) {
       onechr <- TRUE
       Chromosome <- rep(header$snps$chrstring, header$numSNPs)
     } else {

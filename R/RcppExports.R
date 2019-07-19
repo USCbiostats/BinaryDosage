@@ -53,8 +53,8 @@ WriteBinaryDosageHeader3B <- function(filename, md5samples, md5SNPs, numIndices)
     .Call(`_BinaryDosage_WriteBinaryDosageHeader3B`, filename, md5samples, md5SNPs, numIndices)
 }
 
-WriteBinaryDosageHeader4A <- function(filename, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices) {
-    .Call(`_BinaryDosage_WriteBinaryDosageHeader4A`, filename, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices)
+WriteBinaryDosageHeader4A <- function(filename, headerEntries, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices) {
+    .Call(`_BinaryDosage_WriteBinaryDosageHeader4A`, filename, headerEntries, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices)
 }
 
 WriteBinaryDosageDataC <- function(filename, dosage, us, base) {

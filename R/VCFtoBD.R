@@ -197,7 +197,7 @@ GetVCFInfo <- function(filename,
   } else {
     Indices <- numeric(0)
   }
-  snpInfo <- data.frame()
+  snpInfo <- list()
 
   retVal = list(filename = fqfilename,
                 gzipped = gzipped,
