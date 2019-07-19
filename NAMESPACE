@@ -2,7 +2,6 @@
 
 export(GetSNPValues)
 export(GetVCFInfo)
-export(GetVCFInfoC)
 export(VCFtoBD)
 importFrom(Rcpp,sourceCpp)
 importFrom(digest,digest)

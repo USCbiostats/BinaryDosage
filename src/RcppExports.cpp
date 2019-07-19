@@ -5,6 +5,17 @@
 
 using namespace Rcpp;
 
+// GetLineLocations
+std::vector<double> GetLineLocations(std::string& filename);
+RcppExport SEXP _BinaryDosage_GetLineLocations(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetLineLocations(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ReadBinaryDosageBaseHeader
 Rcpp::List ReadBinaryDosageBaseHeader(std::string& filename);
 RcppExport SEXP _BinaryDosage_ReadBinaryDosageBaseHeader(SEXP filenameSEXP) {
@@ -108,33 +119,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// OpenVCFFile
-Rcpp::List OpenVCFFile(Rcpp::StringVector& rFilename);
-RcppExport SEXP _BinaryDosage_OpenVCFFile(SEXP rFilenameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::StringVector& >::type rFilename(rFilenameSEXP);
-    rcpp_result_gen = Rcpp::wrap(OpenVCFFile(rFilename));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ReadVCFValues
-int ReadVCFValues(std::string& filename, Rcpp::NumericMatrix& values, Rcpp::IntegerVector& snps, Rcpp::IntegerVector& subjects, Rcpp::NumericVector& indices, Rcpp::StringVector& formats);
-RcppExport SEXP _BinaryDosage_ReadVCFValues(SEXP filenameSEXP, SEXP valuesSEXP, SEXP snpsSEXP, SEXP subjectsSEXP, SEXP indicesSEXP, SEXP formatsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type values(valuesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type snps(snpsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type subjects(subjectsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::StringVector& >::type formats(formatsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ReadVCFValues(filename, values, snps, subjects, indices, formats));
-    return rcpp_result_gen;
-END_RCPP
-}
 // WriteBinaryDosageBaseHeader
 int WriteBinaryDosageBaseHeader(std::string& filename, int format, int subformat);
 RcppExport SEXP _BinaryDosage_WriteBinaryDosageBaseHeader(SEXP filenameSEXP, SEXP formatSEXP, SEXP subformatSEXP) {
@@ -233,6 +217,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_BinaryDosage_GetLineLocations", (DL_FUNC) &_BinaryDosage_GetLineLocations, 1},
     {"_BinaryDosage_ReadBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageBaseHeader, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3A, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3B, 1},
@@ -241,8 +226,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBDIndicesS4", (DL_FUNC) &_BinaryDosage_ReadBDIndicesS4, 3},
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 6},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 9},
-    {"_BinaryDosage_OpenVCFFile", (DL_FUNC) &_BinaryDosage_OpenVCFFile, 1},
-    {"_BinaryDosage_ReadVCFValues", (DL_FUNC) &_BinaryDosage_ReadVCFValues, 6},
     {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
     {"_BinaryDosage_WriteBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3A, 2},
     {"_BinaryDosage_WriteBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3B, 4},

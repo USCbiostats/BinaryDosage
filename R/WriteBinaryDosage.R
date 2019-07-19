@@ -183,58 +183,34 @@ AllocateBinaryDosageWriteMemory <- function(funcData) {
 # Header has already been written
 # funcData was already created using AllocateBinaryDosageWriteMemory (see above)
 WriteBinaryDosageData <- function(funcData, dosage, p0, p1, p2) {
-  writeFunc <- list(f1 <- c(WriteBinaryDosageData11, WriteBinaryDosageData12),
-                    f2 <- c(WriteBinaryDosageData21, WriteBinaryDosageData22),
-                    f3 <- c(WriteBinaryDosageData31, WriteBinaryDosageData32, WriteBinaryDosageData33, WriteBinaryDosageData34),
-                    f4 <- c(WriteBinaryDosageData41, WriteBinaryDosageData42, WriteBinaryDosageData43, WriteBinaryDosageData44))
+  writeFunc <- list(f1 <- c(WriteBinaryDosageData1, WriteBinaryDosageData2),
+                    f2 <- c(WriteBinaryDosageData3, WriteBinaryDosageData4),
+                    f3 <- c(WriteBinaryDosageData3, WriteBinaryDosageData5, WriteBinaryDosageData3, WriteBinaryDosageData6),
+                    f4 <- c(WriteBinaryDosageData3, WriteBinaryDosageData5, WriteBinaryDosageData3, WriteBinaryDosageData6))
   return (writeFunc[[funcData$format]][[funcData$subformat]](funcData, dosage, p0, p1, p2))
 }
 
-WriteBinaryDosageData11 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData1 <- function(funcData, dosage, p0, p1, p2) {
   return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 1))
 }
 
-WriteBinaryDosageData12 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData2 <- function(funcData, dosage, p0, p1, p2) {
   return (WriteBinaryP1P2Data(funcData$filename, p1, p2, funcData$us,  2))
 }
 
-WriteBinaryDosageData21 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData3 <- function(funcData, dosage, p0, p1, p2) {
   return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
 }
 
-WriteBinaryDosageData22 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData4 <- function(funcData, dosage, p0, p1, p2) {
   return (WriteBinaryP1P2Data(funcData$filename, p1, p2, funcData$us, 3))
 }
 
-WriteBinaryDosageData31 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
-}
-
-WriteBinaryDosageData32 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData5 <- function(funcData, dosage, p0, p1, p2) {
   return (0)
 }
 
-WriteBinaryDosageData33 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
-}
-
-WriteBinaryDosageData34 <- function(funcData, dosage, p0, p1, p2) {
-  return (0)
-}
-
-WriteBinaryDosageData41 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
-}
-
-WriteBinaryDosageData42 <- function(funcData, dosage, p0, p1, p2) {
-  return (0)
-}
-
-WriteBinaryDosageData43 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
-}
-
-WriteBinaryDosageData44 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData6 <- function(funcData, dosage, p0, p1, p2) {
   return (0)
 }
 
