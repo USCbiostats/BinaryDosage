@@ -331,7 +331,37 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
 }
 
 // [[Rcpp::export]]
-Rcpp::IntegerVector ReadBDIndicesS4(std::string filename,
+Rcpp::List ReadBDIndices3C(std::string filename,
+                                    int numSNPs,
+                                    int indexStart) {
+  std::ifstream infile;
+  Rcpp::NumericVector datasize(numSNPs);
+  Rcpp::NumericVector indices(numSNPs);
+  int ds;
+  Rcpp::List retval;
+
+  infile.open(filename.c_str(), READBINARY);
+  if (!infile.good()) {
+    Rcpp::Rcerr << "Unable to open output file" << std::endl;
+    return retval;
+  }
+
+  infile.seekg(indexStart);
+  for (int i = 0; i < numSNPs; ++i) {
+    infile.read((char *)&ds, sizeof(int));
+    datasize[i] = ds;
+    indices[i] = infile.tellg();
+    infile.seekg(ds, std::ios_base::cur);
+  }
+
+  infile.close();
+
+  return Rcpp::List::create(Rcpp::Named("datasize") = datasize,
+                            Rcpp::Named("indices") = indices);
+}
+
+// [[Rcpp::export]]
+Rcpp::IntegerVector ReadBDIndices4C(std::string filename,
                                     int numSNPs,
                                     int indexStart) {
   std::ifstream infile;
@@ -426,6 +456,41 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
   UShortToDouble(us, p2, base - 1);
   dosage = p1 + p2 + p2;
   p0 = 1. - p1 - p2;
+  infile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int ReadBinaryDosageDataCompressed(std::string &filename,
+                                   double index,
+                                   double datasize,
+                                   Rcpp::NumericVector &dosage,
+                                   Rcpp::NumericVector &p0,
+                                   Rcpp::NumericVector &p1,
+                                   Rcpp::NumericVector &p2,
+                                   Rcpp::IntegerVector &us) {
+  unsigned short *usbase, *usadd;
+  std::ifstream infile;
+
+  infile.open(filename.c_str(), READBINARY);
+  if (!infile.good()) {
+    Rcpp::Rcerr << "Unable to open input file" << std::endl;
+    return 1;
+  }
+
+  usbase = (unsigned short *)&us[0];
+  usadd = usbase + dosage.size();
+
+  infile.seekg(index);
+  infile.read((char *)usbase, datasize);
+  for (int i = 0; i < dosage.size(); ++i, ++usbase) {
+    if (*usbase & 0x8000) {
+      dosage = (*usbase & 0x7fff) / 10000.;
+    } else {
+      dosage = *usbase / 10000.;
+    }
+  }
+
   infile.close();
   return 0;
 }

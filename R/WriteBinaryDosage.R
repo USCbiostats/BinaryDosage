@@ -207,7 +207,7 @@ WriteBinaryDosageData4 <- function(funcData, dosage, p0, p1, p2) {
 }
 
 WriteBinaryDosageData5 <- function(funcData, dosage, p0, p1, p2) {
-  return (0)
+  return (WriteBinaryCompressed(funcData$filename, dosage, p0, p1, p2, funcData$us))
 }
 
 WriteBinaryDosageData6 <- function(funcData, dosage, p0, p1, p2) {

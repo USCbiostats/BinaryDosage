@@ -25,8 +25,12 @@ ReadBinaryDosageHeader4B <- function(filename) {
     .Call(`_BinaryDosage_ReadBinaryDosageHeader4B`, filename)
 }
 
-ReadBDIndicesS4 <- function(filename, numSNPs, indexStart) {
-    .Call(`_BinaryDosage_ReadBDIndicesS4`, filename, numSNPs, indexStart)
+ReadBDIndices3C <- function(filename, numSNPs, indexStart) {
+    .Call(`_BinaryDosage_ReadBDIndices3C`, filename, numSNPs, indexStart)
+}
+
+ReadBDIndices4C <- function(filename, numSNPs, indexStart) {
+    .Call(`_BinaryDosage_ReadBDIndices4C`, filename, numSNPs, indexStart)
 }
 
 ReadBinaryDosageDataC <- function(filename, headersize, snp, dosage, usdosage, base) {
@@ -59,5 +63,9 @@ WriteBinaryDosageDataC <- function(filename, dosage, us, base) {
 
 WriteBinaryP1P2Data <- function(filename, p1, p2, us, base) {
     .Call(`_BinaryDosage_WriteBinaryP1P2Data`, filename, p1, p2, us, base)
+}
+
+WriteBinaryCompressed <- function(filename, dosage, p0, p1, p2, us) {
+    .Call(`_BinaryDosage_WriteBinaryCompressed`, filename, dosage, p0, p1, p2, us)
 }
 

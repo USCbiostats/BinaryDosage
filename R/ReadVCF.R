@@ -175,23 +175,26 @@ GetVCFInfo <- function(filename,
     datasize <- integer(numSNPs)
     Indices <- numeric(numSNPs)
     if (gzipped == FALSE) {
-      con2 <- file(filename, "r")
+      x <- BinaryDosage:::GetLineLocations(filename)
+      Indices <- x[(headerlines + 1):(length(x) - 1)]
+      for (i in 1:length(datasize))
+        datasize[i] <- x[headerlines + i + 1] - x[headerlines + i]
+      headersize <- Indices[1]
     } else {
       con2 <- gzfile(filename, "r")
+      currentPos <- seek(con2, 0)
+      for (i in 1:headerlines)
+        line <- readLines(con2, n = 1)
+      headersize <- seek(con2)
+      currentPos <- 0
+      for (i in 1:numSNPs) {
+        Indices[i] <- seek(con2)
+        line <- readLines(con2, n = 1)
+        currentPos <- seek(con2)
+        datasize[i] <- currentPos - Indices[i]
+      }
+      close(con2)
     }
-
-    currentPos <- seek(con2, 0)
-    for (i in 1:headerlines)
-      line <- readLines(con2, n = 1)
-    headersize <- seek(con2)
-    currentPos <- 0
-    for (i in 1:numSNPs) {
-      Indices[i] <- seek(con2)
-      line <- readLines(con2, n = 1)
-      currentPos <- seek(con2)
-      datasize[i] <- currentPos - Indices[i]
-    }
-    close(con2)
   } else {
     headersize <- -1L
     datasize <- integer(0)
@@ -224,7 +227,7 @@ VCFApply <- function(vcfInfo, func, funcdata) {
     seek(con, sum(vcfInfo$indices[1]))
   } else {
     con <- gzfile(vcfInfo$filename, "r")
-    line <- readLines(con, n = vcfInfo$headersize)
+    line <- readLines(con, n = vcfInfo$headerlines)
   }
 
   for (i in 1:vcfInfo$numSNPs) {

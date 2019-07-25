@@ -71,16 +71,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ReadBDIndicesS4
-Rcpp::IntegerVector ReadBDIndicesS4(std::string filename, int numSNPs, int indexStart);
-RcppExport SEXP _BinaryDosage_ReadBDIndicesS4(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexStartSEXP) {
+// ReadBDIndices3C
+Rcpp::List ReadBDIndices3C(std::string filename, int numSNPs, int indexStart);
+RcppExport SEXP _BinaryDosage_ReadBDIndices3C(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexStartSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
     Rcpp::traits::input_parameter< int >::type indexStart(indexStartSEXP);
-    rcpp_result_gen = Rcpp::wrap(ReadBDIndicesS4(filename, numSNPs, indexStart));
+    rcpp_result_gen = Rcpp::wrap(ReadBDIndices3C(filename, numSNPs, indexStart));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBDIndices4C
+Rcpp::IntegerVector ReadBDIndices4C(std::string filename, int numSNPs, int indexStart);
+RcppExport SEXP _BinaryDosage_ReadBDIndices4C(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexStartSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type indexStart(indexStartSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBDIndices4C(filename, numSNPs, indexStart));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -215,6 +228,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// WriteBinaryCompressed
+int WriteBinaryCompressed(std::string& filename, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& us);
+RcppExport SEXP _BinaryDosage_WriteBinaryCompressed(SEXP filenameSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryCompressed(filename, dosage, p0, p1, p2, us));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetLineLocations", (DL_FUNC) &_BinaryDosage_GetLineLocations, 1},
@@ -223,7 +252,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3B, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4A, 1},
     {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
-    {"_BinaryDosage_ReadBDIndicesS4", (DL_FUNC) &_BinaryDosage_ReadBDIndicesS4, 3},
+    {"_BinaryDosage_ReadBDIndices3C", (DL_FUNC) &_BinaryDosage_ReadBDIndices3C, 3},
+    {"_BinaryDosage_ReadBDIndices4C", (DL_FUNC) &_BinaryDosage_ReadBDIndices4C, 3},
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 6},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 9},
     {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
@@ -232,6 +262,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_WriteBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader4A, 18},
     {"_BinaryDosage_WriteBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageDataC, 4},
     {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 5},
+    {"_BinaryDosage_WriteBinaryCompressed", (DL_FUNC) &_BinaryDosage_WriteBinaryCompressed, 6},
     {NULL, NULL, 0}
 };
 

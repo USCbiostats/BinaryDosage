@@ -33,7 +33,7 @@ extern const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::
 // zero values for filling initial values of binary dosage file to 0
 const char CHARZERO = 0x0;
 const int INTZERO = 0;
-const double DOUBLEZERO = 0.;
+//const double DOUBLEZERO = 0.;
 
 struct OFFSETS {
   enum offsets { numsubjects, numsnps, numgroups, suboptions, snpoptions,
@@ -437,6 +437,29 @@ extern const double DBASE[NUMBEROFBASES] = {
   1. / USBASE[2]
 };
 
+unsigned short DoubleToUShort(const double x, const int base) {
+  unsigned short r1, r2;
+  double x1, x2;
+
+  r1 = r2 = 0;
+  x1 = x2 = 0.;
+
+  if (x != x) {
+    // Missing
+    return 0xffff;
+  }
+  r1 = (unsigned short)(x * USBASE[base]);
+  // The following section checks if r1 or (r1 -1) or (r1 + 1)
+  // gives the closest value to the double passed
+  x1 = r1 * DBASE[base];
+  if (r1 * DBASE[base] < x)
+    r2 = r1 + 1;
+  else
+    r2 = r1 - 1;
+  x2 = r2 * DBASE[base];
+
+  return (fabs(x - x1) < fabs(x - x2)) ? r1 : r2;
+}
 // Routine to convert double values to short
 // Parameter x - is the vector of doubles to convert
 // Parameter us - vector of unsigned shorts to store converted values
@@ -519,7 +542,6 @@ int WriteBinaryP1P2Data(std::string &filename,
                         int base) {
   std::ofstream outfile;
 
-  // Opens file for writing binary data by appending
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
     return 1;
@@ -528,6 +550,56 @@ int WriteBinaryP1P2Data(std::string &filename,
   outfile.write((char *)&us[0], p1.size() * sizeof(short));
   DoubleToUShort(p2, us, base - 1);
   outfile.write((char *)&us[0], p2.size() * sizeof(short));
+
+  outfile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int WriteBinaryCompressed(std::string &filename,
+                          Rcpp::NumericVector &dosage,
+                          Rcpp::NumericVector &p0,
+                          Rcpp::NumericVector &p1,
+                          Rcpp::NumericVector &p2,
+                          Rcpp::IntegerVector &us) {
+  int i;
+  int additionallength;
+  unsigned short *usdose, *usadd;
+  unsigned int writesize;
+  std::ofstream outfile;
+
+  // Opens file for appending
+  if (OpenBDFileAppend(outfile, filename) != 0)
+    return 1;
+
+  DoubleToUShort(dosage, us, 2);
+
+  additionallength = 0;
+
+  usdose = (unsigned short *)&us[0];
+  usadd = usdose + dosage.size();
+  for (i = 0; i < dosage.length(); ++i, ++usdose) {
+    if (p0[i] + p1[i] + p2[i] == 1. && p1[i] + p2[i] + p2[i] == dosage[i]) {
+      if (p0[i] != 0 && p2[i] != 0) {
+        *usdose |= 0x8000;
+        *usadd = DoubleToUShort(p1[i], 2);
+        ++usadd;
+        ++additionallength;
+      }
+    } else {
+      *usdose |= 0x8000;
+      *usadd = 0x8000 | DoubleToUShort(p1[i], 2);
+      ++usadd;
+      *usadd = DoubleToUShort(p0[i], 2);
+      ++usadd;
+      *usadd = DoubleToUShort(p2[i], 2);
+      ++usadd;
+      additionallength += 3;
+    }
+  }
+  writesize = (dosage.size() + additionallength) * sizeof(short);
+  outfile.write((char *)&writesize, sizeof(int));
+  outfile.write((char *)&us[0], writesize);
 
   outfile.close();
   return 0;

@@ -47,47 +47,6 @@ ReadFamAndMapFiles <- function(filename, format, subformat, headersize) {
                SNPs = snps))
 }
 
-# This routine sets up the indices when only the dosages are
-# in the binary dosage file. This is simple because the size
-# is fixed 2 bytes per subject per SNP
-ReadIndices1 <- function(numSNPs, dosageoffset) {
-  indices <- numeric(numSNPs)
-  indices[1] <- dosageoffset
-  for (i in 2:numSNPs)
-    indices[i] = indices[i - 1] + 2 * numSNPs
-  return (indices)
-}
-
-# This routine sets up the indices when reading formats 1 and 2
-# when there is both dosage and genetic probability data. This
-# is also simple because the size is fixed to 4 bytes per subject
-# per SNP
-ReadIndices2 <- function(numSNPs, dosageoffset) {
-  indices <- numeric(numSNPs)
-  indices[1] <- dosageoffset
-  for (i in 2:numSNPs)
-    indices[i] = indices[i - 1] + 4 * numSNPs
-  return (indices)
-}
-
-# This routine sets up the indices when reading formats 3 and 4,
-# subformat 2. The inidices are stored at the start of each SNP's
-# dosage data. This is a time consuming operation.
-ReadIndices3 <- function(numSNPs, dosageoffset) {
-  indices <- numeric(numSNPs)
-  indices[1] <- dosageoffset
-  for (i in 2:numSNPs)
-    indices[i] = indices[i - 1] + 4 * numSNPs
-  return (indices)
-}
-
-# This routine sets up the indices when reading formats 3 and 4,
-# subformat 4. The inidices are stored in the header are easy to
-# read in.
-ReadIndices4 <- function(filename, numSNPs, indexStart) {
-  return (ReadBDIndicesS4(filename, numSNPs, indexStart))
-}
-
 Convert4HeaderToBDInfo <- function(filename, header, format, subformat) {
   SID <- unlist(strsplit(header$samples$sidstring, '\t'))
   if (header$samples$fidsize == 0) {
@@ -225,65 +184,86 @@ ReadBinaryDosageHeader44 <- function(filename) {
   return (bdInfo)
 }
 
+# Gets the file locations for snps in a binary dosage file
+ReadBinaryDosageIndices <- function(bdInfo) {
+  ReadIndicesFunc <- list(f1 <- c(ReadIndices1, ReadIndices2),
+                          f2 <- c(ReadIndices1, ReadIndices2),
+                          f3 <- c(ReadIndices1, ReadIndices3, ReadIndices1, ReadIndices4),
+                          f4 <- c(ReadIndices1, ReadIndices3, ReadIndices1, ReadIndices4))
+  return (ReadIndicesFunc[[bdInfo$format]][[bdInfo$subformat]](bdInfo))
+}
+
+FixedIndices <- function(numSub, numSNPs, firstIndex, snpsize) {
+  datasize <- snpsize * numSub
+  indices <- seq(firstIndex, firstIndex + datasize * (numSNPs - 1), datasize)
+  return (list(datasize = datasize, indices = indices))
+}
+
+# This routine sets up the indices when only the dosages are
+# in the binary dosage file. This is simple because the size
+# is fixed 2 bytes per subject per SNP
+ReadIndices1 <- function(bdInfo) {
+  return (FixedIndices(bdInfo$numSamples, bdInfo$numSNPs, bdInfo$headersize, 2))
+}
+
+# This routine sets up the indices when reading formats 1 and 2
+# when there is both dosage and genetic probability data. This
+# is also simple because the size is fixed to 4 bytes per subject
+# per SNP
+ReadIndices2 <- function(bdInfo) {
+  return (FixedIndices(bdInfo$numSamples, bdInfo$numSNPs, bdInfo$headersize, 4))
+}
+
+# This routine sets up the indices when reading formats 3 and 4,
+# subformat 2. The inidices are stored at the start of each SNP's
+# dosage data. This is a time consuming operation.
+ReadIndices3 <- function(bdInfo) {
+  return (ReadBDIndices3C(bdInfo$filename, bdInfo$numSNPs, bdInfo$headersize))
+}
+
+# This routine sets up the indices when reading formats 3 and 4,
+# subformat 4. The inidices are stored in the header are easy to
+# read in.
+ReadIndices4 <- function(filename, numSNPs, indexStart) {
+  return (ReadBDIndicesS4(filename, numSNPs, indexStart))
+}
+
 # Reads a SNP form the various formats
 # of the binary dosage file.
 ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  ReadHeaderFunc <- list(f1 <- c(ReadBinaryDosageData11, ReadBinaryDosageData12),
-                         f2 <- c(ReadBinaryDosageData21, ReadBinaryDosageData22),
-                         f3 <- c(ReadBinaryDosageData31, ReadBinaryDosageData32, ReadBinaryDosageData33, ReadBinaryDosageData34),
-                         f4 <- c(ReadBinaryDosageData41, ReadBinaryDosageData42, ReadBinaryDosageData43, ReadBinaryDosageData44))
+  ReadHeaderFunc <- list(f1 <- c(ReadBinaryDosageData1, ReadBinaryDosageData2),
+                         f2 <- c(ReadBinaryDosageData3, ReadBinaryDosageData4),
+                         f3 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5),
+                         f4 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5))
   return (ReadHeaderFunc[[bdInfo$format]][[bdInfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
 }
 
-ReadBinaryDosageData11 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 1)
 
 }
 
-ReadBinaryDosageData12 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+ReadBinaryDosageData2 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 2)
 }
 
-ReadBinaryDosageData21 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+ReadBinaryDosageData3 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
 
 }
 
-ReadBinaryDosageData22 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+ReadBinaryDosageData4 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 3)
 }
 
-ReadBinaryDosageData31 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
-
-}
-
-ReadBinaryDosageData32 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   return (0)
 }
 
-ReadBinaryDosageData33 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
-}
-
-ReadBinaryDosageData34 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  return (0)
-}
-
-ReadBinaryDosageData41 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
-
-}
-
-ReadBinaryDosageData42 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  return (0)
-}
-
-ReadBinaryDosageData43 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
-
-}
-
-ReadBinaryDosageData44 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  return (0)
+GetBDInfo <- function(bdfilenames) {
+  bdInfo <- ReadBinaryDosageHeader(bdfilenames)
+  indices <- ReadBinaryDosageIndices(bdInfo)
+  bdInfo$datasize <- indices$datasize
+  bdInfo$indices <- indices$indices
+  return (bdInfo)
 }
