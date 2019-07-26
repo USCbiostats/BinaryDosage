@@ -335,7 +335,7 @@ Rcpp::List ReadBDIndices3C(std::string filename,
                                     int numSNPs,
                                     int indexStart) {
   std::ifstream infile;
-  Rcpp::NumericVector datasize(numSNPs);
+  Rcpp::IntegerVector datasize(numSNPs);
   Rcpp::NumericVector indices(numSNPs);
   int ds;
   Rcpp::List retval;
@@ -361,24 +361,33 @@ Rcpp::List ReadBDIndices3C(std::string filename,
 }
 
 // [[Rcpp::export]]
-Rcpp::IntegerVector ReadBDIndices4C(std::string filename,
+Rcpp::List ReadBDIndices4C(std::string filename,
                                     int numSNPs,
-                                    int indexStart) {
+                                    int headersize) {
+  int indexstart;
   std::ifstream infile;
-  Rcpp::IntegerVector retVal(numSNPs);
+  Rcpp::IntegerVector datasize(numSNPs);
+  Rcpp::NumericVector indices(numSNPs);
+  Rcpp::List retval;
 
   infile.open(filename.c_str(), READBINARY);
   if (!infile.good()) {
     Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
+    return retval;
   }
 
-  infile.seekg(indexStart);
-  infile.read((char *)&retVal[0], numSNPs * sizeof(int));
+  indexstart = headersize - numSNPs * sizeof(int);
+  infile.seekg(indexstart);
+  infile.read((char *)&datasize[0], numSNPs * sizeof(int));
 
   infile.close();
 
-  return retVal;
+  indices[0] = headersize;
+  for (int i = 1; i < numSNPs; ++i)
+    indices[i] = indices[i - 1] + datasize[i - 1];
+
+  return Rcpp::List::create(Rcpp::Named("datasize") = datasize,
+                            Rcpp::Named("indices") = indices);
 }
 
 // Routine to convert short values to double
@@ -484,10 +493,39 @@ int ReadBinaryDosageDataCompressed(std::string &filename,
   infile.seekg(index);
   infile.read((char *)usbase, datasize);
   for (int i = 0; i < dosage.size(); ++i, ++usbase) {
+    if (*usbase == 0xffff) {
+      dosage[i] = NA_REAL;
+      p0[i] = NA_REAL;
+      p1[i] = NA_REAL;
+      p2[i] = NA_REAL;
+      continue;
+    }
     if (*usbase & 0x8000) {
-      dosage = (*usbase & 0x7fff) / 10000.;
+      dosage[i] = (*usbase & 0x7fff) / 10000.;
+      if (*usadd & 0x8000) {
+        p1[i] = (*usadd & 0x7fff) / 10000.;
+        ++usadd;
+        p0[i] = *usadd / 10000.;
+        ++usadd;
+        p2[i] = *usadd / 10000.;
+        ++usadd;
+      } else {
+        p1[i] = *usadd / 10000.;
+        ++usadd;
+        p2[i] = (dosage[i] - p1[i]) / 2.;
+        p0[i] = 1. - p2[i] - p1[i];
+      }
     } else {
-      dosage = *usbase / 10000.;
+      dosage[i] = *usbase / 10000.;
+      if (dosage[i] > 1.) {
+        p2[i] = dosage[i] - 1.;
+        p1[i] = dosage[i] - p2[i] - p2[i];
+        p0[i] = 0.;
+      } else {
+        p0[i] = 1. - dosage[i];
+        p1[i] = dosage[i];
+        p2[i] = 0.;
+      }
     }
   }
 

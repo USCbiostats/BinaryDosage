@@ -1,3 +1,14 @@
+#***************************************************************************#
+#                                                                           #
+#                       Writing Binary Dosage files                         #
+#                                                                           #
+#***************************************************************************#
+
+
+#***************************************************************************#
+#             Support functions for subject and SNP data                    #
+#***************************************************************************#
+
 # Formats 1, 2, and 3 all have a separate family and map file
 # This routine saves the data frames in RDS format
 WriteFamilyAndMapFiles <- function(filename, samples, snps) {
@@ -29,6 +40,7 @@ SIDandFID4 <- function(funcData) {
 # Find a character vector in the SNP info data frame
 # Returns the vector if found, otherwise it returns
 # a character vector of length 0
+# This is usually used to find aaf, maf, avgCall, and rsq
 FindSNPInfoString <- function(toFind, snpInfo, numSNPs) {
   infocol <- match(toFind, colnames(snpInfo))
   if (is.na(infocol) == FALSE)
@@ -87,6 +99,13 @@ FindBDSNPInfo <- function(funcData, bdoptions) {
                avgCall = avgCall,
                rsq = rsq))
 }
+
+#***************************************************************************#
+#                                                                           #
+#                     Writing the Binary Dosage header                      #
+#                                                                           #
+#***************************************************************************#
+
 
 # Writes the header for the various formats of the formats
 # of the binary dosage file. These vary for all the different
@@ -166,8 +185,15 @@ WriteBinaryDosageHeader44 <- function(filename, funcData, bdoptions) {
   headerEntries <- 4
   offsets <- c(rep(-1L, 5), seq(8L, 20L, 4L))
   return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
-                                   headEntries, offsets, funcData$numSNPs))
+                                   headerEntries, offsets, funcData$numSNPs))
 }
+
+#***************************************************************************#
+#                                                                           #
+#                     Writing the Binary Dosage data                        #
+#                                                                           #
+#***************************************************************************#
+
 
 # Allocates memory needed to write binary dosage files
 # This is sufficient for all formats
@@ -175,7 +201,9 @@ AllocateBinaryDosageWriteMemory <- function(funcData) {
   return(list(filename = funcData$filename,
               format = funcData$format,
               subformat = funcData$subformat,
-              snp = 0L,
+              headersize = funcData$headersize,
+              snpnumber = 0L,
+              datasize = integer(funcData$numSNPs),
               us = integer(2*funcData$numSamples)))
 }
 
@@ -207,10 +235,37 @@ WriteBinaryDosageData4 <- function(funcData, dosage, p0, p1, p2) {
 }
 
 WriteBinaryDosageData5 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryCompressed(funcData$filename, dosage, p0, p1, p2, funcData$us))
+  snpnumber <- -1L
+  return (WriteBinaryCompressed(funcData$filename,
+                                dosage, p0, p1, p2,
+                                snpnumber,
+                                funcData$datasize,
+                                funcData$us))
 }
 
 WriteBinaryDosageData6 <- function(funcData, dosage, p0, p1, p2) {
+  return (WriteBinaryCompressed(funcData$filename,
+                                dosage, p0, p1, p2,
+                                funcData$snpnumber,
+                                funcData$datasize,
+                                funcData$us))
+}
+
+# Write binary dosage indices to  the file
+# Header has already been written
+# funcData was already created using AllocateBinaryDosageWriteMemory (see above)
+WriteBinaryDosageIndices <- function(funcData) {
+  writeFunc <- list(f1 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1),
+                    f2 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1),
+                    f3 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices2),
+                    f4 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices2))
+  return (writeFunc[[funcData$format]][[funcData$subformat]](funcData))
+}
+
+WriteBinaryDosageIndices1 <- function(funcData) {
   return (0)
 }
 
+WriteBinaryDosageIndices2 <- function(funcData) {
+  return(WriteBinaryDosageIndicesC(funcData$filename, funcData$headersize, funcData$datasize))
+}

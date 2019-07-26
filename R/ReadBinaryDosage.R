@@ -151,13 +151,12 @@ ReadBinaryDosageHeader33 <- function(filename) {
 
 ReadBinaryDosageHeader34 <- function(filename) {
   bdInfo <- ReadFamAndMapFiles(filename, 3, 4, 72)
+  bdInfo$headersize <- bdInfo$headersize + 4 * bdInfo$numSNPs
   additionalInfo = ReadBinaryDosageHeader3B(filename[1])
   if (digest(bdInfo$samples) != additionalInfo$md5[1])
     stop("Subject file does not line up with binary dosage file")
   if (digest(bdInfo$SNPs) != additionalInfo$md5[2])
     stop("Map file does not line up with binary dosage file")
-  bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, 72)
-  bdInfo$headersize <- 72 + 4 * bdInfo$numSNPs
   return (bdInfo)
 }
 
@@ -180,7 +179,6 @@ ReadBinaryDosageHeader43 <- function(filename) {
 ReadBinaryDosageHeader44 <- function(filename) {
   header <- ReadBinaryDosageHeader4B(filename[1])
   bdInfo <- Convert4HeaderToBDInfo(filename, header, 4, 4)
-  bdInfo$index <- ReadIndices4(filename[1], bdInfo$numSNPs, header$indexoffset)
   return (bdInfo)
 }
 
@@ -224,8 +222,8 @@ ReadIndices3 <- function(bdInfo) {
 # This routine sets up the indices when reading formats 3 and 4,
 # subformat 4. The inidices are stored in the header are easy to
 # read in.
-ReadIndices4 <- function(filename, numSNPs, indexStart) {
-  return (ReadBDIndicesS4(filename, numSNPs, indexStart))
+ReadIndices4 <- function(bdInfo) {
+  return (ReadBDIndices4C(bdInfo$filename, bdInfo$numSNPs, bdInfo$headersize))
 }
 
 # Reads a SNP form the various formats
@@ -257,7 +255,10 @@ ReadBinaryDosageData4 <- function(bdInfo, snp, d, p0, p1, p2, us) {
 }
 
 ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  return (0)
+  return (ReadBinaryDosageDataCompressed(bdInfo$filename,
+                                         bdInfo$indices[snp],
+                                         bdInfo$datasize[snp],
+                                         d, p0, p1, p2, us))
 }
 
 GetBDInfo <- function(bdfilenames) {

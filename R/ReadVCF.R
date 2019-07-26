@@ -256,6 +256,4 @@ VCFApply <- function(vcfInfo, func, funcdata) {
     func(funcdata, dosage, p0, p1, p2)
   }
   close(con)
-
-  return (0)
 }

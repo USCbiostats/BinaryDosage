@@ -437,6 +437,11 @@ extern const double DBASE[NUMBEROFBASES] = {
   1. / USBASE[2]
 };
 
+// Routine to convert a double value to an unsigned short
+// Parameter x - is the vector of doubles to convert
+// Parameter us - vector of unsigned shorts to store converted values
+// Parameter base - Index of USBASE to use as base
+// NOTE: missing values are coded as 0xffff
 unsigned short DoubleToUShort(const double x, const int base) {
   unsigned short r1, r2;
   double x1, x2;
@@ -460,7 +465,8 @@ unsigned short DoubleToUShort(const double x, const int base) {
 
   return (fabs(x - x1) < fabs(x - x2)) ? r1 : r2;
 }
-// Routine to convert double values to short
+
+// Routine to convert a vector of double values to a vector of unsigned shorts
 // Parameter x - is the vector of doubles to convert
 // Parameter us - vector of unsigned shorts to store converted values
 // Parameter base - Index of USBASE to use as base
@@ -493,13 +499,6 @@ void DoubleToUShort(Rcpp::NumericVector &x,
 
       *ps1 = (fabs(x[i] - x1) < fabs(x[i] - x2)) ? r1 : r2;
     }
-//    if (i < 10)
-//      Rcpp::Rcout << x[i] << '\t'
-//                  << *ps1 << '\t'
-//                  << r1 << '\t'
-//                  << x1 << '\t'
-//                  << r2 << '\t'
-//                  << x2 << std::endl;
   }
 }
 
@@ -555,12 +554,24 @@ int WriteBinaryP1P2Data(std::string &filename,
   return 0;
 }
 
+// Write compressed data for formats 3 and 4
+// Paramater filename - name of bindary dosage file
+// Parameter dosage - vector of dosages to write
+// Parameter p0 - vector of P(g=0) to write
+// Parameter p1 - vector of P(g=1) to write
+// Parameter p2 - vector of P(g=2) to write
+// Parameter snpnumber - The 0-based number of snp being written
+// Parameter datasize - vector of number of bytes used to store SNP data
+// Parameter us - vector used to store the converted values. This
+//                is passed to avoid allocating and dealllocating memory
 // [[Rcpp::export]]
 int WriteBinaryCompressed(std::string &filename,
                           Rcpp::NumericVector &dosage,
                           Rcpp::NumericVector &p0,
                           Rcpp::NumericVector &p1,
                           Rcpp::NumericVector &p2,
+                          Rcpp::IntegerVector &snpnumber,
+                          Rcpp::IntegerVector &datasize,
                           Rcpp::IntegerVector &us) {
   int i;
   int additionallength;
@@ -579,6 +590,8 @@ int WriteBinaryCompressed(std::string &filename,
   usdose = (unsigned short *)&us[0];
   usadd = usdose + dosage.size();
   for (i = 0; i < dosage.length(); ++i, ++usdose) {
+    if (dosage[i] != dosage[i])
+      continue;
     if (p0[i] + p1[i] + p2[i] == 1. && p1[i] + p2[i] + p2[i] == dosage[i]) {
       if (p0[i] != 0 && p2[i] != 0) {
         *usdose |= 0x8000;
@@ -597,10 +610,31 @@ int WriteBinaryCompressed(std::string &filename,
       additionallength += 3;
     }
   }
+
   writesize = (dosage.size() + additionallength) * sizeof(short);
-  outfile.write((char *)&writesize, sizeof(int));
+  if (snpnumber[0] < 0) {
+    outfile.write((char *)&writesize, sizeof(int));
+  } else {
+    datasize[snpnumber[0]] = writesize;
+    ++snpnumber[0];
+  }
   outfile.write((char *)&us[0], writesize);
 
+  outfile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int WriteBinaryDosageIndicesC(std::string &filename, int headersize, Rcpp::IntegerVector &datasize) {
+  int indexloc;
+  std::fstream outfile;
+
+  if (OpenBDFileReadWrite(outfile, filename) != 0)
+    return 1;
+
+  indexloc = headersize - datasize.size() * sizeof(int);
+  outfile.seekp(indexloc);
+  outfile.write((char *)&datasize[0], datasize.size() * sizeof(int));
   outfile.close();
   return 0;
 }
