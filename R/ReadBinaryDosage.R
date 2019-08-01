@@ -1,3 +1,16 @@
+#***************************************************************************#
+#                                                                           #
+#                       Reading Binary Dosage files                         #
+#                                                                           #
+#***************************************************************************#
+
+
+#***************************************************************************#
+#                                                                           #
+#                     Reading the Binary Dosage header                      #
+#                                                                           #
+#***************************************************************************#
+
 # Reads the header for the various formats of the formats
 # of the binary dosage file. These vary for all the different
 # formats.
@@ -10,101 +23,134 @@ ReadBinaryDosageHeader <- function(filename) {
   return (ReadHeaderFunc[[bdformat$format]][[bdformat$subformat]](filename))
 }
 
+#***************************************************************************#
+#             Routines to read the subject and SNP info                     #
+#***************************************************************************#
+
+# Function to read subject and map files for formats 1, 2, and 3
+# @parameter filename - vector of files names for binary dosage files
+# first value is the binary dosage file, the second value is the fam file
+# and the third is the map file
+# @parameter format - format of the binary dosage file
+# @parameter subformat - subformat of the binary dosage file
+# @parameter headersize - size of the binary dosage header in bytes
+# @return - The subject and family data needed to create a bdinfo list
 ReadFamAndMapFiles <- function(filename, format, subformat, headersize) {
   fqfilename <- normalizePath(filename[1], winslash = '/')
-  subjects <- readRDS(filename[2])
-  numsub <- nrow(subjects)
-  if (all(subjects$FID == "") == TRUE)
-    usesFID <- FALSE
+  samples <- readRDS(filename[2])
+  if (all(samples$fid == "") == TRUE)
+    usesfid <- FALSE
   else
-    usesFID <- TRUE
+    usesfid <- TRUE
   snps <- readRDS(filename[3])
-  numsnps <- nrow(snps)
-  chr1 <- snps$Chromosome[1]
-  onechr <- all(snps$Chromosome == chr1)
-  chrLocID <- paste(snps$Chromosome, snps$Location, sep = ":")
-  if(all(snps$SNPID == chrLocID) == TRUE)
+  chr1 <- snps$chromosome[1]
+  onechr <- all(snps$chromosome == chr1)
+  chrlocid <- paste(snps$chromosome, snps$location, sep = ":")
+  if(all(snps$snpid == chrlocid) == TRUE)
     snpidformat <- 1
   else {
-    chrLocRefAltID <- paste(snps$Chromosome, snps$Location,
-                            snps$Reference, snps$Alternate, sep = ":")
-    if (all(snps$SNPID == chrLocRefAltID) == TRUE)
+    chrlocleflltid <- paste(snps$chromosome, snps$location,
+                            snps$reference, snps$alternate, sep = ":")
+    if (all(snps$snps == chrlocrefaltid) == TRUE)
       snpidformat <- 2
     else
       snpidformat <- 0
   }
 
+  additionalinfo <- list(format = format,
+                         subformat = subformat,
+                         headersize = headersize,
+                         numGroups = 1,
+                         groups = nrow(samples))
+  class(additionalinfo) <- "bdose-info"
+
   return (list(filename = fqfilename,
-               format = format,
-               subformat = subformat,
-               headersize = headersize,
-               numSamples = numsub,
-               usesFID = usesFID,
-               samples = subjects,
+               usesfid = usesfid,
+               samples = samples,
                onechr = onechr,
                snpidformat = snpidformat,
-               numSNPs = numsnps,
-               SNPs = snps))
+               snps = snps,
+               snpinfo = list(),
+               additionalinfo = additionalinfo))
 }
 
+# Function to convert the binary dosage header subject and SNP info
+# into the bdinfo format
+# @parameter filename - vector of file names for the binary dosage
+# file
+# @parameter header - header information read from the binary dosage
+# file
+# @paramter format - format of the binary dosage file - should be 4
+# @paramter subformat - subformat of the binary dosage file
+# @return - The subject and family data needed to create a bdinfo list
 Convert4HeaderToBDInfo <- function(filename, header, format, subformat) {
-  SID <- unlist(strsplit(header$samples$sidstring, '\t'))
+  sid <- unlist(strsplit(header$samples$sidstring, '\t'))
   if (header$samples$fidsize == 0) {
-    usesFID <- FALSE
-    FID = rep("", header$numsub)
+    usesfid <- FALSE
+    fid = rep("", header$numsub)
   } else {
-    usesFID <- TRUE
-    FID <- unlist(strsplit(header$samples$fidstring, '\t'))
+    usesfid <- TRUE
+    fid <- unlist(strsplit(header$samples$fidstring, '\t'))
   }
-  samples <- data.frame(FID, SID, stringsAsFactors = FALSE)
+  samples <- data.frame(fid, sid, stringsAsFactors = FALSE)
 
   if (header$snps$chrsize == 0) {
     onechr <- FALSE
-    Chromosome <- rep("", header$numSNPs)
+    chromosome <- rep("", header$numSNPs)
   } else {
-    if (length(header$snps$chrstring) == 1) {
+    chromosome <- unlist(strsplit(header$snps$chrstring, '\t'))
+    if (length(chromosome) == 1) {
       onechr <- TRUE
-      Chromosome <- rep(header$snps$chrstring, header$numSNPs)
+      chromosome <- rep(header$snps$chrstring, header$numSNPs)
     } else {
       onechr <- FALSE
-      Chromosome <- unlist(strsplit(header$snps$chrstring, '\t'))
     }
   }
   if (length(header$snps$location) == 0)
-    Location <- rep(0L, header$numSNPs)
+    location <- rep(0L, header$numSNPs)
   else
-    Location <- header$snps$location
+    location <- header$snps$location
   if (header$snps$refsize == 0)
-    Reference <- rep("", header$numSNPs)
+    reference <- rep("", header$numSNPs)
   else
-    Reference <- unlist(strsplit(header$snps$refstring, '\t'))
+    reference <- unlist(strsplit(header$snps$refstring, '\t'))
   if (header$snps$altsize == 0)
-    Alternate <- rep("", header$numSNPs)
+    alternate <- rep("", header$numSNPs)
   else
-    Alternate <- unlist(strsplit(header$snps$altstring, '\t'))
-  if (header$snps$snpsize == 0)
-    SNPID <- paste(Chromosome, Location, Reference, Alternate, sep = ':')
-  else
-    SNPID <- unlist(strsplit(header$snps$snpstring))
-  SNPs <- data.frame(Chromosome, Location, SNPID, Reference, Alternate, stringsAsFactors = FALSE)
+    alternate <- unlist(strsplit(header$snps$altstring, '\t'))
+  if (header$snps$snpsize == 0) {
+    if (header$snps$refsize == 0) {
+      snpid <- paste(chromosome, location, sep = ':')
+      snpidformat <- 1
+    } else {
+      snpid <- paste(chromosome, location, reference, alternate, sep = ':')
+      snpidformat <- 2
+    }
+  } else {
+    snpid <- unlist(strsplit(header$snps$snpstring, '\t'))
+    snpidformat <- 0
+  }
+  snps <- data.frame(chromosome, location, snpid, reference, alternate, stringsAsFactors = FALSE)
 
-  snpInfoCol <- match(c("aaf", "maf", "avgcall", "rsq"), names(header$snps))
-  snpInfoCol <- snpInfoCol[sapply(header$snps, function(x) length(x) != 0)[snpInfoCol]]
-  snpinfo <- lapply(header$snps[snpInfoCol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
+  snpinfocol <- match(c("aaf", "maf", "avgcall", "rsq"), names(header$snps))
+  snpinfocol <- snpinfocol[sapply(header$snps, function(x) length(x) != 0)[snpinfocol]]
+  snpinfo <- lapply(header$snps[snpinfocol], matrix, nrow = header$numSNPs, ncol = header$numgroups)
+
+  additionalinfo <- list(format = format,
+                         subformat = subformat,
+                         headersize = header$dosageoffset,
+                         numgroups = 1,
+                         groups = nrow(samples))
+  class(additionalinfo) <- "bdose-info"
 
   return (list(filename = normalizePath(filename[1], winslash = "/"),
-               format = format,
-               subformat = subformat,
-               headersize = header$dosageoffset,
-               numGroups = header$numgroups,
-               groups = header$groups,
-               numSamples = header$numsub,
-               usesFID = usesFID,
+               usesfid = usesfid,
                samples = samples,
                onechr = onechr,
-               numSNPs = header$numSNPs,
-               SNPs = SNPs,
-               snpinfo = snpinfo))
+               snpidformat = snpidformat,
+               snps = snps,
+               snpinfo = snpinfo,
+               additionalinfo = additionalinfo))
 }
 
 ReadBinaryDosageHeader11 <- function(filename) {
@@ -182,17 +228,27 @@ ReadBinaryDosageHeader44 <- function(filename) {
   return (bdInfo)
 }
 
+#***************************************************************************#
+#                                                                           #
+#               Getting the indices for a binary dosage file                #
+#                                                                           #
+#***************************************************************************#
+
 # Gets the file locations for snps in a binary dosage file
 ReadBinaryDosageIndices <- function(bdInfo) {
   ReadIndicesFunc <- list(f1 <- c(ReadIndices1, ReadIndices2),
                           f2 <- c(ReadIndices1, ReadIndices2),
                           f3 <- c(ReadIndices1, ReadIndices3, ReadIndices1, ReadIndices4),
                           f4 <- c(ReadIndices1, ReadIndices3, ReadIndices1, ReadIndices4))
-  return (ReadIndicesFunc[[bdInfo$format]][[bdInfo$subformat]](bdInfo))
+  return (ReadIndicesFunc[[bdInfo$additionalinfo$format]][[bdInfo$additionalinfo$subformat]](bdInfo))
 }
 
-FixedIndices <- function(numSub, numSNPs, firstIndex, snpsize) {
-  datasize <- snpsize * numSub
+# Function to set up the datasize and indices vectors when the
+# data size is the same for each SNP.
+# @parameter numsub - number of subjects in data set
+# @parameter numSNPs - number of snps
+FixedIndices <- function(numsub, numSNPs, firstIndex, snpsize) {
+  datasize <- snpsize * numsub
   indices <- seq(firstIndex, firstIndex + datasize * (numSNPs - 1), datasize)
   return (list(datasize = datasize, indices = indices))
 }
@@ -201,7 +257,9 @@ FixedIndices <- function(numSub, numSNPs, firstIndex, snpsize) {
 # in the binary dosage file. This is simple because the size
 # is fixed 2 bytes per subject per SNP
 ReadIndices1 <- function(bdInfo) {
-  return (FixedIndices(bdInfo$numSamples, bdInfo$numSNPs, bdInfo$headersize, 2))
+  return (FixedIndices(nrow(bdInfo$samples),
+                       nrow(bdInfo$snps),
+                       bdInfo$additionalinfo$headersize, 2))
 }
 
 # This routine sets up the indices when reading formats 1 and 2
@@ -209,21 +267,23 @@ ReadIndices1 <- function(bdInfo) {
 # is also simple because the size is fixed to 4 bytes per subject
 # per SNP
 ReadIndices2 <- function(bdInfo) {
-  return (FixedIndices(bdInfo$numSamples, bdInfo$numSNPs, bdInfo$headersize, 4))
+  return (FixedIndices(nrow(bdInfo$samples),
+                       nrow(bdInfo$snps),
+                       bdInfo$additionalinfo$headersize, 4))
 }
 
 # This routine sets up the indices when reading formats 3 and 4,
 # subformat 2. The inidices are stored at the start of each SNP's
 # dosage data. This is a time consuming operation.
 ReadIndices3 <- function(bdInfo) {
-  return (ReadBDIndices3C(bdInfo$filename, bdInfo$numSNPs, bdInfo$headersize))
+  return (ReadBDIndices3C(bdInfo$filename, nrow(bdInfo$snps), bdInfo$additionalinfo$headersize))
 }
 
 # This routine sets up the indices when reading formats 3 and 4,
-# subformat 4. The inidices are stored in the header are easy to
-# read in.
+# subformat 4. The inidices are stored in the header and are easy
+# to read in.
 ReadIndices4 <- function(bdInfo) {
-  return (ReadBDIndices4C(bdInfo$filename, bdInfo$numSNPs, bdInfo$headersize))
+  return (ReadBDIndices4C(bdInfo$filename, nrow(bdInfo$snps), bdInfo$additionalinfo$headersize))
 }
 
 # Reads a SNP form the various formats
@@ -233,25 +293,25 @@ ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
                          f2 <- c(ReadBinaryDosageData3, ReadBinaryDosageData4),
                          f3 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5),
                          f4 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5))
-  return (ReadHeaderFunc[[bdInfo$format]][[bdInfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
+  return (ReadHeaderFunc[[bdInfo$additionalinfo$format]][[bdInfo$additionalinfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
 }
 
 ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 1)
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, us, 1)
 
 }
 
 ReadBinaryDosageData2 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 2)
+  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, p0, p1, p2, us, 2)
 }
 
 ReadBinaryDosageData3 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$headersize, snp, d, us, 3)
+  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, us, 3)
 
 }
 
 ReadBinaryDosageData4 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$headersize, snp, d, p0, p1, p2, us, 3)
+  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, p0, p1, p2, us, 3)
 }
 
 ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
@@ -261,10 +321,35 @@ ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
                                          d, p0, p1, p2, us))
 }
 
-GetBDInfo <- function(bdfilenames) {
-  bdInfo <- ReadBinaryDosageHeader(bdfilenames)
-  indices <- ReadBinaryDosageIndices(bdInfo)
-  bdInfo$datasize <- indices$datasize
-  bdInfo$indices <- indices$indices
-  return (bdInfo)
+#' Function to read information about binary dosage files
+#'
+#' Function to read information about binary dosage files.
+#' This information is used when reading the dosage and genetic
+#' probabilities from the file. It is also used by GxEScanR.
+#'
+#' @param bdfilenames - Vector of file names. The first is the
+#' binary dosage data containing the dosages and genetic
+#' probabilites. The second file name is the family information
+#' file. The thrid file name is the SNP information file.
+#' The family and SNP information files are not used if the
+#' binary dosage file is in format 4. For this format the
+#' family and SNP information are in the file with the dosage
+#' and genetic probabilites.
+#'
+#' @return
+#' List with subject and SNP information and values needed
+#' to read the dosages and genetic probabilities,
+#'
+#' @export
+#'
+#' @examples
+#' # in work
+getbdinfo <- function(bdfilenames) {
+  headerinfo <- ReadBinaryDosageHeader(bdfilenames)
+  indices <- ReadBinaryDosageIndices(headerinfo)
+  headerinfo$datasize <- indices$datasize
+  headerinfo$indices <- indices$indices
+  class(headerinfo) <- c("genetic-file-info")
+
+  return (headerinfo)
 }

@@ -4,40 +4,38 @@
 \alias{VCFtoBD}
 \title{Function to convert a VCF file to a binary dosage file}
 \usage{
-VCFtoBD(vcfFile, bdFile, famFile = "", mapFile = "", gz = FALSE,
-  format = 4L, subformat = 0L)
+VCFtoBD(vcffile, bdfiles, gz = FALSE, format = 4L, subformat = 0L)
 }
 \arguments{
-\item{vcfFile}{Name of VCF file}
+\item{vcffile}{Name of VCF file}
 
-\item{bdFile}{Name of the output binary dosage file}
+\item{bdfiles}{Vector of names of the output files.
+The binary dosage file name is first. The family and
+map files follow. For format 4, no family and map file
+names are needed.}
 
-\item{famFile}{Name of output family information file.
-This is only used if the output format is 1, 2, or 3.
-The default value is ""}
-
-\item{mapFile}{Name of the output map information file.
-This is only used if the output format is 1, 2, or 3.
-The default value is ""}
-
-\item{gz}{Indicatator if vcf file is compressed using gzip.}
+\item{gz}{Indicator if vcf file in compressed using gzip.
+The default value is FALSE.}
 
 \item{format}{The format of the output binary dosage file.
 Allowed values are 1, 2, 3, and 4. The default value is 4.
 Using the default value is recommended.}
 
 \item{subformat}{The subsubformat of the format of the output
-binary dosage file. A value of 1 indicates that only the
-dosage value is saved. A value greater than 1 indicates
-the dosage and genetic probabilities will be output. A
-value of 0 indicates the genetic probabilities will be
-output if they are contained in the VCF file. Values of
-1 and 2 are currently supported for all formats.
-The default value is 0.}
+binary dosage file. A value of 1 or 3 indicates that only the
+dosage value is saved. A value of 2 or 4 indicates
+the dosage and genetic probabilities will be output. Values
+of 3 or 4 are only allowed with formats 3 and 4. If a value
+of zero if provided, and genetic probabilites are in the vcf
+file, subformat 2 will be used for formats 1 and 2, and
+subformat 4 will be used for formats 3 and 4. If the vcf file
+does not contain genetic probabilities, subformat 1 will be
+used for formats 1 and 2, and subformat 3 will be used for
+formats 3 and 4. The default value is 0.}
 }
 \value{
 A list containing information about the binary dosage file.
-This is the same list returned from GetBDoseInfo. See
+This is the same list returned from BDInfo. See
 GetBDoseInfo for more information.
 }
 \description{

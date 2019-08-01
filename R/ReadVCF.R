@@ -1,9 +1,20 @@
-SummarizeVCFAdditionalInfo <- function(x) {
+summarizevcfadditionalinfo <- function(x) {
   if (length(unique(x)) != 1)
     return (x)
   if (x[1] == '.')
     return (character(0))
   return (x[1])
+}
+
+readminimacinfofile <- function(filename) {
+  addinfo <- read.table(filename, header = TRUE, stringsAsFactors = FALSE)
+  if (ncol(addinfo) != 13)
+    stop("File dose not appear to be a minimac information file")
+  if (all(colnames(addinfo) != c("SNP", "REF.0.", "ALT.1.", "ALT_Frq", "MAF",
+                                 "AvgCall", "Rsq", "Genotyped", "LooRsq",
+                                 "EmpR", "EmpRsq", "Dose0", "Dose1")))
+    stop("File dose not appear to be a minimac information file")
+  return(addinfo)
 }
 
 #' Function to return information about a VCF file
@@ -25,6 +36,8 @@ SummarizeVCFAdditionalInfo <- function(x) {
 #' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
+#' @param infofile Name of file name with information about the
+#' imputation of the SNPs. This file is produced by minimac 3 and 4.
 #'
 #' @return List containing information about the VCF file
 #' to include file name, subject IDs, and information about
@@ -35,7 +48,7 @@ SummarizeVCFAdditionalInfo <- function(x) {
 #'
 #' @examples
 #' # Under construction
-GetVCFInfo <- function(filename,
+getvcfinfo <- function(filename,
                        gzipped = FALSE,
                        index = TRUE,
                        snpidformat = 0L,
@@ -88,8 +101,9 @@ GetVCFInfo <- function(filename,
   fqfilename <- normalizePath(filename, winslash = '/')
 
   headerlines <- 1L
+  headersize <- -1L
   while (TRUE) {
-    currentPos <- seek(con, origin = "current")
+    currentpos <- seek(con, origin = "current")
     line <- readLines(con, n = 1)
     if (substr(line, 1, 1) != '#') {
       close(con)
@@ -102,158 +116,199 @@ GetVCFInfo <- function(filename,
         stop("Error processing header")
       }
       x[1] = "CHROM"
-      beginData <- seek(con, origin = "current")
+      begindata <- seek(con, origin = "current")
       break
     }
     headerlines <- headerlines + 1L
   }
+  if (index == TRUE)
+    headersize <- begindata
   close(con)
 
   if (all(x[1:9] == c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")) == FALSE)
     stop("Column names incorrect")
 
-  NumSamples = length(x) - 9L
-  Samples = data.frame(FID = rep("", NumSamples),
-                       SID = x[10:length(x)],
+  samples = data.frame(fid = rep("", length(x) - 9L),
+                       sid = x[10:length(x)],
                        stringsAsFactors = FALSE)
-  usesFID = FALSE
+  usesfid = FALSE
 
   coltypes = c("character", "integer", rep("character", 7),
-               rep("NULL", NumSamples))
-  SNPs <- read.table(filename,
+               rep("NULL", nrow(samples)))
+  snps <- read.table(filename,
                      skip = headerlines,
                      colClasses = coltypes,
                      stringsAsFactors = FALSE)
-  colnames(SNPs) <- c("Chromosome", "Location", "SNPID",
-                      "Reference", "Alternate", "quality",
+  colnames(snps) <- c("chromosome", "location", "snpid",
+                      "reference", "alternate", "quality",
                       "filter", "info", "format")
-  VCFInfo <- as.list(SNPs[,6:9])
-  SNPs <- SNPs[,1:5]
 
-  numSNPs <- nrow(SNPs)
-  chr1 <- SNPs$Chromosome[1]
-  oneChr <- all(SNPs$Chromosome == chr1)
-  chrLocID <- paste(SNPs$Chromosome, SNPs$Location, sep = ":")
-  vcfSNPformat1 <- all(SNPs$SNPID == chrLocID)
-  chrLocRefAltID <- paste(SNPs$Chromosome, SNPs$Location,
-                          SNPs$Reference, SNPs$Alternate, sep = ":")
-  vcfSNPformat2 <- all(SNPs$SNPID == chrLocRefAltID)
+  vcfinfo <- as.list(snps[,6:9])
+  summaryinfo <- lapply(vcfinfo, summarizevcfadditionalinfo)
+  datacolumns <- data.frame(numcolumns = rep(0L, length(summaryinfo$format)),
+                            dosage = rep(0L, length(summaryinfo$format)),
+                            genotypeprob = rep(0L, length(summaryinfo$format)),
+                            genotype = rep(0L, length(summaryinfo$format)),
+                            stringsAsFactors = FALSE)
+  for (i in 1:length(summaryinfo$format)) {
+    formatsplit <- unlist(strsplit(summaryinfo$format[i], split = ':'))
+    datacolumns$numcolumns[i] <- length(formatsplit)
+    datacolumns$dosage[i] <- match("DS", formatsplit)
+    datacolumns$genotypeprob[i] <- match("GP", formatsplit)
+    datacolumns$genotype[i] <- match("GT", formatsplit)
+  }
+  additionalinfo <- list(gzipped = gzipped,
+                         headerlines = headerlines,
+                         headersize = headersize,
+                         quality = summaryinfo$quality,
+                         filter = summaryinfo$filter,
+                         info = summaryinfo$info,
+                         format = summaryinfo$format,
+                         datacolumns = datacolumns)
+  class(additionalinfo) <- "vcf-info"
+  rm(vcfinfo)
+  rm(datacolumns)
+
+  if (infofile == "") {
+    snpinfo <- list()
+  } else {
+    minimacinfo <- readminimacinfofile(infofile)
+    if (all(minimacinfo$SNP == snps$snpid) == TRUE &
+        all(minimacinfo$REF.0. == snps$reference) == TRUE &
+        all(minimacinfo$ALT.1. == snps$alternate) == TRUE) {
+      snpinfo <- list(aaf = as.matrix(minimacinfo$ALT_Frq),
+                      maf = as.matrix(minimacinfo$MAF),
+                      avgcall = as.matrix(minimacinfo$AvgCall),
+                      rsq = as.matrix(minimacinfo$Rsq))
+    } else {
+      stop("Imputation infromation file does not line up with VCF file")
+    }
+  }
+
+  snps <- snps[,1:5]
+  chr1 <- snps$chromosome[1]
+  oneChr <- all(snps$chromosome == chr1)
+  chrlocid <- paste(snps$chromosome, snps$location, sep = ":")
+  vcfsnpformat1 <- all(snps$snpid == chrlocid)
+  chrlocrefaltid <- paste(snps$chromosome, snps$location,
+                          snps$reference, snps$alternate, sep = ":")
+  vcfsnpformat2 <- all(snps$snpid == chrlocrefaltid)
   if (snpidformat == 0) {
-    if (vcfSNPformat1 == TRUE) {
-      SNPs$SNPID <- chrLocID
+    if (vcfsnpformat1 == TRUE) {
+      snps$snpid <- chrlocid
       snpidformat <- 1L
-    } else if (vcfSNPformat2 == TRUE) {
-      SNPs$SNPID <- chrLocRefAltID
+    } else if (vcfsnpformat2 == TRUE) {
+      snps$snpid <- chrlocrefaltid
       snpidformat <- 2L
     }
   } else if (snpidformat == 1) {
-    if (vcfSNPformat2 == TRUE)
+    if (vcfsnpformat2 == TRUE)
       stop ("snpidformat 1 specified but VCF file uses snpidformat 2")
-    if (vcfSNPformat1 == FALSE)
-      SNPs$SNPID <- chrLocID
+    if (vcfsnpformat1 == FALSE)
+      snps$snpid <- chrlocid
   } else if (snpidformat == 2) {
-    if (vcfSNPformat2 == FALSE)
-      SNPs$SNPID <- chrLocRefAltID
+    if (vcfsnpformat2 == FALSE)
+      snps$snpid <- chrlocrefaltid
   }
-
-  VCFInfo <- lapply(VCFInfo, SummarizeVCFAdditionalInfo)
-  VCFInfo$dataColumns <- data.frame(numValues = rep(0L, length(VCFInfo$format)),
-                                    dosage = rep(0L, length(VCFInfo$format)),
-                                    genotypeProb = rep(0L, length(VCFInfo$format)),
-                                    genotype = rep(0L, length(VCFInfo$format)),
-                                    stringsAsFactors = FALSE)
-  for (i in 1:length(VCFInfo$format)) {
-    formatSplit <- unlist(strsplit(VCFInfo$format[i], split = ':'))
-    VCFInfo$dataColumns$numValues[i] <- length(formatSplit)
-    VCFInfo$dataColumns$dosage[i] <- match("DS", formatSplit)
-    VCFInfo$dataColumns$genotypeProb[i] <- match("GP", formatSplit)
-    VCFInfo$dataColumns$genotype[i] <- match("GT", formatSplit)
-  }
-  class(VCFInfo) <- "vcf-additional-info"
 
   if (index == TRUE) {
-    datasize <- integer(numSNPs)
-    Indices <- numeric(numSNPs)
+    datasize <- integer(nrow(snps))
+    indices <- numeric(nrow(snps))
     if (gzipped == FALSE) {
-      x <- BinaryDosage:::GetLineLocations(filename)
-      Indices <- x[(headerlines + 1):(length(x) - 1)]
+      x <- GetLineLocations(filename)
+      indices <- x[(headerlines + 1):(length(x) - 1)]
       for (i in 1:length(datasize))
         datasize[i] <- x[headerlines + i + 1] - x[headerlines + i]
-      headersize <- Indices[1]
     } else {
       con2 <- gzfile(filename, "r")
-      currentPos <- seek(con2, 0)
+      currentpos <- seek(con2, 0)
       for (i in 1:headerlines)
         line <- readLines(con2, n = 1)
-      headersize <- seek(con2)
-      currentPos <- 0
-      for (i in 1:numSNPs) {
-        Indices[i] <- seek(con2)
+      currentpos <- 0
+      for (i in 1:nrow(snps)) {
+        indices[i] <- seek(con2)
         line <- readLines(con2, n = 1)
-        currentPos <- seek(con2)
-        datasize[i] <- currentPos - Indices[i]
+        currentpos <- seek(con2)
+        datasize[i] <- currentPos - indices[i]
       }
       close(con2)
     }
   } else {
-    headersize <- -1L
     datasize <- integer(0)
-    Indices <- numeric(0)
+    indices <- numeric(0)
   }
-  snpInfo <- list()
 
-  retVal = list(filename = fqfilename,
-                gzipped = gzipped,
-                headerlines = headerlines,
-                headersize = headersize,
-                numSamples = NumSamples,
-                usesFID = usesFID,
-                samples = Samples,
+  retval = list(filename = fqfilename,
+                usesfid = usesfid,
+                samples = samples,
                 onechr = oneChr,
                 snpidformat = snpidformat,
-                numSNPs = numSNPs,
-                SNPs = SNPs,
-                snpInfo = snpInfo,
+                snps = snps,
+                snpinfo = snpinfo,
                 datasize = datasize,
-                indices = Indices,
-                additionalInfo = VCFInfo)
-  class(retVal) <- c("genetic-file-info", "vcf-file-info")
-  return (retVal)
+                indices = indices,
+                additionalinfo = additionalinfo)
+  class(retval) <- c("genetic-file-info", "vcf-file-info")
+  return (retval)
 }
 
-VCFApply <- function(vcfInfo, func, funcdata) {
-  if (vcfInfo$gzipped == FALSE) {
-    con <- file(vcfInfo$filename, "r")
-    seek(con, sum(vcfInfo$indices[1]))
-  } else {
-    con <- gzfile(vcfInfo$filename, "r")
-    line <- readLines(con, n = vcfInfo$headerlines)
-  }
+#' Apply a function to all the SNPs in a VCF file
+#'
+#' Routine to apply a user provided function to all the
+#' SNPs in a VCF file.
+#'
+#' @param vcfinfo Information about a VCF file returned from
+#' getvcfinfo
+#' @param func
+#' The function to apply to each of the SNPs.
+#'
+#' @return
+#' A list with the function result for each SNP
+#'
+#' @export
+#'
+#' @examples
+#' # In work
+vcfapply <- function(vcfinfo, func, ...) {
+  if (is.na(match("vcf-file-info", class(vcfinfo))) == TRUE)
+    stop("vcfinfo does not appear to contain information about a vcf file")
 
-  for (i in 1:vcfInfo$numSNPs) {
+  retval <- vector("list", nrow(vcfinfo$snps))
+  if (vcfinfo$additionalinfo$gzipped == FALSE)
+    con <- file(vcfinfo$filename, "r")
+  else
+    con <- gzfile(vcfinfo$filename, "r")
+  line <- readLines(con, n = vcfinfo$additionalinfo$headerlines)
+
+  for (i in 1:nrow(vcfinfo$snps)) {
     line <- readLines(con, n = 1)
     x <- unlist(strsplit(line, "\t"))
     y <- unlist(strsplit(x[10:length(x)], ":"))
-    if (length(vcfInfo$additionalInfo$dataColumns$dosage) == 1) {
-      dosageCol <- vcfInfo$additionalInfo$dataColumns$dosage
-      gpCol <- vcfInfo$additionalInfo$dataColumns$genotypeProb
-      numValues <- vcfInfo$additionalInfo$dataColumns$numValues
+    if (length(vcfinfo$additionalinfo$datacolumns$dosage) == 1) {
+      dosagecol <- vcfinfo$additionalinfo$datacolumns$dosage
+      gpcol <- vcfinfo$additionalinfo$datacolumns$genotypeprob
+      numcolumns <- vcfinfo$additionalinfo$datacolumns$numcolumns
     } else {
-      dosageCol <- vcfInfo$additionalInfo$dataColumns$dosage[i]
-      gpCol <- vcfInfo$additionalInfo$dataColumns$genotypeProb[i]
-      numValues <- vcfInfo$additionalInfo$dataColumns$numValues[i]
+      dosagecol <- vcfinfo$additionalinfo$datacolumns$dosage[i]
+      gpcol <- vcfinfo$additionalinfo$datacolumns$genotypeprob[i]
+      numcolumns <- vcfinfo$additionalinfo$datacolumns$numcolumns[i]
     }
-    if(is.na(dosageCol) == FALSE) {
-      dosage <- as.numeric(y[seq(dosageCol, length(y) - numValues + dosageCol, numValues)])
+    if(is.na(dosagecol) == FALSE) {
+      dosage <- as.numeric(y[seq(dosagecol, length(y) - numcolumns + dosagecol, numcolumns)])
     }
-    if(is.na(gpCol) == FALSE) {
-      gpString <- y[seq(gpCol, length(y) - numValues + gpCol, numValues)]
-      z <- unlist(strsplit(gpString, ","))
+    if(is.na(gpcol) == FALSE) {
+      gpstring <- y[seq(gpcol, length(y) - numcolumns + gpcol, numcolumns)]
+      z <- unlist(strsplit(gpstring, ","))
       p0 <- as.numeric(z[seq(1, length(z) - 2, 3)])
       p1 <- as.numeric(z[seq(2, length(z) - 1, 3)])
       p2 <- as.numeric(z[seq(3, length(z), 3)])
     }
-    func(funcdata, dosage, p0, p1, p2)
+    retval[[i]] <- func(dosage = dosage,
+                        p0 = p0,
+                        p1 = p1,
+                        p2 = p2
+                        , ...)
   }
   close(con)
+  return (retval)
 }

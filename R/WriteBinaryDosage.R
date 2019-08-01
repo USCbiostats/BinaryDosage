@@ -22,16 +22,16 @@ WriteFamilyAndMapFiles <- function(filename, samples, snps) {
 FindGroups <- function(geneticfileinfo) {
   x <- match("groups", names(geneticfileinfo))
   if (is.na(x))
-    return (geneticfileinfo$numSamples)
+    return (nrow(geneticfileinfo$samples))
   return(geneticfileinfo$groups)
 }
 
 # Create the subject and family strings to write to the binary
 # dosage header for format 4
-SIDandFID4 <- function(funcData) {
-  sid <- paste(funcData$samples$SID, collapse = '\t')
-  if (funcData$usesFID == TRUE)
-    fid <- paste(funcData$samples$FID, collapse = '\t')
+SIDandFID4 <- function(genefileinfo) {
+  sid <- paste(genefileinfo$samples$sid, collapse = '\t')
+  if (genefileinfo$usesfid == TRUE)
+    fid <- paste(genefileinfo$samples$fid, collapse = '\t')
   else
     fid <- ""
   return (list(sid = sid, fid = fid))
@@ -39,12 +39,11 @@ SIDandFID4 <- function(funcData) {
 
 # Find a character vector in the SNP info data frame
 # Returns the vector if found, otherwise it returns
-# a character vector of length 0
-# This is usually used to find aaf, maf, avgCall, and rsq
-FindSNPInfoString <- function(toFind, snpInfo, numSNPs) {
-  infocol <- match(toFind, colnames(snpInfo))
+# a character vector of length 1 with "" as its value.
+FindSNPInfoString <- function(tofind, snpinfo) {
+  infocol <- match(tofind, colnames(snpinfo))
   if (is.na(infocol) == FALSE)
-    return (snpInfo[,infocol])
+    return (snpinfo[,infocol])
   return ("")
 }
 
@@ -53,37 +52,37 @@ FindSNPInfoString <- function(toFind, snpInfo, numSNPs) {
 # return. If it is not found in the options, it
 # returns the vector if found in the SNP info, otherwise
 # it returns a numeric vector of length 0
-FindSNPInfoNumeric <- function(toFind, snpInfo, numSNPs, bdoptions) {
-  if (is.na(match(toFind, bdoptions)) == FALSE)
-    return (numeric(numSNPs))
-  infocol <- match(toFind, names(snpInfo))
+FindSNPInfoNumeric <- function(tofind, snpinfo, numsnps, bdoptions) {
+  if (is.na(match(tofind, bdoptions)) == FALSE)
+    return (numeric(numsnps))
+  infocol <- match(tofind, names(snpinfo))
   if (is.na(infocol) == FALSE)
-    return (snpInfo[infocol])
+    return (as.vector(snpinfo[[infocol]]))
   return (numeric(0))
 }
 
 # Find the SNP information needed for format 4
-FindBDSNPInfo <- function(funcData, bdoptions) {
-  snpcolnames <- colnames(funcData$SNPs)
-  if (funcData$snpidformat == 0)
-    snpid <- FindSNPInfoString("SNPID", funcData$SNPs, funcData$numSNPs)
+FindBDSNPInfo <- function(genefileinfo, bdoptions) {
+  snpcolnames <- colnames(genefileinfo$snps)
+  if (genefileinfo$snpidformat == 0)
+    snpid <- FindSNPInfoString("snpid", genefileinfo$snps)
   else
     snpid <- ""
-  chr <- FindSNPInfoString("Chromosome", funcData$SNPs, funcData$numSNPs)
-  if (funcData$onechr == TRUE)
+  chr <- FindSNPInfoString("chromosome", genefileinfo$snps)
+  if (genefileinfo$onechr == TRUE)
     chr <- chr[1]
-  if (is.na(match("Location", colnames(funcData$SNPs))) == TRUE)
-    loc = rep(0L, funcData$numSNPs)
+  if (is.na(match("location", colnames(genefileinfo$snps))) == TRUE)
+    loc = rep(0L, nrow(genefileinfo$snps))
   else
-    loc <- funcData$SNPs$Location
-  ref <- FindSNPInfoString("Reference", funcData$SNPs, funcData$numSNPs)
-  alt <- FindSNPInfoString("Alternate", funcData$SNPs, funcData$numSNPs)
+    loc <- genefileinfo$snps$location
+  ref <- FindSNPInfoString("reference", genefileinfo$snps)
+  alt <- FindSNPInfoString("alternate", genefileinfo$snps)
 
-  aaf <- FindSNPInfoNumeric("aaf", funcData$snpInfo, funcData$numSNPs, bdoptions)
-  maf <- FindSNPInfoNumeric("maf", funcData$snpInfo, funcData$numSNPs, bdoptions)
+  aaf <- FindSNPInfoNumeric("aaf", genefileinfo$snpinfo, nrow(genefileinfo$snps), bdoptions)
+  maf <- FindSNPInfoNumeric("maf", genefileinfo$snpinfo, nrow(genefileinfo$snps), bdoptions)
   # Average call cannot be calculated, therefore bdoptions are meaningless
-  avgCall <- FindSNPInfoNumeric("avgCall", funcData$snpInfo, funcData$numSNPs, "")
-  rsq <- FindSNPInfoNumeric("rsq", funcData$snpInfo, funcData$numSNPs, bdoptions)
+  avgcall <- FindSNPInfoNumeric("avgcall", genefileinfo$snpinfo, nrow(genefileinfo$snps), "")
+  rsq <- FindSNPInfoNumeric("rsq", genefileinfo$snpinfo, nrow(genefileinfo$snps), bdoptions)
 
   snpid <- paste0(snpid, collapse = '\t')
   chr <- paste0(chr, collapse = '\t')
@@ -96,7 +95,7 @@ FindBDSNPInfo <- function(funcData, bdoptions) {
                alternate = alt,
                aaf = aaf,
                maf = maf,
-               avgCall = avgCall,
+               avgcall = avgcall,
                rsq = rsq))
 }
 
@@ -110,47 +109,48 @@ FindBDSNPInfo <- function(funcData, bdoptions) {
 # Writes the header for the various formats of the formats
 # of the binary dosage file. These vary for all the different
 # formats.
-WriteBinaryDosageHeader <- function(format, subformat, filename, funcData, bdoptions) {
+WriteBinaryDosageHeader <- function(format, subformat, filename, genefileinfo, bdoptions) {
   writeHeaderFunc <- list(f1 <- c(WriteBinaryDosageHeader1, WriteBinaryDosageHeader1),
                           f2 <- c(WriteBinaryDosageHeader1, WriteBinaryDosageHeader1),
                           f3 <- c(WriteBinaryDosageHeader31, WriteBinaryDosageHeader31, WriteBinaryDosageHeader33, WriteBinaryDosageHeader34),
                           f4 <- c(WriteBinaryDosageHeader41, WriteBinaryDosageHeader41, WriteBinaryDosageHeader43, WriteBinaryDosageHeader44))
   WriteBinaryDosageBaseHeader(filename[1], format - 1, subformat - 1)
-  return (writeHeaderFunc[[format]][[subformat]](filename, funcData, bdoptions))
+  return (writeHeaderFunc[[format]][[subformat]](filename, genefileinfo, bdoptions))
 }
 
-WriteBinaryDosageHeader1 <- function(filename, funcData, bdoptions) {
-  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+WriteBinaryDosageHeader1 <- function(filename, genefileinfo, bdoptions) {
+  md5 <- WriteFamilyAndMapFiles(filename, genefileinfo$samples, genefileinfo$snps)
   return (0)
 }
 
-WriteBinaryDosageHeader31 <- function(filename, funcData, bdoptions) {
-  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
-  WriteBinaryDosageHeader3A(filename[1], funcData$numSamples)
+WriteBinaryDosageHeader31 <- function(filename, genefileinfo, bdoptions) {
+  md5 <- WriteFamilyAndMapFiles(filename, genefileinfo$samples, genefileinfo$snps)
+  WriteBinaryDosageHeader3A(filename[1], nrow(genefileinfo$samples))
   return (0)
 }
 
-WriteBinaryDosageHeader33 <- function(filename, funcData, bdoptions) {
-  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
+WriteBinaryDosageHeader33 <- function(filename, genefileinfo, bdoptions) {
+  md5 <- WriteFamilyAndMapFiles(filename, genefileinfo$samples, genefileinfo$snps)
   WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2], 0)
   return (0)
 }
 
-WriteBinaryDosageHeader34 <- function(filename, funcData, bdoptions) {
-  md5 <- WriteFamilyAndMapFiles(filename, funcData$samples, funcData$SNPs)
-  WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2], funcData$numSNPs)
+WriteBinaryDosageHeader34 <- function(filename, genefileinfo, bdoptions) {
+  md5 <- WriteFamilyAndMapFiles(filename, genefileinfo$samples, genefileinfo$snps)
+  WriteBinaryDosageHeader3B(filename[1], md5[1], md5[2], nrow(genefileinfo$snps))
   return (0)
 }
 
-WriteBinaryDosageHeader4 <- function(filename, funcData, bdoptions,
-                                     headerEntries, offsets, numIndices) {
-  subInfo <- SIDandFID4(funcData)
-  snpInfo <- FindBDSNPInfo(funcData, bdoptions)
+WriteBinaryDosageHeader4 <- function(filename, genefileinfo, bdoptions,
+                                     headerEntries, offsets, numindices) {
+  subInfo <- SIDandFID4(genefileinfo)
+  snpInfo <- FindBDSNPInfo(genefileinfo, bdoptions)
+
   WriteBinaryDosageHeader4A(filename[1],
                             headerEntries,
-                            funcData$numSamples,
-                            funcData$numSNPs,
-                            FindGroups(funcData),
+                            nrow(genefileinfo$samples),
+                            nrow(genefileinfo$snps),
+                            FindGroups(genefileinfo),
                             subInfo$sid[1],
                             subInfo$fid[1],
                             snpInfo$snpid[1],
@@ -160,32 +160,32 @@ WriteBinaryDosageHeader4 <- function(filename, funcData, bdoptions,
                             snpInfo$alternate[1],
                             snpInfo$aaf,
                             snpInfo$maf,
-                            snpInfo$avgCall,
+                            snpInfo$avgcall,
                             snpInfo$rsq,
                             offsets,
-                            numIndices)
+                            numindices)
   return (0)
 }
 
-WriteBinaryDosageHeader41 <- function(filename, funcData, bdoptions) {
-  headerEntries <- 8
+WriteBinaryDosageHeader41 <- function(filename, genefileinfo, bdoptions) {
+  headerEntries <- 8L
   offsets <- c(seq(8L, 36L, 4L), 36L)
-  return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
+  return (WriteBinaryDosageHeader4(filename, genefileinfo, bdoptions,
                                    headerEntries, offsets, 0))
 }
 
-WriteBinaryDosageHeader43 <- function(filename, funcData, bdoptions) {
+WriteBinaryDosageHeader43 <- function(filename, genefileinfo, bdoptions) {
   headerEntries <- 4
   offsets <- c(rep(-1L, 5), seq(8L, 20L, 4L))
-  return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
+  return (WriteBinaryDosageHeader4(filename, genefileinfo, bdoptions,
                                    headerEntries, offsets, 0))
 }
 
-WriteBinaryDosageHeader44 <- function(filename, funcData, bdoptions) {
+WriteBinaryDosageHeader44 <- function(filename, genefileinfo, bdoptions) {
   headerEntries <- 4
   offsets <- c(rep(-1L, 5), seq(8L, 20L, 4L))
-  return (WriteBinaryDosageHeader4(filename, funcData, bdoptions,
-                                   headerEntries, offsets, funcData$numSNPs))
+  return (WriteBinaryDosageHeader4(filename, genefileinfo, bdoptions,
+                                   headerEntries, offsets, nrow(genefileinfo$snps)))
 }
 
 #***************************************************************************#
@@ -194,78 +194,91 @@ WriteBinaryDosageHeader44 <- function(filename, funcData, bdoptions) {
 #                                                                           #
 #***************************************************************************#
 
+#***************************************************************************#
+#                        Allocate memory                                    #
+#***************************************************************************#
 
 # Allocates memory needed to write binary dosage files
 # This is sufficient for all formats
-AllocateBinaryDosageWriteMemory <- function(funcData) {
-  return(list(filename = funcData$filename,
-              format = funcData$format,
-              subformat = funcData$subformat,
-              headersize = funcData$headersize,
+AllocateBinaryDosageWriteMemory <- function(headerinfo) {
+  return(list(filename = headerinfo$filename,
+              format = headerinfo$additionalinfo$format,
+              subformat = headerinfo$additionalinfo$subformat,
+              headersize = headerinfo$additionalinfo$headersize,
               snpnumber = 0L,
-              datasize = integer(funcData$numSNPs),
-              us = integer(2*funcData$numSamples)))
+              datasize = integer(nrow(headerinfo$snps)),
+              us = integer(2*nrow(headerinfo$samples))))
 }
+
+#***************************************************************************#
+#                        Write the data                                     #
+#***************************************************************************#
 
 # Write binary dosage data at the end of the file
 # Header has already been written
 # funcData was already created using AllocateBinaryDosageWriteMemory (see above)
-WriteBinaryDosageData <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData <- function(dosage, p0, p1, p2, writeinfo) {
   writeFunc <- list(f1 <- c(WriteBinaryDosageData1, WriteBinaryDosageData2),
                     f2 <- c(WriteBinaryDosageData3, WriteBinaryDosageData4),
                     f3 <- c(WriteBinaryDosageData3, WriteBinaryDosageData5, WriteBinaryDosageData3, WriteBinaryDosageData6),
                     f4 <- c(WriteBinaryDosageData3, WriteBinaryDosageData5, WriteBinaryDosageData3, WriteBinaryDosageData6))
-  return (writeFunc[[funcData$format]][[funcData$subformat]](funcData, dosage, p0, p1, p2))
+  return (writeFunc[[writeinfo$format]][[writeinfo$subformat]](writeinfo, dosage, p0, p1, p2))
 }
 
-WriteBinaryDosageData1 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 1))
+WriteBinaryDosageData1 <- function(writeinfo, dosage, p0, p1, p2) {
+  return (WriteBinaryDosageDataC(writeinfo$filename, dosage, writeinfo$us, 1))
 }
 
-WriteBinaryDosageData2 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryP1P2Data(funcData$filename, p1, p2, funcData$us,  2))
+WriteBinaryDosageData2 <- function(writeinfo, dosage, p0, p1, p2) {
+  return (WriteBinaryP1P2Data(writeinfo$filename, p1, p2, writeinfo$us,  2))
 }
 
-WriteBinaryDosageData3 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryDosageDataC(funcData$filename, dosage, funcData$us, 3))
+WriteBinaryDosageData3 <- function(writeinfo, dosage, p0, p1, p2) {
+  return (WriteBinaryDosageDataC(writeinfo$filename, dosage, writeinfo$us, 3))
 }
 
-WriteBinaryDosageData4 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryP1P2Data(funcData$filename, p1, p2, funcData$us, 3))
+WriteBinaryDosageData4 <- function(writeinfo, dosage, p0, p1, p2) {
+  return (WriteBinaryP1P2Data(writeinfo$filename, p1, p2, writeinfo$us, 3))
 }
 
-WriteBinaryDosageData5 <- function(funcData, dosage, p0, p1, p2) {
+WriteBinaryDosageData5 <- function(writeinfo, dosage, p0, p1, p2) {
   snpnumber <- -1L
-  return (WriteBinaryCompressed(funcData$filename,
+  return (WriteBinaryCompressed(writeinfo$filename,
                                 dosage, p0, p1, p2,
                                 snpnumber,
-                                funcData$datasize,
-                                funcData$us))
+                                writeinfo$datasize,
+                                writeinfo$us))
 }
 
-WriteBinaryDosageData6 <- function(funcData, dosage, p0, p1, p2) {
-  return (WriteBinaryCompressed(funcData$filename,
+WriteBinaryDosageData6 <- function(writeinfo, dosage, p0, p1, p2) {
+  return (WriteBinaryCompressed(writeinfo$filename,
                                 dosage, p0, p1, p2,
-                                funcData$snpnumber,
-                                funcData$datasize,
-                                funcData$us))
+                                writeinfo$snpnumber,
+                                writeinfo$datasize,
+                                writeinfo$us))
 }
+
+#***************************************************************************#
+#                                                                           #
+#                     Writing the Binary Dosage indices                     #
+#                                                                           #
+#***************************************************************************#
 
 # Write binary dosage indices to  the file
 # Header has already been written
 # funcData was already created using AllocateBinaryDosageWriteMemory (see above)
-WriteBinaryDosageIndices <- function(funcData) {
+WriteBinaryDosageIndices <- function(writeinfo) {
   writeFunc <- list(f1 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1),
                     f2 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1),
                     f3 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices2),
                     f4 <- c(WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices1, WriteBinaryDosageIndices2))
-  return (writeFunc[[funcData$format]][[funcData$subformat]](funcData))
+  return (writeFunc[[writeinfo$format]][[writeinfo$subformat]](writeinfo))
 }
 
-WriteBinaryDosageIndices1 <- function(funcData) {
+WriteBinaryDosageIndices1 <- function(writeinfo) {
   return (0)
 }
 
-WriteBinaryDosageIndices2 <- function(funcData) {
-  return(WriteBinaryDosageIndicesC(funcData$filename, funcData$headersize, funcData$datasize))
+WriteBinaryDosageIndices2 <- function(writeinfo) {
+  return(WriteBinaryDosageIndicesC(writeinfo$filename, writeinfo$headersize, writeinfo$datasize))
 }

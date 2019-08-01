@@ -11,60 +11,46 @@ NULL
 #' run on other VCF files if they contain dosage and genetic
 #' probabilities.
 #'
-#' @param vcfFile Name of VCF file
-#' @param bdFile Name of the output binary dosage file
-#' @param famFile Name of output family information file.
-#' This is only used if the output format is 1, 2, or 3.
-#' The default value is ""
-#' @param mapFile Name of the output map information file.
-#' This is only used if the output format is 1, 2, or 3.
-#' The default value is ""
-#' @param gz Indicatator if vcf file is compressed using gzip.
+#' @param vcffile Name of VCF file
+#' @param bdfiles Vector of names of the output files.
+#' The binary dosage file name is first. The family and
+#' map files follow. For format 4, no family and map file
+#' names are needed.
+#' @param gz Indicator if vcf file in compressed using gzip.
+#' The default value is FALSE.
 #' @param format The format of the output binary dosage file.
 #' Allowed values are 1, 2, 3, and 4. The default value is 4.
 #' Using the default value is recommended.
 #' @param subformat The subsubformat of the format of the output
-#' binary dosage file. A value of 1 indicates that only the
-#' dosage value is saved. A value greater than 1 indicates
-#' the dosage and genetic probabilities will be output. A
-#' value of 0 indicates the genetic probabilities will be
-#' output if they are contained in the VCF file. Values of
-#' 1 and 2 are currently supported for all formats.
-#' The default value is 0.
+#' binary dosage file. A value of 1 or 3 indicates that only the
+#' dosage value is saved. A value of 2 or 4 indicates
+#' the dosage and genetic probabilities will be output. Values
+#' of 3 or 4 are only allowed with formats 3 and 4. If a value
+#' of zero if provided, and genetic probabilites are in the vcf
+#' file, subformat 2 will be used for formats 1 and 2, and
+#' subformat 4 will be used for formats 3 and 4. If the vcf file
+#' does not contain genetic probabilities, subformat 1 will be
+#' used for formats 1 and 2, and subformat 3 will be used for
+#' formats 3 and 4. The default value is 0.
 #'
 #' @return
 #' A list containing information about the binary dosage file.
-#' This is the same list returned from GetBDoseInfo. See
+#' This is the same list returned from BDInfo. See
 #' GetBDoseInfo for more information.
 #' @export
 #'
 #' @examples
 #' # Under construnction
-VCFtoBD <- function(vcfFile, bdFile, famFile = "",
-                    mapFile = "", gz = FALSE,
+VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
                     format = 4L, subformat = 0L) {
-  if (missing(vcfFile) == TRUE)
+  if (missing(vcffile) == TRUE)
     stop("No VCF file specified")
-  if (is.character(vcfFile) == FALSE)
-    stop("vcfFile must be a character value")
-  if (length(vcfFile) != 1)
-    stop("vcfFile must be a single character value")
-  if (vcfFile == "")
+  if (is.character(vcffile) == FALSE)
+    stop("vcffile must be a character value")
+  if (length(vcffile) != 1)
+    stop("vcffile must be a single character value")
+  if (vcffile == "")
     stop("No VCF file specified")
-
-  if (missing(bdFile) == TRUE)
-    stop("No output file specified")
-  if (is.character(bdFile) == FALSE)
-    stop("bdFile must be a character value")
-  if (length(bdFile) != 1)
-    stop("bdFile must be a single character value")
-  if (bdFile == "")
-    stop("No output file specified")
-
-  if (is.logical(gz) == FALSE)
-    stop("gz must be a logical value")
-  if (length(gz) != 1)
-    stop("gz must be a single logical value")
 
   if (is.numeric(format) == FALSE && is.integer(format) == FALSE)
     stop("format must be an integer value")
@@ -92,34 +78,34 @@ VCFtoBD <- function(vcfFile, bdFile, famFile = "",
   if (format < 3 && subformat > 2)
     stop("subformat must be an integer value from 0 to 2 for formats 1 and 2")
 
-  if (format < 4) {
-    if (is.character(famFile) == FALSE)
-      stop("famFile must be a character value")
-    if (length(famFile) != 1)
-      stop("famFile must be a single character value")
-    if (famFile == "") {
-      errormessage <- paste("famFile must be specified for format", format)
-      stop(errormessage)
-    }
-    if (is.character(mapFile) == FALSE)
-      stop("mapFile must be a character value")
-    if (length(mapFile) != 1)
-      stop("mapFile must be a single character value")
-    if (mapFile == "") {
-      errormessage <- paste("mapFile must be specified for format", format)
-      stop(errormessage)
-    }
-  } else {
-    if (is.character(famFile) == FALSE ||
-        length(famFile) != 1 || famFile != "")
-      stop("Value or famFile specified for format 4")
-    if (is.character(mapFile) == FALSE ||
-        length(mapFile) != 1 || mapFile != "")
-      stop("Value or mapFile specified for format 4")
-  }
+  if (missing(bdfiles) == TRUE)
+    stop("No output files specified")
+  if (is.character(bdfiles) == FALSE)
+    stop("Output file names must be a character values")
+  if (format == 4 & length(bdfiles) != 1)
+    stop("Only one file name is needed when using format 4")
+  if (format < 4 & length(bdfiles) != 3)
+    stop("Three file names are required when using formats 1, 2, and 3")
+  if (is.na(match("", bdfiles)) == FALSE)
+    stop("Output file names cannot be blank")
 
-  vcfInfo <- GetVCFInfo(vcfFile, gz = gz, index = FALSE)
-  WriteBinaryDosageHeader(bdFile, format, subformat)
-  WriteBDFamilyFile(bdFile, famFile, vcfInfo$Samples, format, subformat)
-  return (vcfInfo)
+  if (is.logical(gz) == FALSE)
+    stop("gz must be a logical value")
+  if (length(gz) != 1)
+    stop("gz must be a single logical value")
+
+  bdoptions <- character(0)
+
+  vcfinfo <- getvcfinfo(filename = vcffile, gz = gz, index = FALSE)
+  WriteBinaryDosageHeader(format = format,
+                          subformat = subformat,
+                          filename = bdfiles,
+                          genefileinfo = vcfinfo,
+                          bdoptions = bdoptions)
+  headerinfo <- ReadBinaryDosageHeader(filename = bdfiles)
+  bdwriteinfo <- AllocateBinaryDosageWriteMemory(headerinfo = headerinfo)
+  vcfapply(vcfinfo = vcfinfo,
+           func = WriteBinaryDosageData,
+           writeinfo = bdwriteinfo)
+  WriteBinaryDosageIndices(writeinfo = bdwriteinfo)
 }

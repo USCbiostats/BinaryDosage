@@ -20,10 +20,10 @@
 extern const int MAGICWORD = 0x65736f62;
 // Format ID stored in file
 extern const std::vector<std::vector<int> > FORMAT = {
-  { 0x01000100, 0x01000200},
-  { 0x02000100, 0x02000200},
-  { 0x03000100, 0x03000200, 0x03000300, 0x03000400},
-  { 0x04000100, 0x04000200, 0x04000300, 0x04000400}
+  { 0x01000100, 0x02000100},
+  { 0x01000200, 0x02000200},
+  { 0x01000300, 0x02000300, 0x03000300, 0x04000300},
+  { 0x01000400, 0x02000400, 0x03000400, 0x04000400}
 };
 // Various modes of opening the binary dosage file
 extern const std::ios_base::openmode NEWBINARY = std::ios_base::out | std::ios_base::binary;
@@ -34,6 +34,9 @@ extern const std::ios_base::openmode READWRITEBINARY = std::ios_base::in | std::
 const char CHARZERO = 0x0;
 const int INTZERO = 0;
 //const double DOUBLEZERO = 0.;
+
+// Tolerance for writing data
+const double WRITINGTOLERANCE = 1e-6;
 
 struct OFFSETS {
   enum offsets { numsubjects, numsnps, numgroups, suboptions, snpoptions,
@@ -546,8 +549,10 @@ int WriteBinaryP1P2Data(std::string &filename,
     return 1;
 
   DoubleToUShort(p1, us, base - 1);
+  Rcpp::Rcout << us[0] << '\t' << us[1] << '\t' << outfile.tellp() << '\t';
   outfile.write((char *)&us[0], p1.size() * sizeof(short));
   DoubleToUShort(p2, us, base - 1);
+  Rcpp::Rcout << us[0] << '\t' << us[1] << '\t' << outfile.tellp() << std::endl;
   outfile.write((char *)&us[0], p2.size() * sizeof(short));
 
   outfile.close();
@@ -592,7 +597,8 @@ int WriteBinaryCompressed(std::string &filename,
   for (i = 0; i < dosage.length(); ++i, ++usdose) {
     if (dosage[i] != dosage[i])
       continue;
-    if (p0[i] + p1[i] + p2[i] == 1. && p1[i] + p2[i] + p2[i] == dosage[i]) {
+    if (fabs(p0[i] + p1[i] + p2[i] - 1.) < WRITINGTOLERANCE
+          && fabs(p1[i] + p2[i] + p2[i] - dosage[i]) < WRITINGTOLERANCE) {
       if (p0[i] != 0 && p2[i] != 0) {
         *usdose |= 0x8000;
         *usadd = DoubleToUShort(p1[i], 2);

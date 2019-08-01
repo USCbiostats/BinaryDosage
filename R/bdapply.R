@@ -1,11 +1,17 @@
-bdapply <- function(bdinfo, func, funcdata) {
-  dosage <- numeric(bdinfo$numSamples)
-  p0 <- numeric(bdinfo$numSamples)
-  p1 <- numeric(bdinfo$numSamples)
-  p2 <- numeric(bdinfo$numSamples)
-  us <- integer(2*bdinfo$numSamples)
-  for (i in 1:bdinfo$numSNPs) {
+bdapply <- function(bdinfo, func, ...) {
+  retval <- vector("list", nrow(bdinfo$snps))
+  dosage <- numeric(nrow(bdinfo$samples))
+  p0 <- numeric(nrow(bdinfo$samples))
+  p1 <- numeric(nrow(bdinfo$samples))
+  p2 <- numeric(nrow(bdinfo$samples))
+  us <- integer(2 * nrow(bdinfo$samples))
+  for (i in 1:nrow(bdinfo$snps)) {
+    dosage[1] <- NA
+    p0[1] <- NA
+    p1[1] <- NA
+    p2[1] <- NA
     ReadBinaryDosageData(bdinfo, i, dosage, p0, p1, p2, us)
-    func(funcdata, dosage, p0, p1, p2)
+    retval[[i]] <- func(dosage, p0, p1, p2, ...)
   }
+  return (retval)
 }
