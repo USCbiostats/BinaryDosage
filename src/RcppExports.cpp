@@ -277,6 +277,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// updatesnpinfo
+int updatesnpinfo(std::string& filename, int offset, Rcpp::NumericVector& value);
+RcppExport SEXP _BinaryDosage_updatesnpinfo(SEXP filenameSEXP, SEXP offsetSEXP, SEXP valueSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type value(valueSEXP);
+    rcpp_result_gen = Rcpp::wrap(updatesnpinfo(filename, offset, value));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetLineLocations", (DL_FUNC) &_BinaryDosage_GetLineLocations, 1},
@@ -298,6 +311,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 5},
     {"_BinaryDosage_WriteBinaryCompressed", (DL_FUNC) &_BinaryDosage_WriteBinaryCompressed, 8},
     {"_BinaryDosage_WriteBinaryDosageIndicesC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageIndicesC, 3},
+    {"_BinaryDosage_updatesnpinfo", (DL_FUNC) &_BinaryDosage_updatesnpinfo, 3},
     {NULL, NULL, 0}
 };
 

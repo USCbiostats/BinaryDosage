@@ -543,8 +543,6 @@ int WriteBinaryP1P2Data(std::string &filename,
                         Rcpp::IntegerVector &us,
                         int base) {
   std::ofstream outfile;
-  unsigned short *pus;
-  pus = (unsigned short *)&us[0];
 
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
@@ -641,6 +639,19 @@ int WriteBinaryDosageIndicesC(std::string &filename, int headersize, Rcpp::Integ
   indexloc = headersize - datasize.size() * sizeof(int);
   outfile.seekp(indexloc);
   outfile.write((char *)&datasize[0], datasize.size() * sizeof(int));
+  outfile.close();
+  return 0;
+}
+
+// [[Rcpp::export]]
+int updatesnpinfo(std::string &filename, int offset, Rcpp::NumericVector &value) {
+  std::fstream outfile;
+
+  if (OpenBDFileReadWrite(outfile, filename) != 0)
+    return 1;
+
+  outfile.seekp(offset);
+  outfile.write((char *)&value[0], value.size() * sizeof(double));
   outfile.close();
   return 0;
 }

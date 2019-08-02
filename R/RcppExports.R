@@ -77,3 +77,7 @@ WriteBinaryDosageIndicesC <- function(filename, headersize, datasize) {
     .Call(`_BinaryDosage_WriteBinaryDosageIndicesC`, filename, headersize, datasize)
 }
 
+updatesnpinfo <- function(filename, offset, value) {
+    .Call(`_BinaryDosage_updatesnpinfo`, filename, offset, value)
+}
+

@@ -282,3 +282,71 @@ WriteBinaryDosageIndices1 <- function(writeinfo) {
 WriteBinaryDosageIndices2 <- function(writeinfo) {
   return(WriteBinaryDosageIndicesC(writeinfo$filename, writeinfo$headersize, writeinfo$datasize))
 }
+
+#***************************************************************************#
+#                                                                           #
+#                    Update snp info, aaf, maf, and rsq                     #
+#                                                                           #
+#***************************************************************************#
+getaaf <- function(dosage, p0, p1, p2) {
+  return (mean(dosage) / 2)
+}
+
+getmaf <- function(dosage, p0, p1, p2) {
+  aaf <- mean(dosage) / 2
+  maf <- ifelse(aaf > 0.5, 1. - aaf, aaf)
+  return (maf)
+}
+
+getrsq <- function(dosage, p0, p1, p2) {
+  q <- numeric(2 * length(dosage))
+  d <- dosage * dosage - 4 * p2
+  d <- ifelse(d < 0 & d > -0.01, 0., d)
+  d <- sqrt(d)
+  q[1:length(dosage)] <- 0.5 * (dosage - d)
+  q[(length(dosage) + 1):(2*length(dosage))] <- 0.5 * (dosage + d)
+  mu <- mean(q)
+  sigma <- mean(q*q) - mu * mu
+  rsq <- sigma / (mu * (1. - mu))
+  return (rsq)
+}
+
+updateaaf <- function (bdinfo) {
+  if (is.na(match("aaf", names(bdinfo$snpinfo))) == TRUE)
+    stop("Binary dosage file does not have aaf allocated")
+  if (bdinfo$additionalinfo$subformat < 3)
+    headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
+  else
+    headerinfo <- ReadBinaryDosageHeader4B(bdinfo$filename)
+
+  aaf <- unlist(bdapply(bdinfo, getaaf))
+
+  updatesnpinfo(bdinfo$filename, headerinfo$snps$aafoffset, aaf)
+}
+
+updatemaf <- function (bdinfo) {
+  if (is.na(match("maf", names(bdinfo$snpinfo))) == TRUE)
+    stop("Binary dosage file does not have maf allocated")
+  if (bdinfo$additionalinfo$subformat < 3)
+    headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
+  else
+    headerinfo <- ReadBinaryDosageHeader4B(bdinfo$filename)
+
+  maf <- unlist(bdapply(bdinfo, getmaf))
+
+  updatesnpinfo(bdinfo$filename, headerinfo$snps$mafoffset, maf)
+}
+
+updatersq <- function (bdinfo) {
+  if (is.na(match("rsq", names(bdinfo$snpinfo))) == TRUE)
+    stop("Binary dosage file does not have rsq allocated")
+  if (bdinfo$additionalinfo$subformat < 3)
+    headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
+  else
+    headerinfo <- ReadBinaryDosageHeader4B(bdinfo$filename)
+
+  rsq <- unlist(bdapply(bdinfo, getrsq))
+
+  updatesnpinfo(bdinfo$filename, headerinfo$snps$rsqoffset, rsq)
+}
+

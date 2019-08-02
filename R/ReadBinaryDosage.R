@@ -172,7 +172,7 @@ ReadBinaryDosageHeader22 <- function(filename) {
 ReadBinaryDosageHeader31 <- function(filename) {
   bdInfo <- ReadFamAndMapFiles(filename, 3, 1, 12)
   additionalInfo = ReadBinaryDosageHeader3A(filename[1])
-  if (additionalInfo$numsub != bdInfo$numSamples)
+  if (additionalInfo$numsub != nrow(bdInfo$samples))
     stop("Subject file does not line up with binary dosage file")
   return (bdInfo)
 }
@@ -180,7 +180,7 @@ ReadBinaryDosageHeader31 <- function(filename) {
 ReadBinaryDosageHeader32 <- function(filename) {
   bdInfo <- ReadFamAndMapFiles(filename, 3, 2, 12)
   additionalInfo = ReadBinaryDosageHeader3A(filename[1])
-  if (additionalInfo$numsub != bdInfo$numSamples)
+  if (additionalInfo$numsub != nrow(bdInfo$samples))
     stop("Subject file does not line up with binary dosage file")
   return (bdInfo)
 }
@@ -190,18 +190,18 @@ ReadBinaryDosageHeader33 <- function(filename) {
   additionalInfo = ReadBinaryDosageHeader3B(filename[1])
   if (digest(bdInfo$samples) != additionalInfo$md5[1])
     stop("Subject file does not line up with binary dosage file")
-  if (digest(bdInfo$SNPs) != additionalInfo$md5[2])
+  if (digest(bdInfo$snps) != additionalInfo$md5[2])
     stop("Map file does not line up with binary dosage file")
   return (bdInfo)
 }
 
 ReadBinaryDosageHeader34 <- function(filename) {
   bdInfo <- ReadFamAndMapFiles(filename, 3, 4, 72)
-  bdInfo$headersize <- bdInfo$headersize + 4 * bdInfo$numSNPs
+  bdInfo$additionalinfo$headersize <- bdInfo$additionalinfo$headersize + 4 * nrow(bdInfo$snps)
   additionalInfo = ReadBinaryDosageHeader3B(filename[1])
   if (digest(bdInfo$samples) != additionalInfo$md5[1])
     stop("Subject file does not line up with binary dosage file")
-  if (digest(bdInfo$SNPs) != additionalInfo$md5[2])
+  if (digest(bdInfo$snps) != additionalInfo$md5[2])
     stop("Map file does not line up with binary dosage file")
   return (bdInfo)
 }
@@ -304,7 +304,6 @@ ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
 
 ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {
   BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, us, 1)
-
 }
 
 ReadBinaryDosageData2 <- function(bdInfo, snp, d, p0, p1, p2, us) {

@@ -280,6 +280,11 @@ vcfapply <- function(vcfinfo, func, ...) {
     con <- gzfile(vcfinfo$filename, "r")
   line <- readLines(con, n = vcfinfo$additionalinfo$headerlines)
 
+  dosage <- numeric(nrow(vcfinfo$samples))
+  p0 <- numeric(nrow(vcfinfo$samples))
+  p1 <- numeric(nrow(vcfinfo$samples))
+  p2 <- numeric(nrow(vcfinfo$samples))
+
   for (i in 1:nrow(vcfinfo$snps)) {
     line <- readLines(con, n = 1)
     x <- unlist(strsplit(line, "\t"))
@@ -294,14 +299,23 @@ vcfapply <- function(vcfinfo, func, ...) {
       numcolumns <- vcfinfo$additionalinfo$datacolumns$numcolumns[i]
     }
     if(is.na(dosagecol) == FALSE) {
-      dosage <- as.numeric(y[seq(dosagecol, length(y) - numcolumns + dosagecol, numcolumns)])
+      dosage[1:nrow(vcfinfo$samples)] <- as.numeric(y[seq(dosagecol, length(y) - numcolumns + dosagecol, numcolumns)])
     }
     if(is.na(gpcol) == FALSE) {
       gpstring <- y[seq(gpcol, length(y) - numcolumns + gpcol, numcolumns)]
       z <- unlist(strsplit(gpstring, ","))
-      p0 <- as.numeric(z[seq(1, length(z) - 2, 3)])
-      p1 <- as.numeric(z[seq(2, length(z) - 1, 3)])
-      p2 <- as.numeric(z[seq(3, length(z), 3)])
+      p0[1:nrow(vcfinfo$samples)] <- as.numeric(z[seq(1, length(z) - 2, 3)])
+      p1[1:nrow(vcfinfo$samples)] <- as.numeric(z[seq(2, length(z) - 1, 3)])
+      p2[1:nrow(vcfinfo$samples)] <- as.numeric(z[seq(3, length(z), 3)])
+    } else {
+      p0[1:nrow(vcfinfo$samples)] <- NA
+      p1[1:nrow(vcfinfo$samples)] <- NA
+      p2[1:nrow(vcfinfo$samples)] <- NA
+    }
+    if(is.na(dosagecol) == FALSE) {
+      dosage[1:nrow(vcfinfo$samples)] <- as.numeric(y[seq(dosagecol, length(y) - numcolumns + dosagecol, numcolumns)])
+    } else {
+      dosage[1:nrow(vcfinfo$samples)] <- p1 + p2 + p2
     }
     retval[[i]] <- func(dosage = dosage,
                         p0 = p0,

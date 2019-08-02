@@ -174,6 +174,7 @@ Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int numGroups, int snp
   int snpSize, chrSize, refSize, altSize;
   std::string snpString, chrString, refString, altString;
   std::vector<int> location;
+  int aafoffset, mafoffset, avgcalloffset, rsqoffset;
   std::vector<double> aaf, maf, avgCall, rsq;
 
   infile.read((char *)&snpSize, sizeof(int));
@@ -188,14 +189,26 @@ Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int numGroups, int snp
   refString = ReadBDString(infile, refSize);
   altString = ReadBDString(infile, altSize);
 
-  if ((snpoptions & 0x0080) != 0)
+  aafoffset = 0;
+  if ((snpoptions & 0x0080) != 0) {
+    aafoffset = infile.tellg();
     aaf = ReadBDNumeric(infile, numSNPs * numGroups);
-  if ((snpoptions & 0x0100) != 0)
+  }
+  mafoffset = 0;
+  if ((snpoptions & 0x0100) != 0) {
+    mafoffset = infile.tellg();
     maf = ReadBDNumeric(infile, numSNPs * numGroups);
-  if ((snpoptions & 0x0200) != 0)
+  }
+  avgcalloffset = 0;
+  if ((snpoptions & 0x0200) != 0) {
+    avgcalloffset = infile.tellg();
     avgCall = ReadBDNumeric(infile, numSNPs * numGroups);
-  if ((snpoptions & 0x0400) != 0)
+  }
+  rsqoffset = 0;
+  if ((snpoptions & 0x0400) != 0) {
+    rsqoffset = infile.tellg();
     rsq = ReadBDNumeric(infile, numSNPs * numGroups);
+  }
 
   return Rcpp::List::create(Rcpp::Named("snpsize") = snpSize,
                             Rcpp::Named("chrsize") = chrSize,
@@ -206,6 +219,10 @@ Rcpp::List ReadBDSNPs(std::ifstream &infile, int numSNPs, int numGroups, int snp
                             Rcpp::Named("location") = location,
                             Rcpp::Named("refstring") = refString,
                             Rcpp::Named("altstring") = altString,
+                            Rcpp::Named("aafoffset") = aafoffset,
+                            Rcpp::Named("mafoffset") = mafoffset,
+                            Rcpp::Named("avgcallfoffset") = avgcalloffset,
+                            Rcpp::Named("rsqoffset") = rsqoffset,
                             Rcpp::Named("aaf") = aaf,
                             Rcpp::Named("maf") = maf,
                             Rcpp::Named("avgcall") = avgCall,
@@ -451,9 +468,6 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
   std::ifstream infile;
   std::streampos loc;
   int readsize;
-  unsigned short *pus;
-
-  pus = (unsigned short *)&us[0];
 
   infile.open(filename.c_str(), READBINARY);
   if (!infile.good()) {
@@ -471,6 +485,12 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
   UShortToDouble(us, p2, base - 1);
   dosage = p1 + p2 + p2;
   p0 = 1. - p1 - p2;
+  for (int i = 0; i < dosage.size(); ++i) {
+    if (dosage[i] > 2.)
+      dosage[i] = 2.;
+    if (p0[i] < 0.)
+      p0[i] = 0.;
+  }
   infile.close();
   return 0;
 }

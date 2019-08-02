@@ -32,6 +32,11 @@ NULL
 #' does not contain genetic probabilities, subformat 1 will be
 #' used for formats 1 and 2, and subformat 3 will be used for
 #' formats 3 and 4. The default value is 0.
+#' @param bdoptions Character array containg any of the following
+#' value, "aaf", "maf", "rsq". The presence of any of these
+#' values indicates that the specified values should be
+#' calculates and stored in the bdosage file. These values only
+#' apply to format 4.
 #'
 #' @return
 #' A list containing information about the binary dosage file.
@@ -42,7 +47,7 @@ NULL
 #' @examples
 #' # Under construnction
 VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
-                    format = 4L, subformat = 0L) {
+                    format = 4L, subformat = 0L, bdoptions = character(0)) {
   if (missing(vcffile) == TRUE)
     stop("No VCF file specified")
   if (is.character(vcffile) == FALSE)
@@ -94,7 +99,14 @@ VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
   if (length(gz) != 1)
     stop("gz must be a single logical value")
 
-  bdoptions <- character(0)
+  if (is.character(bdoptions) == FALSE)
+    stop("bdoptions must be a character array")
+  if (length(bdoptions) > 0 & format != 4)
+    stop("bdoptions can only be used with format 4")
+  if (length(bdoptions) > 1) {
+    if (any(is.na(match(bdoptions, c("aaf", "maf", "rsq")))) == TRUE)
+      stop("Only valid bdoptions are aaf, maf, and rsq")
+  }
 
   vcfinfo <- getvcfinfo(filename = vcffile, gz = gz, index = FALSE)
   WriteBinaryDosageHeader(format = format,
@@ -108,4 +120,11 @@ VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
            func = WriteBinaryDosageData,
            writeinfo = bdwriteinfo)
   WriteBinaryDosageIndices(writeinfo = bdwriteinfo)
+  bdinfo <- getbdinfo(bdfilenames = bdfiles)
+  if (is.na(match("aaf", bdoptions)) == FALSE)
+    updateaaf(bdinfo)
+  if (is.na(match("maf", bdoptions)) == FALSE)
+    updatemaf(bdinfo)
+  if (is.na(match("rsq", bdoptions)) == FALSE)
+    updatersq(bdinfo)
 }
