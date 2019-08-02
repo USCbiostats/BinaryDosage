@@ -450,6 +450,10 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
                              int base) {
   std::ifstream infile;
   std::streampos loc;
+  int readsize;
+  unsigned short *pus;
+
+  pus = (unsigned short *)&us[0];
 
   infile.open(filename.c_str(), READBINARY);
   if (!infile.good()) {
@@ -458,10 +462,12 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
   }
 
   loc = headersize + 4 * (snp - 1) * dosage.size();
+  readsize = dosage.size() * sizeof(short);
+
   infile.seekg(loc);
-  infile.read((char *)&us[0], us.size() * sizeof(short));
+  infile.read((char *)&us[0], readsize);
   UShortToDouble(us, p1, base - 1);
-  infile.read((char *)&us[0], us.size() * sizeof(short));
+  infile.read((char *)&us[0], readsize);
   UShortToDouble(us, p2, base - 1);
   dosage = p1 + p2 + p2;
   p0 = 1. - p1 - p2;

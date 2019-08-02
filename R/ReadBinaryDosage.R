@@ -286,6 +286,12 @@ ReadIndices4 <- function(bdInfo) {
   return (ReadBDIndices4C(bdInfo$filename, nrow(bdInfo$snps), bdInfo$additionalinfo$headersize))
 }
 
+#***************************************************************************#
+#                                                                           #
+#                              Read the data                                #
+#                                                                           #
+#***************************************************************************#
+
 # Reads a SNP form the various formats
 # of the binary dosage file.
 ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {

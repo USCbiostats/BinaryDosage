@@ -543,16 +543,16 @@ int WriteBinaryP1P2Data(std::string &filename,
                         Rcpp::IntegerVector &us,
                         int base) {
   std::ofstream outfile;
+  unsigned short *pus;
+  pus = (unsigned short *)&us[0];
 
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
     return 1;
 
   DoubleToUShort(p1, us, base - 1);
-  Rcpp::Rcout << us[0] << '\t' << us[1] << '\t' << outfile.tellp() << '\t';
   outfile.write((char *)&us[0], p1.size() * sizeof(short));
   DoubleToUShort(p2, us, base - 1);
-  Rcpp::Rcout << us[0] << '\t' << us[1] << '\t' << outfile.tellp() << std::endl;
   outfile.write((char *)&us[0], p2.size() * sizeof(short));
 
   outfile.close();
