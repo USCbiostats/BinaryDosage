@@ -201,13 +201,20 @@ WriteBinaryDosageHeader44 <- function(filename, genefileinfo, bdoptions) {
 # Allocates memory needed to write binary dosage files
 # This is sufficient for all formats
 AllocateBinaryDosageWriteMemory <- function(headerinfo) {
-  return(list(filename = headerinfo$filename,
-              format = headerinfo$additionalinfo$format,
-              subformat = headerinfo$additionalinfo$subformat,
-              headersize = headerinfo$additionalinfo$headersize,
-              snpnumber = 0L,
-              datasize = integer(nrow(headerinfo$snps)),
-              us = integer(2*nrow(headerinfo$samples))))
+  filename <- headerinfo$filename
+  format <- headerinfo$additionalinfo$format
+  subformat <- headerinfo$additionalinfo$subformat
+  headersize <- headerinfo$additionalinfo$headersize
+  snpnumber <- 0L
+  datasize <- integer(nrow(headerinfo$snps))
+  us <- integer(2*nrow(headerinfo$samples))
+  return(list(filename = filename,
+              format = format,
+              subformat = subformat,
+              headersize = headersize,
+              snpnumber = snpnumber,
+              datasize = datasize,
+              us = us))
 }
 
 #***************************************************************************#
