@@ -205,7 +205,7 @@ AllocateBinaryDosageWriteMemory <- function(headerinfo) {
   format <- headerinfo$additionalinfo$format
   subformat <- headerinfo$additionalinfo$subformat
   headersize <- headerinfo$additionalinfo$headersize
-  snpnumber <- 0L
+  snpnumber <- integer(1)
   datasize <- integer(nrow(headerinfo$snps))
   us <- integer(2*nrow(headerinfo$samples))
   return(list(filename = filename,

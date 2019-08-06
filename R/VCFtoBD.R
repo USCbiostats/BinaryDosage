@@ -116,12 +116,6 @@ VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
                           bdoptions = bdoptions)
   headerinfo <- ReadBinaryDosageHeader(filename = bdfiles)
   bdwriteinfo <- AllocateBinaryDosageWriteMemory(headerinfo = headerinfo)
-  bdwriteinfo$snpnumber <- -1L
-  print("snpnumber")
-  print(bdwriteinfo$snpnumber)
-  bdwriteinfo$snpnumber <- bdwriteinfo$snpnumber + 1L
-  print("snpnumber")
-  print(bdwriteinfo$snpnumber)
   vcfapply(vcfinfo = vcfinfo,
            func = WriteBinaryDosageData,
            writeinfo = bdwriteinfo)
