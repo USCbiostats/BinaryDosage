@@ -12,12 +12,18 @@ NULL
 #' probabilities.
 #'
 #' @param vcffile Name of VCF file
+#' @param vcfinfofile (Optional) Name of information file associated
+#' with the vcf file. Default value "".
 #' @param bdfiles Vector of names of the output files.
 #' The binary dosage file name is first. The family and
 #' map files follow. For format 4, no family and map file
 #' names are needed.
 #' @param gz Indicator if vcf file in compressed using gzip.
 #' The default value is FALSE.
+#' @param snpidformat Format to store the snp id in. Format 1
+#' is chromosome:location. Format 2 is
+#' chromosome:location:reference:alternate. Format 0 indicates
+#' to use the format in the vcf file. 0 is the default.
 #' @param format The format of the output binary dosage file.
 #' Allowed values are 1, 2, 3, and 4. The default value is 4.
 #' Using the default value is recommended.
@@ -46,16 +52,22 @@ NULL
 #'
 #' @examples
 #' # Under construnction
-VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
-                    format = 4L, subformat = 0L, bdoptions = character(0)) {
+vcftobd <- function(vcffile, vcfinfofile = "", bdfiles, gz = FALSE,
+                    format = 4L, subformat = 0L, snpidformat = 0,
+                    bdoptions = character(0)) {
   if (missing(vcffile) == TRUE)
     stop("No VCF file specified")
   if (is.character(vcffile) == FALSE)
     stop("vcffile must be a character value")
   if (length(vcffile) != 1)
-    stop("vcffile must be a single character value")
+    stop("vcffile must be a character array of length 1")
   if (vcffile == "")
     stop("No VCF file specified")
+
+  if (is.character(vcfinfofile) == FALSE)
+    stop("vcfinfofile must be a character value")
+  if (length(vcfinfofile) != 1)
+    stop("vcfinfofile must be a character array of length 1")
 
   if (is.numeric(format) == FALSE && is.integer(format) == FALSE)
     stop("format must be an integer value")
@@ -83,6 +95,18 @@ VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
   if (format < 3 && subformat > 2)
     stop("subformat must be an integer value from 0 to 2 for formats 1 and 2")
 
+  if (is.numeric(snpidformat) == FALSE && is.integer(snpidformat) == FALSE)
+    stop("snpidformat must be an integer value")
+  if (length(snpidformat) != 1)
+    stop("snpidformat must be a single integer value")
+  if (is.numeric(snpidformat) == TRUE) {
+    if (floor(snpidformat) != snpidformat)
+      stop("snpidformat must be an integer")
+    snpidformat = floor(snpidformat)
+  }
+  if (snpidformat < 0 || snpidformat > 2)
+    stop("snpidformat must be an integer value from 0 to 2")
+
   if (missing(bdfiles) == TRUE)
     stop("No output files specified")
   if (is.character(bdfiles) == FALSE)
@@ -108,7 +132,16 @@ VCFtoBD <- function(vcffile, bdfiles, gz = FALSE,
       stop("Only valid bdoptions are aaf, maf, and rsq")
   }
 
-  vcfinfo <- getvcfinfo(filename = vcffile, gz = gz, index = FALSE)
+  vcfinfo <- getvcfinfo(filename = vcffile,
+                        gz = gz,
+                        index = FALSE,
+                        snpidformat = snpidformat)
+  if (subformat == 0) {
+    if (anyNA(vcfinfo$additionalinfo$datacolumns$genotypeprob) == TRUE)
+      subformat <- 1
+    else
+      subformat <- 2
+  }
   WriteBinaryDosageHeader(format = format,
                           subformat = subformat,
                           filename = bdfiles,

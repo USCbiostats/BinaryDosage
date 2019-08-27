@@ -49,7 +49,7 @@ ReadFamAndMapFiles <- function(filename, format, subformat, headersize) {
   if(all(snps$snpid == chrlocid) == TRUE)
     snpidformat <- 1
   else {
-    chrlocleflltid <- paste(snps$chromosome, snps$location,
+    chrlocrefaltid <- paste(snps$chromosome, snps$location,
                             snps$reference, snps$alternate, sep = ":")
     if (all(snps$snps == chrlocrefaltid) == TRUE)
       snpidformat <- 2

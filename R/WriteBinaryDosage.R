@@ -12,6 +12,7 @@
 # Formats 1, 2, and 3 all have a separate family and map file
 # This routine saves the data frames in RDS format
 WriteFamilyAndMapFiles <- function(filename, samples, snps) {
+  print(snps)
   saveRDS(samples, filename[2])
   saveRDS(snps, filename[3])
   return (md5 <- c(digest(samples, "md5"), digest(snps, "md5")))
