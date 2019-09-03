@@ -248,7 +248,7 @@ getvcfinfo <- function(filename,
                 datasize = datasize,
                 indices = indices,
                 additionalinfo = additionalinfo)
-  class(retval) <- c("genetic-file-info", "vcf-file-info")
+  class(retval) <- c("genetic-info")
   return (retval)
 }
 
@@ -270,7 +270,9 @@ getvcfinfo <- function(filename,
 #' @examples
 #' # In work
 vcfapply <- function(vcfinfo, func, ...) {
-  if (is.na(match("vcf-file-info", class(vcfinfo))) == TRUE)
+  if (is.na(match("genetic-info", class(vcfinfo))) == TRUE)
+    stop("vcfinfo is not of class genetic-info")
+  if (is.na(match("vcf-info", class(vcfinfo$additionalinfo))) == TRUE)
     stop("vcfinfo does not appear to contain information about a vcf file")
 
   retval <- vector("list", nrow(vcfinfo$snps))
