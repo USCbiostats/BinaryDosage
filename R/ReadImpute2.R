@@ -1,21 +1,21 @@
-getimp2info <- function(imp2file,
-                        samplefile = "",
-                        snpcolumns = 1L:5L,
-                        startcolumn = 6L,
-                        impformat = 3L,
-                        chromosome = "",
-                        header = FALSE,
-                        gzipped = FALSE,
-                        index = TRUE,
-                        snpidformat = 0L,
-                        sep = '\t') {
-  if (missing(imp2file) == TRUE)
+getgeninfo <- function(genfile,
+                       samplefile = "",
+                       snpcolumns = 1L:5L,
+                       startcolumn = 6L,
+                       impformat = 3L,
+                       chromosome = "",
+                       header = FALSE,
+                       gz = FALSE,
+                       index = TRUE,
+                       snpidformat = 0L,
+                       sep = '\t') {
+  if (missing(genfile) == TRUE)
     stop("No input file specified")
-  if (is.character(imp2file) == FALSE)
-    stop("imp2file must be a character value")
-  if (length(imp2file) != 1)
-    stop("imp2file must be a character vector of length 1")
-  if (imp2file == "")
+  if (is.character(genfile) == FALSE)
+    stop("genfile must be a character value")
+  if (length(genfile) != 1)
+    stop("genfile must be a character vector of length 1")
+  if (genfile == "")
     stop("No input file specified")
 
   if (is.character(samplefile) == FALSE)
@@ -69,16 +69,16 @@ getimp2info <- function(imp2file,
       stop("File has no header and no sample file is provided")
   }
 
-  if (is.logical(gzipped) == FALSE)
-    stop("gzipped must be a logical value")
-  if (length(gzipped) != 1)
-    stop("gzipped must be a logical vector of length 1")
+  if (is.logical(gz) == FALSE)
+    stop("gz must be a logical value")
+  if (length(gz) != 1)
+    stop("gz must be a logical vector of length 1")
 
   if (is.logical(index) == FALSE)
     stop("index must be a logical value")
   if (length(index) != 1)
     stop("index must be a logical vector of length 1")
-  if (gzipped == TRUE & index == TRUE)
+  if (gz == TRUE & index == TRUE)
     stop("indexing of a gzipped file is not supported")
 
   if (is.integer(snpidformat) == FALSE)
@@ -97,10 +97,10 @@ getimp2info <- function(imp2file,
 
 
   if (header == TRUE) {
-    if (gzipped == TRUE)
-      filecon <- gzfile(imp2file)
+    if (gz == TRUE)
+      filecon <- gzfile(genfile)
     else
-      filecon <- file(imp2file)
+      filecon <- file(genfile)
     headerline <- readLines(filecon, 1)
     close(filecon)
     headervalues <- unlist(strsplit(headerline, sep))
@@ -138,7 +138,7 @@ getimp2info <- function(imp2file,
   headersize <- 0
   if (header == TRUE)
     headersize <- 1
-  snps <- read.table(imp2file,
+  snps <- read.table(genfile,
                      skip = headersize,
                      colClasses = coltypes,
                      stringsAsFactors = FALSE)
@@ -196,8 +196,8 @@ getimp2info <- function(imp2file,
   } else {
     datasize <- integer(nrow(snps))
     indices <- numeric(nrow(snps))
-    if (gzipped == FALSE) {
-      x <- GetLineLocations(imp2file)
+    if (gz == FALSE) {
+      x <- GetLineLocations(genfile)
       if (header == TRUE)
         headerlines <- 1
       else
@@ -206,7 +206,7 @@ getimp2info <- function(imp2file,
       for (i in 1:length(datasize))
         datasize[i] <- x[headerlines + i + 1] - x[headerlines + i]
     } else {
-      con2 <- gzfile(imp2file, "r")
+      con2 <- gzfile(genfile, "r")
       currentpos <- seek(con2, 0)
       if (header == TRUE)
         line <- readLines(con2, n = 1)
@@ -221,13 +221,14 @@ getimp2info <- function(imp2file,
     }
   }
 
-  additionalinfo <- list(gzipped = gzipped,
+  additionalinfo <- list(gzipped = gz,
                          headersize = headersize,
                          format = impformat,
-                         startcolumn = startcolumn)
+                         startcolumn = startcolumn,
+                         sep = sep)
   class(additionalinfo) <- "gen-info"
 
-  retval <- list(filename = normalizePath(imp2file, winslash = '/'),
+  retval <- list(filename = normalizePath(genfile, winslash = '/'),
                  usesfid = usesfid,
                  samples = samples,
                  onechr = onechr,
@@ -245,7 +246,7 @@ getimp2info <- function(imp2file,
 genapply <- function(geninfo, func, ...) {
   if (is.na(match("genetic-info", class(geninfo))) == TRUE)
     stop("geninfo is not of class genetic-info")
-  if (is.na(match("vcf-info", class(vcfinfo$additionalinfo))) == TRUE)
+  if (is.na(match("gen-info", class(geninfo$additionalinfo))) == TRUE)
     stop("geninfo does not appear to contain information about a gen file")
 
   retval <- vector("list", nrow(geninfo$snps))
@@ -253,27 +254,28 @@ genapply <- function(geninfo, func, ...) {
     con <- file(geninfo$filename, "r")
   else
     con <- gzfile(geninfo$filename, "r")
-  line <- readLines(con, n = geninfo$additionalinfo$headerlines)
+  line <- readLines(con, n = geninfo$additionalinfo$headersize)
 
   dosage <- numeric(nrow(geninfo$samples))
   p0 <- numeric(nrow(geninfo$samples))
-  p1 <- numeric(nrow(geninfo$samples))
-  p2 <- numeric(nrow(geninfo$samples))
-  for (i in 1:nrow(vcfinfo$snps)) {
+  p0[1:length(p0)] <- NA
+  p1 <- p0
+  p2 <- p0
+  for (i in 1:nrow(geninfo$snps)) {
     line <- readLines(con, n = 1)
-    x <- unlist(strsplit(line, "\t"))
-    y <- unlist(strsplit(x[geninfo$additionalinfo$startcolumn:length(x)], ":"))
+    x <- unlist(strsplit(line, geninfo$additionalinfo$sep))
+    y <- x[geninfo$additionalinfo$startcolumn:length(x)]
     if (geninfo$additionalinfo$format == 1) {
-      dosage[1:length(dosage)] <- as.character(y)
+      dosage[1:length(dosage)] <- as.numeric(y)
     } else if (geninfo$additionalinfo$format == 2) {
-      p0[1:length(p0)] <- as.character(y[seq(1, length(y) - 1, 2)])
-      p1[1:length(p1)] <- as.character(y[seq(2, length(y), 2)])
+      p0[1:length(p0)] <- as.numeric(y[seq(1, length(y) - 1, 2)])
+      p1[1:length(p1)] <- as.numeric(y[seq(2, length(y), 2)])
       p2[1:length(p2)] <- ifelse(p0 + p1 < 1, 1 - p0 - p1, 0.)
       dosage[1:length(dosage)] <- ifelse(p1 + p2 + p2 < 2, p1 + p2 + p2, 2.)
     } else {
-      p0[1:length(p0)] <- as.character(y[seq(1, length(y) - 2, 3)])
-      p1[1:length(p1)] <- as.character(y[seq(2, length(y) - 1, 3)])
-      p2[1:length(p2)] <- as.character(y[seq(3, length(y), 3)])
+      p0[1:length(p0)] <- as.numeric(y[seq(1, length(y) - 2, 3)])
+      p1[1:length(p1)] <- as.numeric(y[seq(2, length(y) - 1, 3)])
+      p2[1:length(p2)] <- as.numeric(y[seq(3, length(y), 3)])
       dosage[1:length(dosage)] <- ifelse(p1 + p2 + p2 < 2, p1 + p2 + p2, 2.)
     }
 

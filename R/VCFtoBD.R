@@ -14,12 +14,12 @@ NULL
 #' @param vcffile Name of VCF file
 #' @param vcfinfofile (Optional) Name of information file associated
 #' with the vcf file. Default value "".
+#' @param gz Indicator if vcf file in compressed using gzip.
+#' The default value is FALSE.
 #' @param bdfiles Vector of names of the output files.
 #' The binary dosage file name is first. The family and
 #' map files follow. For format 4, no family and map file
 #' names are needed.
-#' @param gz Indicator if vcf file in compressed using gzip.
-#' The default value is FALSE.
 #' @param snpidformat Format to store the snp id in. Format 1
 #' is chromosome:location. Format 2 is
 #' chromosome:location:reference:alternate. Format 0 indicates
@@ -52,8 +52,13 @@ NULL
 #'
 #' @examples
 #' # Under construnction
-vcftobd <- function(vcffile, vcfinfofile = "", bdfiles, gz = FALSE,
-                    format = 4L, subformat = 0L, snpidformat = 0,
+vcftobd <- function(vcffile,
+                    vcfinfofile = "",
+                    gz = FALSE,
+                    bdfiles,
+                    format = 4L,
+                    subformat = 0L,
+                    snpidformat = 0,
                     bdoptions = character(0)) {
   if (missing(vcffile) == TRUE)
     stop("No VCF file specified")

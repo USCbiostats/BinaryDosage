@@ -6,10 +6,10 @@ mergegeneticinfo <- function(geneticinfo, allsnps) {
   }
 
   samples <- geneticinfo[[1]]$samples
-  for (i in 2:length(geneticinfo))
+  for (i in 2:length(bdinfo))
     samples <- rbind(samples, geneticinfo[[i]]$samples)
-  print(nrow(unique(samples)))
-  print(nrow(samples))
+#  print(nrow(unique(samples)))
+#  print(nrow(samples))
   if (nrow(unique(samples)) != nrow(samples))
     print("There are duplicate samples in the merged file")
 
@@ -66,16 +66,49 @@ mergebdinfo <- function(bdinfo) {
 
 }
 
-bdmerge <- function(bdfiles, onegroup = TRUE, snpjoin = "inner") {
+bdmerge <- function(bdfiles,
+                    famfiles = character(),
+                    mapfiles = character(),
+                    onegroup = TRUE,
+                    snpjoin = "inner") {
+
+  if (missing(bdfiles) == TRUE)
+    stop("No files specified")
+  if (is.character(bdfiles) == FALSE)
+    stop("bdfiles must be a character vector")
+  if (length(bdfiles) < 2)
+    stop("At least two binary dosage files must be specified")
+
+  if (is.character(famfiles) == FALSE)
+    stop("famfiles must be a character vector")
+  if (is.character(mapfiles) == FALSE)
+    stop("mapfiles must be a character vector")
+  if (length(famfiles) != 0 & length(mapfiles) == 0)
+    stop("If famfiles is specified, mapfiles must be specified")
+  if (length(famfiles) != 0 & length(mapfiles) == 0)
+    stop("If mapfiles is specified, famfiles must be specified")
+  if (length(famfiles) != 0 & (length(famfiles) != length(bdfiles) | length(mapfiles) != length(bdfiles)))
+    stop("If famfiles and mapfiles are specified they must have the same length as bdfiles")
+
+  if (is.logical(onegroup) == FALSE)
+    stop("onegroup must be logical value")
+  if (length(onegroup) != 1)
+    stop("onegroups must be a logical vector of length 1")
+
+  if (snpjoin != "inner" & snpjoin != "outer")
+    stop("snpjoin must have a value of either \"inner\" or \"outer\"")
+
   allsnps <- TRUE
   if (snpjoin == "inner")
     allsnps <- FALSE
 
   bdinfo <- vector("list", length(bdfiles))
-  for (i in 1:length(bdfiles))
-    bdinfo[[i]] <- getbdinfo(bdfiles[[i]])
+  for (i in 1:length(bdfiles)) {
+    if (length(famfiles) > 0)
+      bdinfo[[i]] <- getbdinfo(c(bdfiles[i], famfiles[i], mapfiles[i]))
+    else
+      bdinfo[[i]] <- getbdinfo(bdfiles[i])
+  }
 
-  mergedinfo <- mergegeneticinfo(bdinfo, allsnps)
-
-  return (mergedinfo)
+  return (bdinfo)
 }
