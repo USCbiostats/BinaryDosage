@@ -1,6 +1,7 @@
 #' @useDynLib BinaryDosage, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom digest digest
+#' @importFrom prodlim row.match
 NULL
 
 #' Function to convert a VCF file to a binary dosage file
