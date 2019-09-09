@@ -414,6 +414,7 @@ Rcpp::List ReadBDIndices4C(std::string filename,
 // NOTE: missing values are coded as 0xffff for shorts
 void UShortToDouble(Rcpp::IntegerVector &us,
                     Rcpp::NumericVector &x,
+                    const int numsub,
                     const int base) {
   unsigned short *ps1;
   double *d;
@@ -421,7 +422,7 @@ void UShortToDouble(Rcpp::IntegerVector &us,
 
   ps1 = (unsigned short *)&us[0];
   d = (double *)&x[0];
-  for (i = 0; i < x.size(); ++i, ++ps1, ++d) {
+  for (i = 0; i < numsub; ++i, ++ps1, ++d) {
     if (*ps1 == 0xffff) {
       // Missing
       *d = NA_REAL;
@@ -434,9 +435,10 @@ void UShortToDouble(Rcpp::IntegerVector &us,
 // [[Rcpp::export]]
 int ReadBinaryDosageDataC(std::string &filename,
                           int headersize,
+                          int numsub,
                           int snp,
                           Rcpp::NumericVector &dosage,
-                          Rcpp::IntegerVector &usdosage,
+                          Rcpp::IntegerVector &us,
                           int base) {
   std::ifstream infile;
   std::streampos loc;
@@ -447,10 +449,10 @@ int ReadBinaryDosageDataC(std::string &filename,
     return 1;
   }
 
-  loc = headersize + 2 * (snp - 1) * dosage.size();
+  loc = headersize + 2 * (snp - 1) * numsub;
   infile.seekg(loc);
-  infile.read((char *)&usdosage[0], usdosage.size() * sizeof(short));
-  UShortToDouble(usdosage, dosage, base - 1);
+  infile.read((char *)&us[0], numsub * sizeof(short));
+  UShortToDouble(us, dosage, numsub, base - 1);
   infile.close();
   return 0;
 }
@@ -458,6 +460,7 @@ int ReadBinaryDosageDataC(std::string &filename,
 // [[Rcpp::export]]
 int ReadBinaryDosageDataP1P2(std::string &filename,
                              int headersize,
+                             int numsub,
                              int snp,
                              Rcpp::NumericVector &dosage,
                              Rcpp::NumericVector &p0,
@@ -475,17 +478,17 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
     return 1;
   }
 
-  loc = headersize + 4 * (snp - 1) * dosage.size();
-  readsize = dosage.size() * sizeof(short);
+  loc = headersize + 4 * (snp - 1) * numsub;
+  readsize = numsub * sizeof(short);
 
   infile.seekg(loc);
   infile.read((char *)&us[0], readsize);
-  UShortToDouble(us, p1, base - 1);
+  UShortToDouble(us, p1, base - 1, numsub);
   infile.read((char *)&us[0], readsize);
-  UShortToDouble(us, p2, base - 1);
+  UShortToDouble(us, p2, base - 1, numsub);
   dosage = p1 + p2 + p2;
   p0 = 1. - p1 - p2;
-  for (int i = 0; i < dosage.size(); ++i) {
+  for (int i = 0; i < numsub; ++i) {
     if (dosage[i] > 2.)
       dosage[i] = 2.;
     if (p0[i] < 0.)
@@ -499,6 +502,7 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
 int ReadBinaryDosageDataCompressed(std::string &filename,
                                    double index,
                                    double datasize,
+                                   int numsub,
                                    Rcpp::NumericVector &dosage,
                                    Rcpp::NumericVector &p0,
                                    Rcpp::NumericVector &p1,
@@ -514,11 +518,11 @@ int ReadBinaryDosageDataCompressed(std::string &filename,
   }
 
   usbase = (unsigned short *)&us[0];
-  usadd = usbase + dosage.size();
+  usadd = usbase + numsub;
 
   infile.seekg(index);
   infile.read((char *)usbase, datasize);
-  for (int i = 0; i < dosage.size(); ++i, ++usbase) {
+  for (int i = 0; i < numsub; ++i, ++usbase) {
     if (*usbase == 0xffff) {
       dosage[i] = NA_REAL;
       p0[i] = NA_REAL;

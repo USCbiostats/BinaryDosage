@@ -12,7 +12,6 @@
 # Formats 1, 2, and 3 all have a separate family and map file
 # This routine saves the data frames in RDS format
 WriteFamilyAndMapFiles <- function(filename, samples, snps) {
-  print(snps)
   saveRDS(samples, filename[2])
   saveRDS(snps, filename[3])
   return (md5 <- c(digest(samples, "md5"), digest(snps, "md5")))
@@ -21,10 +20,10 @@ WriteFamilyAndMapFiles <- function(filename, samples, snps) {
 # Find the groups value in the genetic file info. If it doesn't
 # exist it returns the number of samples
 FindGroups <- function(geneticfileinfo) {
-  x <- match("groups", names(geneticfileinfo))
-  if (is.na(x))
+  x <- match("groups", names(geneticfileinfo$additionalinfo))
+  if (is.na(x) == TRUE)
     return (nrow(geneticfileinfo$samples))
-  return(geneticfileinfo$groups)
+  return(geneticfileinfo$additional$groups)
 }
 
 # Create the subject and family strings to write to the binary
@@ -224,7 +223,7 @@ AllocateBinaryDosageWriteMemory <- function(headerinfo) {
 
 # Write binary dosage data at the end of the file
 # Header has already been written
-# funcData was already created using AllocateBinaryDosageWriteMemory (see above)
+# writeinfo was already created using AllocateBinaryDosageWriteMemory (see above)
 WriteBinaryDosageData <- function(dosage, p0, p1, p2, writeinfo) {
   writeFunc <- list(f1 <- c(WriteBinaryDosageData1, WriteBinaryDosageData2),
                     f2 <- c(WriteBinaryDosageData3, WriteBinaryDosageData4),

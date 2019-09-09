@@ -139,8 +139,8 @@ Convert4HeaderToBDInfo <- function(filename, header, format, subformat) {
   additionalinfo <- list(format = format,
                          subformat = subformat,
                          headersize = header$dosageoffset,
-                         numgroups = 1,
-                         groups = nrow(samples))
+                         numgroups = header$numgroups,
+                         groups = header$groups)
   class(additionalinfo) <- "bdose-info"
 
   return (list(filename = normalizePath(filename[1], winslash = "/"),
@@ -303,27 +303,61 @@ ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
 }
 
 ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, us, 1)
+  BinaryDosage:::ReadBinaryDosageDataC(filename = bdInfo$filename,
+                                       headersize = bdInfo$additionalinfo$headersize,
+                                       numsub = nrow(bdInfo$samples),
+                                       snp = snp,
+                                       dosage = d,
+                                       us = us,
+                                       base = 1)
 }
 
 ReadBinaryDosageData2 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, p0, p1, p2, us, 2)
+  BinaryDosage:::ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
+                                          headersize = bdInfo$additionalinfo$headersize,
+                                          numsub = nrow(bdInfo$samples),
+                                          snp = snp,
+                                          dosage = d,
+                                          p0 = p0,
+                                          p1 = p1,
+                                          p2 = p2,
+                                          us = us,
+                                          base = 2)
 }
 
 ReadBinaryDosageData3 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, us, 3)
-
+  BinaryDosage:::ReadBinaryDosageDataC(filename = bdInfo$filename,
+                                       headersize = bdInfo$additionalinfo$headersize,
+                                       numsub = nrow(bdInfo$samples),
+                                       snp = snp,
+                                       dosage = d,
+                                       us = us,
+                                       base = 3)
 }
 
 ReadBinaryDosageData4 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(bdInfo$filename, bdInfo$additionalinfo$headersize, snp, d, p0, p1, p2, us, 3)
+  BinaryDosage:::ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
+                                          headersize = bdInfo$additionalinfo$headersize,
+                                          numsub = nrow(bdInfo$samples),
+                                          snp = snp,
+                                          dosage = d,
+                                          p0 = p0,
+                                          p1 = p1,
+                                          p2 = p2,
+                                          us = us,
+                                          base = 3)
 }
 
 ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  return (ReadBinaryDosageDataCompressed(bdInfo$filename,
-                                         bdInfo$indices[snp],
-                                         bdInfo$datasize[snp],
-                                         d, p0, p1, p2, us))
+  return (ReadBinaryDosageDataCompressed(filename = bdInfo$filename,
+                                         index = bdInfo$indices[snp],
+                                         datasize = bdInfo$datasize[snp],
+                                         numsub = nrow(bdInfo$samples),
+                                         dosage = d,
+                                         p0 = p0,
+                                         p1 = p1,
+                                         p2 = p2,
+                                         us = us))
 }
 
 #' Function to read information about binary dosage files

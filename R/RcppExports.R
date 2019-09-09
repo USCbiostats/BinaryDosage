@@ -33,16 +33,16 @@ ReadBDIndices4C <- function(filename, numSNPs, headersize) {
     .Call(`_BinaryDosage_ReadBDIndices4C`, filename, numSNPs, headersize)
 }
 
-ReadBinaryDosageDataC <- function(filename, headersize, snp, dosage, usdosage, base) {
-    .Call(`_BinaryDosage_ReadBinaryDosageDataC`, filename, headersize, snp, dosage, usdosage, base)
+ReadBinaryDosageDataC <- function(filename, headersize, numsub, snp, dosage, us, base) {
+    .Call(`_BinaryDosage_ReadBinaryDosageDataC`, filename, headersize, numsub, snp, dosage, us, base)
 }
 
-ReadBinaryDosageDataP1P2 <- function(filename, headersize, snp, dosage, p0, p1, p2, us, base) {
-    .Call(`_BinaryDosage_ReadBinaryDosageDataP1P2`, filename, headersize, snp, dosage, p0, p1, p2, us, base)
+ReadBinaryDosageDataP1P2 <- function(filename, headersize, numsub, snp, dosage, p0, p1, p2, us, base) {
+    .Call(`_BinaryDosage_ReadBinaryDosageDataP1P2`, filename, headersize, numsub, snp, dosage, p0, p1, p2, us, base)
 }
 
-ReadBinaryDosageDataCompressed <- function(filename, index, datasize, dosage, p0, p1, p2, us) {
-    .Call(`_BinaryDosage_ReadBinaryDosageDataCompressed`, filename, index, datasize, dosage, p0, p1, p2, us)
+ReadBinaryDosageDataCompressed <- function(filename, index, datasize, numsub, dosage, p0, p1, p2, us) {
+    .Call(`_BinaryDosage_ReadBinaryDosageDataCompressed`, filename, index, datasize, numsub, dosage, p0, p1, p2, us)
 }
 
 WriteBinaryDosageBaseHeader <- function(filename, format, subformat) {

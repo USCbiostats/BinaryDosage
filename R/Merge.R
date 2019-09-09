@@ -225,6 +225,14 @@ bdmerge <- function(mergefiles,
     else
       bdinfo[[i]] <- getbdinfo(bdfiles[i])
   }
+  # Testing - needs to be removed
+  ######################################################
+  bdinfo[[1]]$snps$snpid[3] <- bdinfo[[2]]$snps$snpid[1]
+  bdinfo[[1]]$snps$snpid[4] <- bdinfo[[2]]$snps$snpid[3]
+  bdinfo[[1]]$snps$snpid[1] <- bdinfo[[2]]$snps$snpid[4]
+  bdinfo[[1]]$snps[7,] <- bdinfo[[2]]$snps[9,]
+  bdinfo[[1]]$snps[9,] <- bdinfo[[2]]$snps[7,]
+  ######################################################
 
   bdmergedinfo <- mergebdinfo(bdinfo = bdinfo,
                               format = format,
@@ -234,13 +242,17 @@ bdmerge <- function(mergefiles,
   mergedgeneticinfo <- mergegeneticinfo(mergefile = mergefiles[1],
                                         geneticinfo = bdinfo,
                                         allsnps = allsnps)
+  mergedgeneticinfo$additionalinfo <- bdmergedinfo
+
   snpsbtom <- list()
   snpsmtob <- list()
+  snpsbtomNA <- list()
+  snpsmtobNA <- list()
   for (i in 1:length(bdinfo)) {
-    x <- prodlim::row.match(bdinfo[[i]]$snps, mergedgeneticinfo$snps)
-    snpsbtom[[i]] <- x[!is.na(x)]
-    x <- prodlim::row.match(mergedgeneticinfo$snps, bdinfo[[i]]$snps)
-    snpsmtob[[i]] <- x[!is.na(x)]
+    snpsbtomNA[[i]] <- prodlim::row.match(bdinfo[[i]]$snps, mergedgeneticinfo$snps)
+    snpsbtom[[i]] <- snpsbtomNA[[i]][!is.na(snpsbtomNA[[i]])]
+    snpsmtobNA[[i]] <- prodlim::row.match(mergedgeneticinfo$snps, bdinfo[[i]]$snps)
+    snpsmtob[[i]] <- snpsmtobNA[[i]][!is.na(snpsmtobNA[[i]])]
   }
 
   mergedgeneticinfo$snpinfo <- mergesnpinfo(mergedinfo = mergedgeneticinfo,
@@ -254,6 +266,60 @@ bdmerge <- function(mergefiles,
                           filename = mergefiles,
                           genefileinfo = mergedgeneticinfo,
                           bdoptions = bdoptions)
+  headerinfo <- ReadBinaryDosageHeader(filename = mergefiles)
+  bdwriteinfo <- AllocateBinaryDosageWriteMemory(headerinfo = headerinfo)
 
-  return (mergedgeneticinfo)
+  dosage <- numeric(nrow(mergedgeneticinfo$samples))
+  p0 <- numeric(nrow(mergedgeneticinfo$samples))
+  p1 <- numeric(nrow(mergedgeneticinfo$samples))
+  p2 <- numeric(nrow(mergedgeneticinfo$samples))
+  us <- integer(2 * nrow(mergedgeneticinfo$samples))
+  dosaget <- numeric(nrow(mergedgeneticinfo$samples))
+  p0t <- numeric(nrow(mergedgeneticinfo$samples))
+  p1t <- numeric(nrow(mergedgeneticinfo$samples))
+  p2t <- numeric(nrow(mergedgeneticinfo$samples))
+  ust <- integer(2 * nrow(mergedgeneticinfo$samples))
+  startgroup <- integer(length(bdinfo))
+  endgroup <- integer(length(bdinfo))
+  startgroup[1] <- 1
+  endgroup[1] <- nrow(bdinfo[[1]]$samples)
+  for (i in 2:length(bdinfo)) {
+    startgroup[i] <- endgroup[i - 1] + 1
+    endgroup[i] <- endgroup[i - 1] + nrow(bdinfo[[i]]$samples)
+  }
+
+  for (i in 1:nrow(mergedgeneticinfo$snps)) {
+#  for (i in 1:1) {
+    for (j in 1:length(bdinfo)) {
+      dosage[1:nrow(mergedgeneticinfo$samples)] <- NA
+      p0[1:nrow(mergedgeneticinfo$samples)] <- NA
+      p1[1:nrow(mergedgeneticinfo$samples)] <- NA
+      p2[1:nrow(mergedgeneticinfo$samples)] <- NA
+      if (is.na(snpsmtobNA[[j]][i]) == FALSE)
+        ReadBinaryDosageData(bdinfo[[j]], snpsmtobNA[[j]][i], dosage, p0, p1, p2, us)
+      dosaget[startgroup[j]:endgroup[j]] <- dosage[1:nrow(bdinfo[[j]]$samples)]
+      p0t[startgroup[j]:endgroup[j]] <- p0[1:nrow(bdinfo[[j]]$samples)]
+      p1t[startgroup[j]:endgroup[j]] <- p1[1:nrow(bdinfo[[j]]$samples)]
+      p2t[startgroup[j]:endgroup[j]] <- p2[1:nrow(bdinfo[[j]]$samples)]
+    }
+    WriteBinaryDosageData(dosaget, p0t, p1t, p2t, bdwriteinfo)
+    print(mean(dosaget, na.rm = TRUE) / 2.)
+  }
+  WriteBinaryDosageIndices(writeinfo = bdwriteinfo)
+
+  return (list(bdmergedinfo = bdmergedinfo,
+               mergedgeneticinfo = mergedgeneticinfo,
+               snpsmtob = snpsmtob,
+               snpsbtom = snpsbtom,
+               snpsmtobNA = snpsmtobNA,
+               snpsbtomNA = snpsbtomNA,
+               dosage = dosage,
+               p0 = p0,
+               p1 = p1,
+               p2 = p2,
+               dosaget = dosaget,
+               p0t = p0t,
+               p1t = p1t,
+               p2t = p2t,
+               bdinfo = bdinfo))
 }
