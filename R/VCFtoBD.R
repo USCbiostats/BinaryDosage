@@ -138,7 +138,7 @@ vcftobd <- function(vcffile,
       stop("Only valid bdoptions are aaf, maf, and rsq")
   }
 
-  vcfinfo <- getvcfinfo(filename = vcffile,
+  vcfinfo <- getvcfinfo(vcffiles = vcffile,
                         gz = gz,
                         index = FALSE,
                         snpidformat = snpidformat)
@@ -159,7 +159,7 @@ vcftobd <- function(vcffile,
            func = WriteBinaryDosageData,
            writeinfo = bdwriteinfo)
   WriteBinaryDosageIndices(writeinfo = bdwriteinfo)
-  bdinfo <- getbdinfo(bdfilenames = bdfiles)
+  bdinfo <- getbdinfo(bdfiles = bdfiles)
   if (is.na(match("aaf", bdoptions)) == FALSE)
     updateaaf(bdinfo)
   if (is.na(match("maf", bdoptions)) == FALSE)

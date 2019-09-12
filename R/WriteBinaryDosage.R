@@ -296,11 +296,11 @@ WriteBinaryDosageIndices2 <- function(writeinfo) {
 #                                                                           #
 #***************************************************************************#
 getaaf <- function(dosage, p0, p1, p2) {
-  return (mean(dosage) / 2)
+  return (mean(dosage, na.rm = TRUE) / 2)
 }
 
 getmaf <- function(dosage, p0, p1, p2) {
-  aaf <- mean(dosage) / 2
+  aaf <- mean(dosage, na.rm = TRUE) / 2
   maf <- ifelse(aaf > 0.5, 1. - aaf, aaf)
   return (maf)
 }
@@ -312,6 +312,7 @@ getrsq <- function(dosage, p0, p1, p2) {
   d <- sqrt(d)
   q[1:length(dosage)] <- 0.5 * (dosage - d)
   q[(length(dosage) + 1):(2*length(dosage))] <- 0.5 * (dosage + d)
+  q <- q[is.na(q) == FALSE]
   mu <- mean(q)
   sigma <- mean(q*q) - mu * mu
   rsq <- sigma / (mu * (1. - mu))

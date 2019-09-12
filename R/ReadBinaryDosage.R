@@ -20,6 +20,13 @@ ReadBinaryDosageHeader <- function(filename) {
                          f3 <- c(ReadBinaryDosageHeader31, ReadBinaryDosageHeader32, ReadBinaryDosageHeader33, ReadBinaryDosageHeader34),
                          f4 <- c(ReadBinaryDosageHeader41, ReadBinaryDosageHeader42, ReadBinaryDosageHeader43, ReadBinaryDosageHeader44))
   bdformat <- ReadBinaryDosageBaseHeader(filename[1])
+  if (bdformat$format == 4) {
+    if (length(filename) != 1)
+      stop("Binary dosage file format 4 does not use family and map files")
+  } else {
+    if (length(filename) != 3)
+      stop("Binary dosage file format 1, 2, and 3 require family and map files")
+  }
   return (ReadHeaderFunc[[bdformat$format]][[bdformat$subformat]](filename))
 }
 
@@ -360,35 +367,3 @@ ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
                                          us = us))
 }
 
-#' Function to read information about binary dosage files
-#'
-#' Function to read information about binary dosage files.
-#' This information is used when reading the dosage and genetic
-#' probabilities from the file. It is also used by GxEScanR.
-#'
-#' @param bdfilenames - Vector of file names. The first is the
-#' binary dosage data containing the dosages and genetic
-#' probabilites. The second file name is the family information
-#' file. The thrid file name is the SNP information file.
-#' The family and SNP information files are not used if the
-#' binary dosage file is in format 4. For this format the
-#' family and SNP information are in the file with the dosage
-#' and genetic probabilites.
-#'
-#' @return
-#' List with subject and SNP information and values needed
-#' to read the dosages and genetic probabilities,
-#'
-#' @export
-#'
-#' @examples
-#' # in work
-getbdinfo <- function(bdfilenames) {
-  headerinfo <- ReadBinaryDosageHeader(bdfilenames)
-  indices <- ReadBinaryDosageIndices(headerinfo)
-  headerinfo$datasize <- indices$datasize
-  headerinfo$indices <- indices$indices
-  class(headerinfo) <- c("genetic-file-info")
-
-  return (headerinfo)
-}

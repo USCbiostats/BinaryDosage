@@ -157,8 +157,7 @@ gentobd <- function(genfile,
       stop("Only valid bdoptions are aaf, maf, and rsq")
   }
 
-  geninfo <- getgeninfo(genfile = genfile,
-                        samplefile = samplefile,
+  geninfo <- getgeninfo(genfiles = c(genfile, samplefile),
                         snpcolumns = snpcolumns,
                         startcolumn = startcolumn,
                         impformat = impformat,
@@ -186,7 +185,7 @@ gentobd <- function(genfile,
            func = WriteBinaryDosageData,
            writeinfo = bdwriteinfo)
   WriteBinaryDosageIndices(writeinfo = bdwriteinfo)
-  bdinfo <- getbdinfo(bdfilenames = bdfiles)
+  bdinfo <- getbdinfo(bdfiles = bdfiles)
   if (is.na(match("aaf", bdoptions)) == FALSE)
     updateaaf(bdinfo)
   if (is.na(match("maf", bdoptions)) == FALSE)
