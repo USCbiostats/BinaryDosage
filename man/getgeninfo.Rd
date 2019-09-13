@@ -45,9 +45,10 @@ Default value is FALSE.}
 \item{gz}{Indicator if file is compressed using gzip.
 Default value is FALSE.}
 
-\item{index}{Indicator if the file is to be indexed.
-This allows for faster reading of the file. This is
-not supported if gz is TRUE.}
+\item{index}{Indicator if file should be indexed. This
+allows for faster reading of the file. Indexing a gzipped
+file is not supported.
+Default value is TRUE.}
 
 \item{snpidformat}{Format to change the snpid to.
 0 indicates to use the snpid format in the file.

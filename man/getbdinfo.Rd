@@ -4,10 +4,10 @@
 \alias{getbdinfo}
 \title{Get information about a binary dosage file}
 \usage{
-getbdinfo(bdfilenames)
+getbdinfo(bdfiles)
 }
 \arguments{
-\item{bdfilenames}{- Vector of file names. The first is the
+\item{bdfiles}{Vector of file names. The first is the
 binary dosage data containing the dosages and genetic
 probabilites. The second file name is the family information
 file. The thrid file name is the SNP information file.
@@ -30,5 +30,5 @@ file.
 }
 \examples{
 vcf1abdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
-bdinfo <- getbdinfo(bdfilenames = vcf1abdfile)
+bdinfo <- getbdinfo(bdfiles = vcf1abdfile)
 }

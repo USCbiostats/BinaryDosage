@@ -4,22 +4,22 @@
 \alias{getvcfinfo}
 \title{Get information about a vcf file}
 \usage{
-getvcfinfo(vcffilenames, gzipped = FALSE, index = TRUE,
-  snpidformat = 0L)
+getvcfinfo(vcffiles, gz = FALSE, index = TRUE, snpidformat = 0L)
 }
 \arguments{
-\item{vcffilenames}{A vector of file names.
+\item{vcffiles}{A vector of file names.
 The first is the name of the vcf file. The
 second is name of the file that contains information
 about the imputation of the SNPs. This file is produced
 by minimac 3 and 4.}
 
-\item{gzipped}{Indicator if VCF file is compressed using gzip.
+\item{gz}{Indicator if VCF file is compressed using gzip.
 Default value is FALSE.}
 
 \item{index}{Indicator if file should be indexed. This
 allows for faster reading of the file. Indexing a gzipped
-file does not speed up access. Default value is TRUE.}
+file is not supported.
+Default value is TRUE.}
 
 \item{snpidformat}{The format that the SNP ID will be saved as.
 0 - same as in the VCF file
@@ -46,5 +46,5 @@ vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 
 # Get the information about the vcf file
-vcf1ainfo <- getvcfinfo(vcffilenames = c(vcf1afile, vcf1ainfo))
+vcf1ainfo <- getvcfinfo(vcffiles = c(vcf1afile, vcf1ainfo))
 }
