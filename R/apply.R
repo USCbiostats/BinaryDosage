@@ -32,7 +32,7 @@
 #' # Get information about a binary dosage file
 #'
 #' vcf1abdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
-#' bdinfo <- getbdinfo(bdfilenames = vcf1abdfile)
+#' bdinfo <- getbdinfo(bdfiles = vcf1abdfile)
 #'
 #' # Apply the getaaf, get alternate allele frequency, function
 #' # to all the SNPs in the binary dosage file
@@ -102,7 +102,7 @@ bdapply <- function(bdinfo, func, ...) {
 #' # Get information about a vcf file
 #'
 #' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-#' vcfinfo <- getvcfinfo(filename = vcf1afile)
+#' vcfinfo <- getvcfinfo(vcffiles = vcf1afile)
 #'
 #' # Apply the getaaf, get alternate allele frequency, function
 #' # to all the SNPs in the vcf file
@@ -210,7 +210,7 @@ vcfapply <- function(vcfinfo, func, ...) {
 #' # Get information about a gen, impute2, file
 #'
 #' gen1afile <- system.file("extdata", "set1a.imp", package = "BinaryDosage")
-#' geninfo <- getgeninfo(genfile = gen1afile,
+#' geninfo <- getgeninfo(genfiles = gen1afile,
 #'                       snpcolumns = c(1L, 3L, 2L, 4L, 5L),
 #'                       header = TRUE)
 #'

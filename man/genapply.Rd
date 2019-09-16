@@ -38,7 +38,7 @@ specified function to the data.
 # Get information about a gen, impute2, file
 
 gen1afile <- system.file("extdata", "set1a.imp", package = "BinaryDosage")
-geninfo <- getgeninfo(genfile = gen1afile,
+geninfo <- getgeninfo(genfiles = gen1afile,
                       snpcolumns = c(1L, 3L, 2L, 4L, 5L),
                       header = TRUE)
 

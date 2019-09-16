@@ -2,6 +2,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom digest digest
 #' @importFrom prodlim row.match
+#' @importFrom utils read.table
 NULL
 
 validatebdinput <- function(bdfiles,
@@ -117,7 +118,7 @@ validatebdinput <- function(bdfiles,
 #' vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 #' bdfiles <- tempfile()
 #' # Convert the file
-#' Verify the file was written correctly
+#' # Verify the file was written correctly
 #' vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
 vcftobd <- function(vcffiles,
                     gz = FALSE,
@@ -255,7 +256,7 @@ vcftobd <- function(vcffiles,
 #' gentobd(genfiles = c(gen3afile, gen3asample),
 #'         snpcolumns = c(0L, 2L:5L),
 #'         bdfiles = bdfiles)
-#' Verify the file was written correctly
+#' # Verify the file was written correctly
 #' bdinfo <- getbdinfo(bdfiles = bdfiles)
 gentobd <- function(genfiles,
                     snpcolumns = 1L:5L,

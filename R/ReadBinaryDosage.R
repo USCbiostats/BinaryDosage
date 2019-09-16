@@ -310,49 +310,49 @@ ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
 }
 
 ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(filename = bdInfo$filename,
-                                       headersize = bdInfo$additionalinfo$headersize,
-                                       numsub = nrow(bdInfo$samples),
-                                       snp = snp,
-                                       dosage = d,
-                                       us = us,
-                                       base = 1)
+  ReadBinaryDosageDataC(filename = bdInfo$filename,
+                        headersize = bdInfo$additionalinfo$headersize,
+                        numsub = nrow(bdInfo$samples),
+                        snp = snp,
+                        dosage = d,
+                        us = us,
+                        base = 1)
 }
 
 ReadBinaryDosageData2 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
-                                          headersize = bdInfo$additionalinfo$headersize,
-                                          numsub = nrow(bdInfo$samples),
-                                          snp = snp,
-                                          dosage = d,
-                                          p0 = p0,
-                                          p1 = p1,
-                                          p2 = p2,
-                                          us = us,
-                                          base = 2)
+  ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
+                           headersize = bdInfo$additionalinfo$headersize,
+                           numsub = nrow(bdInfo$samples),
+                           snp = snp,
+                           dosage = d,
+                           p0 = p0,
+                           p1 = p1,
+                           p2 = p2,
+                           us = us,
+                           base = 2)
 }
 
 ReadBinaryDosageData3 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataC(filename = bdInfo$filename,
-                                       headersize = bdInfo$additionalinfo$headersize,
-                                       numsub = nrow(bdInfo$samples),
-                                       snp = snp,
-                                       dosage = d,
-                                       us = us,
-                                       base = 3)
+  ReadBinaryDosageDataC(filename = bdInfo$filename,
+                        headersize = bdInfo$additionalinfo$headersize,
+                        numsub = nrow(bdInfo$samples),
+                        snp = snp,
+                        dosage = d,
+                        us = us,
+                        base = 3)
 }
 
 ReadBinaryDosageData4 <- function(bdInfo, snp, d, p0, p1, p2, us) {
-  BinaryDosage:::ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
-                                          headersize = bdInfo$additionalinfo$headersize,
-                                          numsub = nrow(bdInfo$samples),
-                                          snp = snp,
-                                          dosage = d,
-                                          p0 = p0,
-                                          p1 = p1,
-                                          p2 = p2,
-                                          us = us,
-                                          base = 3)
+  ReadBinaryDosageDataP1P2(filename = bdInfo$filename,
+                           headersize = bdInfo$additionalinfo$headersize,
+                           numsub = nrow(bdInfo$samples),
+                           snp = snp,
+                           dosage = d,
+                           p0 = p0,
+                           p1 = p1,
+                           p2 = p2,
+                           us = us,
+                           base = 3)
 }
 
 ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {

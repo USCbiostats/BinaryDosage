@@ -101,6 +101,6 @@ bdfiles <- tempfile()
 gentobd(genfiles = c(gen3afile, gen3asample),
         snpcolumns = c(0L, 2L:5L),
         bdfiles = bdfiles)
-Verify the file was written correctly
+# Verify the file was written correctly
 bdinfo <- getbdinfo(bdfiles = bdfiles)
 }

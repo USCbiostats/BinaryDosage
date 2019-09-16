@@ -7,8 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "jmorr@usc.edu")
 Description: Tools to create binary dosage from either vcf
-    or Impute2 style text files, merge binary dosage files, and read
-    binary dosage files
+    or gen files, merge binary dosage files, and read
+    binary dosage files.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

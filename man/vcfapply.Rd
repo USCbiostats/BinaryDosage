@@ -37,7 +37,7 @@ function to the data.
 # Get information about a vcf file
 
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-vcfinfo <- getvcfinfo(filename = vcf1afile)
+vcfinfo <- getvcfinfo(vcffiles = vcf1afile)
 
 # Apply the getaaf, get alternate allele frequency, function
 # to all the SNPs in the vcf file

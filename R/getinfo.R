@@ -293,7 +293,7 @@ getvcfinfo <- function(vcffiles,
         indices[i] <- seek(con2)
         line <- readLines(con2, n = 1)
         currentpos <- seek(con2)
-        datasize[i] <- currentPos - indices[i]
+        datasize[i] <- currentpos - indices[i]
       }
       close(con2)
     }
@@ -611,7 +611,7 @@ getgeninfo <- function(genfiles,
         indices[i] <- seek(con2)
         line <- readLines(con2, n = 1)
         currentpos <- seek(con2)
-        datasize[i] <- currentPos - indices[i]
+        datasize[i] <- currentpos - indices[i]
       }
       close(con2)
     }

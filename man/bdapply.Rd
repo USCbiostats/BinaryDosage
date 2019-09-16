@@ -38,7 +38,7 @@ specified function to the data.
 # Get information about a binary dosage file
 
 vcf1abdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
-bdinfo <- getbdinfo(bdfilenames = vcf1abdfile)
+bdinfo <- getbdinfo(bdfiles = vcf1abdfile)
 
 # Apply the getaaf, get alternate allele frequency, function
 # to all the SNPs in the binary dosage file

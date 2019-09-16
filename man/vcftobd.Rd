@@ -68,6 +68,6 @@ vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 bdfiles <- tempfile()
 # Convert the file
-Verify the file was written correctly
+# Verify the file was written correctly
 vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
 }
