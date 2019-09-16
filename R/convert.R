@@ -118,8 +118,9 @@ validatebdinput <- function(bdfiles,
 #' vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 #' bdfiles <- tempfile()
 #' # Convert the file
-#' # Verify the file was written correctly
 #' vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
+#' # Verify the file was written correctly
+#' bdinfo <- getbdinfo(bdfiles)
 vcftobd <- function(vcffiles,
                     gz = FALSE,
                     bdfiles,
