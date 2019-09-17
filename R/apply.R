@@ -27,7 +27,7 @@
 #' of the list is the value returned by the user
 #' supplied function
 #' @export
-#'
+#' @family Iterating functions
 #' @examples
 #' # Get information about a binary dosage file
 #'
@@ -97,7 +97,7 @@ bdapply <- function(bdinfo, func, ...) {
 #' of the list is the value returned by the user
 #' supplied function
 #' @export
-#'
+#' @family Iterating functions
 #' @examples
 #' # Get information about a vcf file
 #'
@@ -188,7 +188,7 @@ vcfapply <- function(vcfinfo, func, ...) {
 #' specified function to the data.
 #'
 #' @param geninfo List with information about the
-#' gen, impute2, file returned from getgeninfo
+#' gen, impute2, file returned from [getgeninfo]
 #' @param func A user supplied function to apply
 #' to the data for each snp. The function must be
 #' provide with the following paramters, dosage,
@@ -206,6 +206,7 @@ vcfapply <- function(vcfinfo, func, ...) {
 #' supplied function
 #' @export
 #'
+#' @family Iterating functions
 #' @examples
 #' # Get information about a gen, impute2, file
 #'

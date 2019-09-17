@@ -1,5 +1,5 @@
 Package: BinaryDosage
-Title: Creates, merges, and reads binary dosage files
+Title: Creates, Merges, and Reads Binary Dosage Files
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "John",
@@ -18,6 +18,7 @@ Suggests:
     testthat (>= 2.1.0)
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
+Roxygen: list(markdown = TRUE)
 LinkingTo: 
     Rcpp
 Imports: 

@@ -46,3 +46,8 @@ bdinfo <- getbdinfo(bdfiles = vcf1abdfile)
 aaf <- bdapply(bdinfo = bdinfo,
                func = BinaryDosage:::getaaf)
 }
+\seealso{
+Other Iterating functions: \code{\link{genapply}},
+  \code{\link{vcfapply}}
+}
+\concept{Iterating functions}

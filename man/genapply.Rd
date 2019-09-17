@@ -9,7 +9,7 @@ genapply(geninfo, func, ...)
 }
 \arguments{
 \item{geninfo}{List with information about the
-gen, impute2, file returned from getgeninfo}
+gen, impute2, file returned from \link{getgeninfo}}
 
 \item{func}{A user supplied function to apply
 to the data for each snp. The function must be
@@ -46,3 +46,8 @@ geninfo <- getgeninfo(genfiles = gen1afile,
 aaf <- genapply(geninfo = geninfo,
                 func = BinaryDosage:::getaaf)
 }
+\seealso{
+Other Iterating functions: \code{\link{bdapply}},
+  \code{\link{vcfapply}}
+}
+\concept{Iterating functions}

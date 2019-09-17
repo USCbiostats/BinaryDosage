@@ -212,7 +212,7 @@ vcftobd <- function(vcffiles,
 #' @param gz Indicator if file is compressed using gzip.
 #' Default value is FALSE.
 #' @param sep Seperator used in the gen file. Default
-#' value is "\\t"
+#' value is "\\\t"
 #' @param bdfiles Vector of names of the output files.
 #' The binary dosage file name is first. The family and
 #' map files follow. For format 4, no family and map file

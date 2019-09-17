@@ -369,7 +369,7 @@ getvcfinfo <- function(vcffiles,
 #' location in bp, REF is the reference allele, andALT
 #' is the alternate allele. Default value is 0.
 #' @param sep Seperator used in the gen file. Default
-#' value is "\\t"
+#' value is "\\\t"
 #'
 #' @return List with information about the gen file.
 #' This includes family and subject IDs along with
