@@ -1,8 +1,13 @@
 BinaryDosage: Creates, Merges, and Reads Binary Dosage Files
 ================
 
+<!-- badges: start -->
+
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDosage?branch=master&svg=true)](https://ci.appveyor.com/project/USCbiostats/BinaryDosage)
+[![Travis build
+status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=master)](https://travis-ci.org/USCbiostats/BinaryDosage)
+<!-- badges: end -->
 
 # Binary Dosage Files
 
@@ -148,6 +153,7 @@ vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 bdfiles <- tempfile()
 # Convert the file
 vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
-# Verify the file was written correctly - an error will be returned if file wasn't written properly
+# Verify the file was written correctly - an error will be returned if file
+# wasn't written properly
 bdinfo <- getbdinfo(bdfiles)
 ```
