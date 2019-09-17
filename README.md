@@ -7,6 +7,8 @@ BinaryDosage: Creates, Merges, and Reads Binary Dosage Files
 status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDosage?branch=master&svg=true)](https://ci.appveyor.com/project/USCbiostats/BinaryDosage)
 [![Travis build
 status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=master)](https://travis-ci.org/USCbiostats/BinaryDosage)
+[![Codecov test
+coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=master)
 <!-- badges: end -->
 
 # Binary Dosage Files
