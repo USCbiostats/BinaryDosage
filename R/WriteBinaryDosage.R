@@ -295,16 +295,86 @@ WriteBinaryDosageIndices2 <- function(writeinfo) {
 #                    Update snp info, aaf, maf, and rsq                     #
 #                                                                           #
 #***************************************************************************#
+#' Calculate alternate allele frequency
+#'
+#' Routine to calculate the alternate allele frequency given the dosages.
+#' Missing values for dosage ignored. This function is used internally and
+#' is exported for use in examples.
+#'
+#' @param dosage Dosage values
+#' @param p0 Pr(g=0) - unused
+#' @param p1 Pr(g=1) - unused
+#' @param p2 Pr(g=2) - unused
+#'
+#' @return
+#' Alternate allele frequency
+#' @export
+#'
+#' @examples
+#' # Get information about binary dosage file
+#' bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+#' bdinfo <- getbdinfo(bdfiles = bdfile)
+#' snp1 <- getsnp(bdinfo = bdinfo, 1)
+#' aaf <- getaaf(snp1$dosage)
 getaaf <- function(dosage, p0, p1, p2) {
   return (mean(dosage, na.rm = TRUE) / 2)
 }
 
+#' Calculate minor allele frequency
+#'
+#' Routine to calculate the minor allele frequency given the dosages.
+#' Missing values for dosage ignored. This function is used internally and
+#' is exported for use in examples. Note: The minor allele in one data set
+#' may be different from another data set. This can make comparing minor
+#' allele frequencies between data sets nonsensical.
+#'
+#' @param dosage Dosage values
+#' @param p0 Pr(g=0) - unused
+#' @param p1 Pr(g=1) - unused
+#' @param p2 Pr(g=2) - unused
+#'
+#' @return
+#' Minor allele frequency
+#' @export
+#'
+#' @examples
+#' # Get information about binary dosage file
+#' bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+#' bdinfo <- getbdinfo(bdfiles = bdfile)
+#' snp1 <- getsnp(bdinfo = bdinfo, 1)
+#' maf <- getmaf(snp1$dosage)
 getmaf <- function(dosage, p0, p1, p2) {
   aaf <- mean(dosage, na.rm = TRUE) / 2
   maf <- ifelse(aaf > 0.5, 1. - aaf, aaf)
   return (maf)
 }
 
+#' Calculate imputation r squared
+#'
+#' Routine to calculate the imputation r squared given the dosages
+#' and Pr(g=2).
+#' This is an estimate for the impuation r squared returned from
+#' minimac and impute2. The r squared values are calculated slightly
+#' differently between the programs. This estimate is based on the
+#' method used by minimac. It does well for minor allele frequencies
+#' above 5%. This function is used internally and is exported for
+#' use in examples.
+#'
+#' @param dosage Dosage values
+#' @param p0 Pr(g=0) - unused
+#' @param p1 Pr(g=1) - unused
+#' @param p2 Pr(g=2)
+#'
+#' @return
+#' Imputation r squared
+#' @export
+#'
+#' @examples
+#' # Get information about binary dosage file
+#' bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+#' bdinfo <- getbdinfo(bdfiles = bdfile)
+#' snp1 <- getsnp(bdinfo = bdinfo, 1, dosageonly = FALSE)
+#' rsq <- BinaryDosage:::getrsq(snp1$dosage, p2 = snp1$p2)
 getrsq <- function(dosage, p0, p1, p2) {
   q <- numeric(2 * length(dosage))
   d <- dosage * dosage - 4 * p2
