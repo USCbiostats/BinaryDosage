@@ -123,8 +123,8 @@ test_that("getgeninfo", {
                           header = 1),
                "header must be a logical value")
   expect_error(getgeninfo(genfiles = c("file1", "file2"),
-                          header = c(TRUE, TRUE)),
-               "header must be a logical vector of length 1")
+                          header = c(TRUE, TRUE, TRUE)),
+               "header must be a logical vector of length 1 or 2")
   expect_error(getgeninfo(genfiles = c("file1", ""),
                           header = FALSE),
                "File has no header and no sample file is provided")

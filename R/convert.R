@@ -206,9 +206,10 @@ vcftobd <- function(vcffiles,
 #' @param chromosome Chromosome value to use if the
 #' first value of the snpcolumns is equal to 0.
 #' Default value is character().
-#' @param header Indicator if the gen file has a header
-#' containing column names and family and subject IDs.
-#' Default value is FALSE.
+#' @param header Indicators if the gen and sample files
+#' have headers. If the gen file does not have a
+#' header. A sample file must be included.
+#' Default value is c(FALSE, TRUE).
 #' @param gz Indicator if file is compressed using gzip.
 #' Default value is FALSE.
 #' @param sep Seperator used in the gen file. Default
@@ -264,9 +265,9 @@ gentobd <- function(genfiles,
                     startcolumn = 6L,
                     impformat = 3L,
                     chromosome = character(),
-                    header = FALSE,
+                    header = c(FALSE, TRUE),
                     gz = FALSE,
-                    sep = '\t',
+                    sep = "\t",
                     bdfiles,
                     format = 4L,
                     subformat = 0L,

@@ -1,11 +1,23 @@
 Package: BinaryDosage
 Title: Creates, Merges, and Reads Binary Dosage Files
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "John",
-           family = "Morrison",
-           role = c("aut", "cre"),
-           email = "jmorr@usc.edu")
+Authors@R:
+    c(person(given = "John",
+             family = "Morrison",
+             role = c("aut", "cre"),
+             email = "jmorr@usc.edu"),
+      person(given = "NIEHS",
+             comment = "P01 CA196559",
+             role = c("fnd")),
+      person(given = "NIEHS",
+             comment = "R01 CA201407",
+             role = c("fnd")),
+      person(given = "NIEHS",
+             comment = "P30 ES007048",
+             role = c("fnd")),
+      person(given = "NIEHS",
+             comment = "P01 HL115606",
+             role = c("fnd")))
 Description: Tools to create binary dosage from either vcf
     or gen files, merge binary dosage files, and read
     binary dosage files.

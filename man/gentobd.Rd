@@ -5,7 +5,7 @@
 \title{Convert a gen file to a binary dosage file}
 \usage{
 gentobd(genfiles, snpcolumns = 1L:5L, startcolumn = 6L,
-  impformat = 3L, chromosome = character(), header = FALSE,
+  impformat = 3L, chromosome = character(), header = c(FALSE, TRUE),
   gz = FALSE, sep = "\\t", bdfiles, format = 4L, subformat = 0L,
   snpidformat = 0L, bdoptions = character(0))
 }
@@ -39,9 +39,10 @@ P(g=2). Default value is 3L.}
 first value of the snpcolumns is equal to 0.
 Default value is character().}
 
-\item{header}{Indicator if the gen file has a header
-containing column names and family and subject IDs.
-Default value is FALSE.}
+\item{header}{Indicators if the gen and sample files
+have headers. If the gen file does not have a
+header. A sample file must be included.
+Default value is c(FALSE, TRUE).}
 
 \item{gz}{Indicator if file is compressed using gzip.
 Default value is FALSE.}

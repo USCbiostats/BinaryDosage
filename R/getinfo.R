@@ -351,9 +351,10 @@ getvcfinfo <- function(vcffiles,
 #' @param chromosome Chromosome value to use if the
 #' first value of the snpcolumns is equal to 0.
 #' Default value is character().
-#' @param header Indicator if the gen file has a header
-#' containing column names and family and subject IDs.
-#' Default value is FALSE.
+#' @param header Indicators if the gen and sample files
+#' have headers. If the gen file does not have a
+#' header. A sample file must be included.
+#' Default value is c(FALSE, TRUE).
 #' @param gz Indicator if file is compressed using gzip.
 #' Default value is FALSE.
 #' @param index Indicator if file should be indexed. This
@@ -390,11 +391,11 @@ getgeninfo <- function(genfiles,
                        startcolumn = 6L,
                        impformat = 3L,
                        chromosome = character(),
-                       header = FALSE,
+                       header = c(FALSE, TRUE),
                        gz = FALSE,
                        index = TRUE,
                        snpidformat = 0L,
-                       sep = '\t') {
+                       sep = "\t") {
   if (missing(genfiles) == TRUE)
     stop("No gen file specified")
   if (is.character(genfiles) == FALSE)
@@ -455,9 +456,11 @@ getgeninfo <- function(genfiles,
 
   if (is.logical(header) == FALSE)
     stop("header must be a logical value")
-  if (length(header) != 1)
-    stop("header must be a logical vector of length 1")
-  if (header == FALSE) {
+  if (length(header) !=  1 & length(header) != 2)
+    stop("header must be a logical vector of length 1 or 2")
+  if (length(header) == 1)
+    header = c(header, TRUE)
+  if (header[1] == FALSE) {
     if (length(samplefile) == 0)
       stop("File has no header and no sample file is provided")
   } else {
@@ -492,7 +495,7 @@ getgeninfo <- function(genfiles,
     stop("no value of sep provided")
 
 
-  if (header == TRUE) {
+  if (header[1] == TRUE) {
     if (gz == TRUE)
       filecon <- gzfile(genfile, "r")
     else
@@ -507,11 +510,16 @@ getgeninfo <- function(genfiles,
       stop("Odd number of values for family and subject ID")
     fid <- headervalues[seq(1,length(headervalues) - 1, 2)]
     iid <- headervalues[seq(2,length(headervalues), 2)]
-    samples <- data.frame(fid = fid, sid = iid, stringsAsFactors = FALSE)
+    samples <- data.frame(fid = fid,
+                          sid = iid,
+                          stringsAsFactors = FALSE)
   } else {
-    samples <- read.table(samplefile, header = TRUE, stringsAsFactors = FALSE)
+    samples <- read.table(samplefile,
+                          header = header[2],
+                          sep = sep,
+                          stringsAsFactors = FALSE)
     if (ncol(samples) == 1)
-      stop("Error reading from sample file only one column found")
+      samples[,2] <- samples[,1]
     samples <- samples[,1:2]
     samples[,1] <- as.character(samples[,1])
     samples[,2] <- as.character(samples[,2])
@@ -532,11 +540,12 @@ getgeninfo <- function(genfiles,
   coltypes[snpcolumns[c(2, 4, 5)]] <- "character"
   coltypes[snpcolumns[3]] <- "integer"
   headersize <- 0
-  if (header == TRUE)
+  if (header[1] == TRUE)
     headersize <- 1
   snps <- read.table(genfile,
                      skip = headersize,
                      colClasses = coltypes,
+                     sep = sep,
                      stringsAsFactors = FALSE)
   if (snpcolumns[1] == -1) {
     snps$chromosome <- chromosome
@@ -594,7 +603,7 @@ getgeninfo <- function(genfiles,
     indices <- numeric(nrow(snps))
     if (gz == FALSE) {
       x <- GetLineLocations(genfile)
-      if (header == TRUE)
+      if (header[1] == TRUE)
         headerlines <- 1
       else
         headerlines <- 0
