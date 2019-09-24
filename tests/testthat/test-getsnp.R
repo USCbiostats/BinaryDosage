@@ -32,6 +32,11 @@ test_that("getsnp", {
                "snp value out or range")
 
   expect_error(getsnp(bdinfo = bdinfo,
-                      snp = 1),
+                      snp = 1,
+                      FALSE),
                NA)
-  })
+  expect_error(getsnp(bdinfo = bdinfo,
+                      snp = "1:11000:T:C",
+                      TRUE),
+               NA)
+})

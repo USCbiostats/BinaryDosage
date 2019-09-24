@@ -55,6 +55,16 @@ test_that("vcfapply", {
                                func = func)),
                aaf1a,
                tolerance = 4e-5)
+
+  vcf1andfile <- system.file("extdata", "set1a_nd.vcf.gz", package = "BinaryDosage")
+  expect_error(vcfinfo <- getvcfinfo(vcf1andfile,
+                                     gz = TRUE,
+                                     index = FALSE),
+               NA)
+  expect_equal(unlist(vcfapply(vcfinfo = vcfinfo,
+                               func = getaaf)),
+               aaf1a,
+               tolerance = 4e-5)
 })
 
 test_that("genapply", {
@@ -86,4 +96,19 @@ test_that("genapply", {
                                func = func)),
                aaf1a,
                tolerance = 4e-5)
+
+  gen4afile <- system.file("extdata", "set4a.imp.gz", package = "BinaryDosage")
+  gen4asample <- system.file("extdata", "set4a.sample", package = "BinaryDosage")
+  expect_error(geninfo <- getgeninfo(genfiles = c(gen4afile, gen4asample),
+                                     snpcolumns = c(1L, 2L, 4L:6L),
+                                     startcolumn = 7L,
+                                     impformat = 2L,
+                                     gz = TRUE,
+                                     index = FALSE),
+               NA)
+  expect_equal(unlist(genapply(geninfo = geninfo,
+                               func = func)),
+               aaf1a,
+               tolerance = 4e-5)
+
 })

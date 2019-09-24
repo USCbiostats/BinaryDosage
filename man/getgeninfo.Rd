@@ -6,7 +6,8 @@
 \usage{
 getgeninfo(genfiles, snpcolumns = 1L:5L, startcolumn = 6L,
   impformat = 3L, chromosome = character(), header = c(FALSE, TRUE),
-  gz = FALSE, index = TRUE, snpidformat = 0L, sep = "\\t")
+  gz = FALSE, index = TRUE, snpidformat = 0L, sep = c("\\t",
+  "\\t"))
 }
 \arguments{
 \item{genfiles}{A vector of file names.
@@ -60,8 +61,9 @@ where CHR is the chromosome number, LOC is the
 location in bp, REF is the reference allele, andALT
 is the alternate allele. Default value is 0.}
 
-\item{sep}{Seperator used in the gen file. Default
-value is "\\t"}
+\item{sep}{Seperators used in the gen file and sample files,
+respectively. If only value is provided it is used for both
+files. Default value is c("\\t", "\\t")}
 }
 \value{
 List with information about the gen file.

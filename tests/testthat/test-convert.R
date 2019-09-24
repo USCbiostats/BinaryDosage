@@ -76,8 +76,19 @@ test_that("vcftobd", {
   vcf1afile = system.file("extdata", "set1a.vcf", package = "BinaryDosage")
   vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
   bdfiles <- tempfile()
-  expect_error(vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles), NA)
+  expect_error(vcftobd(vcffiles = c(vcf1afile, vcf1ainfo),
+                       bdfiles = bdfiles,
+                       bdoptions = c("aaf", "maf", "rsq")),
+               NA)
   expect_error(bdinfo <- getbdinfo(bdfiles = bdfiles), NA)
+
+  vcf2afile = system.file("extdata", "set2a.vcf", package = "BinaryDosage")
+  bdfiles2 <- tempfile()
+  expect_error(vcftobd(vcffiles = c(vcf2afile),
+                       bdfiles = bdfiles2),
+               NA)
+  expect_error(bdinfo <- getbdinfo(bdfiles = bdfiles2), NA)
+
 })
 
 test_that("gentobd", {
@@ -88,10 +99,20 @@ test_that("gentobd", {
 
   gen3afile <- system.file("extdata", "set3a.imp", package = "BinaryDosage")
   gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
-  bdfiles <- tempfile()
+  bdfiles3a <- tempfile()
   expect_error(gentobd(genfiles = c(gen3afile, gen3asample),
                        snpcolumns = c(0L, 2L:5L),
-                       bdfiles = bdfiles),
+                       bdfiles = bdfiles3a,
+                       bdoptions = c("aaf", "maf", "rsq")),
                NA)
-  expect_error(bdinfo <- getbdinfo(bdfiles = bdfiles), NA)
-})
+  expect_error(bdinfo <- getbdinfo(bdfiles3a), NA)
+
+  gen2afile <- system.file("extdata", "set2a.imp", package = "BinaryDosage")
+  gen2asample <- system.file("extdata", "set2a.sample", package = "BinaryDosage")
+  bdfiles2a <- tempfile()
+  expect_error(gentobd(genfiles = c(gen2afile, gen2asample),
+                       snpcolumns = c(1L, 3L, 2L, 4L, 5L),
+                       impformat = 1L,
+                       bdfiles = bdfiles2a),
+               NA)
+  expect_error(bdinfo <- getbdinfo(bdfiles2a), NA)})

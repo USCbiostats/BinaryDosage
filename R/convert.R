@@ -299,10 +299,10 @@ gentobd <- function(genfiles,
                         sep = sep)
 
   if (subformat == 0) {
-    if (anyNA(geninfo$additionalinfo$format) == 1)
-      subformat <- 1
+    if (geninfo$additionalinfo$format == 1L)
+      subformat <- 1L
     else
-      subformat <- 2
+      subformat <- 2L
   }
   WriteBinaryDosageHeader(format = format,
                           subformat = subformat,

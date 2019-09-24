@@ -11,8 +11,9 @@ std::vector<double> GetLineLocations(std::string &filename) {
 
   infile.open(filename.c_str());
   if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open file" << std::endl;
-    return indices;
+    Rcpp::stop("Unable to open file");
+//    Rcpp::Rcerr << "Unable to open file" << std::endl;
+//    return indices;
   }
 
   while(!infile.fail() && indices.size() < 100) {

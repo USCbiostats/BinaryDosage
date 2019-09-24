@@ -283,19 +283,6 @@ getvcfinfo <- function(vcffiles,
       indices <- x[(headerlines + 1):(length(x) - 1)]
       for (i in 1:length(datasize))
         datasize[i] <- x[headerlines + i + 1] - x[headerlines + i]
-    } else {
-      con2 <- gzfile(filename, "r")
-      currentpos <- seek(con2, 0)
-      for (i in 1:headerlines)
-        line <- readLines(con2, n = 1)
-      currentpos <- 0
-      for (i in 1:nrow(snps)) {
-        indices[i] <- seek(con2)
-        line <- readLines(con2, n = 1)
-        currentpos <- seek(con2)
-        datasize[i] <- currentpos - indices[i]
-      }
-      close(con2)
     }
   } else {
     datasize <- integer(0)
@@ -369,8 +356,9 @@ getvcfinfo <- function(vcffiles,
 #' where CHR is the chromosome number, LOC is the
 #' location in bp, REF is the reference allele, andALT
 #' is the alternate allele. Default value is 0.
-#' @param sep Seperator used in the gen file. Default
-#' value is "\\\t"
+#' @param sep Seperators used in the gen file and sample files,
+#' respectively. If only value is provided it is used for both
+#' files. Default value is c("\\\t", "\\\t")
 #'
 #' @return List with information about the gen file.
 #' This includes family and subject IDs along with
@@ -395,7 +383,7 @@ getgeninfo <- function(genfiles,
                        gz = FALSE,
                        index = TRUE,
                        snpidformat = 0L,
-                       sep = "\t") {
+                       sep = c("\t", "\t")) {
   if (missing(genfiles) == TRUE)
     stop("No gen file specified")
   if (is.character(genfiles) == FALSE)
@@ -489,10 +477,12 @@ getgeninfo <- function(genfiles,
 
   if (is.character(sep) == FALSE)
     stop("sep must be a character value")
-  if (length(sep) != 1)
-    stop("sep must be a character vector of length 1")
-  if (sep == "")
-    stop("no value of sep provided")
+  if (length(sep) != 1 & length(sep) != 2)
+    stop("sep must be a character vector of length 1 or 2")
+  if (length(sep) == 1)
+    sep = c(sep, sep)
+  if (sep[1] == "" | sep[2] == "")
+    stop("sep values cannot be empty strings")
 
 
   if (header[1] == TRUE) {
@@ -502,7 +492,7 @@ getgeninfo <- function(genfiles,
       filecon <- file(genfile, "r")
     headerline <- readLines(filecon, 1)
     close(filecon)
-    headervalues <- unlist(strsplit(headerline, sep))
+    headervalues <- unlist(strsplit(headerline, sep[1]))
     if (length(headervalues) < startcolumn)
       stop("Number of values in header less than startcolumn")
     headervalues <- headervalues[startcolumn:length(headervalues)]
@@ -516,7 +506,7 @@ getgeninfo <- function(genfiles,
   } else {
     samples <- read.table(samplefile,
                           header = header[2],
-                          sep = sep,
+                          sep = sep[2],
                           stringsAsFactors = FALSE)
     if (ncol(samples) == 1)
       samples[,2] <- samples[,1]
@@ -545,7 +535,7 @@ getgeninfo <- function(genfiles,
   snps <- read.table(genfile,
                      skip = headersize,
                      colClasses = coltypes,
-                     sep = sep,
+                     sep = sep[1],
                      stringsAsFactors = FALSE)
   if (snpcolumns[1] == -1) {
     snps$chromosome <- chromosome
@@ -610,19 +600,6 @@ getgeninfo <- function(genfiles,
       indices <- x[(headerlines + 1):(length(x) - 1)]
       for (i in 1:length(datasize))
         datasize[i] <- x[headerlines + i + 1] - x[headerlines + i]
-    } else {
-      con2 <- gzfile(genfile, "r")
-      currentpos <- seek(con2, 0)
-      if (header == TRUE)
-        line <- readLines(con2, n = 1)
-      currentpos <- 0
-      for (i in 1:nrow(snps)) {
-        indices[i] <- seek(con2)
-        line <- readLines(con2, n = 1)
-        currentpos <- seek(con2)
-        datasize[i] <- currentpos - indices[i]
-      }
-      close(con2)
     }
   }
 
@@ -630,7 +607,7 @@ getgeninfo <- function(genfiles,
                          headersize = headersize,
                          format = impformat,
                          startcolumn = startcolumn,
-                         sep = sep)
+                         sep = sep[1])
   class(additionalinfo) <- "gen-info"
 
   retval <- list(filename = normalizePath(genfile, winslash = '/'),

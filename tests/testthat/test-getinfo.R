@@ -13,6 +13,10 @@ test_that("getbdinfo", {
                "bdfiles contains empty strings")
   expect_error(getbdinfo(bdfiles = c(vcf1abdfile, "file2", "file3")),
                "Binary dosage file format 4 does not use family and map files")
+
+  vcf1abdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+  expect_error(getbdinfo(bdfiles = c(vcf1abdfile, "", "")),
+               NA)
 })
 
 test_that("getvcfinfo", {
@@ -56,6 +60,12 @@ test_that("getvcfinfo", {
   expect_error(getvcfinfo(vcffiles = "file1",
                           snpidformat = 3),
                "snpidformat must have a value of 0, 1, or 2")
+
+  vcf5afile <- system.file("extdata", "set5a.vcf.gz", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = vcf5afile,
+                          gz = TRUE,
+                          index = FALSE),
+               NA)
 })
 
 test_that("getgeninfo", {
@@ -163,10 +173,10 @@ test_that("getgeninfo", {
                           sep = 1L),
                "sep must be a character value")
   expect_error(getgeninfo(genfiles = c("file1", "file2"),
-                          sep = c("a", "b")),
-               "sep must be a character vector of length 1")
+                          sep = c("a", "b", "c")),
+               "sep must be a character vector of length 1 or 2")
   expect_error(getgeninfo(genfiles = c("file1", "file2"),
                           sep = ""),
-               "no value of sep provided")
+               "sep values cannot be empty strings")
 
 })
