@@ -61,6 +61,16 @@ test_that("getvcfinfo", {
                           snpidformat = 3),
                "snpidformat must have a value of 0, 1, or 2")
 
+  vcfbad1file <- system.file("extdata", "bad1.vcf", package = "BinaryDosage")
+  expect_error(vcfinfo <- getvcfinfo(vcffiles = vcfbad1file),
+               "Error processing header")
+  vcfbad2file <- system.file("extdata", "bad2.vcf", package = "BinaryDosage")
+  expect_error(vcfinfo <- getvcfinfo(vcffiles = vcfbad2file),
+               "Error processing header")
+  vcfbad3file <- system.file("extdata", "bad3.vcf", package = "BinaryDosage")
+  expect_error(vcfinfo <- getvcfinfo(vcffiles = vcfbad3file),
+               "Column names incorrect")
+
   vcf5afile <- system.file("extdata", "set5a.vcf.gz", package = "BinaryDosage")
   expect_error(getvcfinfo(vcffiles = vcf5afile,
                           gz = TRUE,

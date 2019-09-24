@@ -160,8 +160,6 @@ getvcfinfo <- function(vcffiles,
     con <- gzfile(filename, "r")
   }
 
-  if (isOpen(con, "r") == FALSE)
-    stop("Unable to open VCF file")
   fqfilename <- normalizePath(filename, winslash = '/')
 
   headerlines <- 1L
@@ -171,7 +169,7 @@ getvcfinfo <- function(vcffiles,
     line <- readLines(con, n = 1)
     if (substr(line, 1, 1) != '#') {
       close(con)
-      stop("Error process header")
+      stop("Error processing header")
     }
     if (substr(line, 2, 2) != '#') {
       x <- unlist(strsplit(line, "\t"))
