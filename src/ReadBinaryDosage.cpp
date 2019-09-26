@@ -483,9 +483,9 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
 
   infile.seekg(loc);
   infile.read((char *)&us[0], readsize);
-  UShortToDouble(us, p1, base - 1, numsub);
+  UShortToDouble(us, p1, numsub, base - 1);
   infile.read((char *)&us[0], readsize);
-  UShortToDouble(us, p2, base - 1, numsub);
+  UShortToDouble(us, p2, numsub, base - 1);
   dosage = p1 + p2 + p2;
   p0 = 1. - p1 - p2;
   for (int i = 0; i < numsub; ++i) {
