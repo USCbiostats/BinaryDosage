@@ -99,20 +99,72 @@ test_that("gentobd", {
 
   gen3afile <- system.file("extdata", "set3a.imp", package = "BinaryDosage")
   gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
-  bdfiles3a <- tempfile()
+  bdfile3a <- tempfile()
+  bdfam3a <- tempfile()
+  bdmap3a <- tempfile()
+  expect_error(getgeninfo(genfiles = c(gen3afile, gen3asample),
+                          snpcolumns = c(0L, 2L:5L),
+                          chromosome = "",
+                          index = TRUE),
+               NA)
   expect_error(gentobd(genfiles = c(gen3afile, gen3asample),
                        snpcolumns = c(0L, 2L:5L),
-                       bdfiles = bdfiles3a,
-                       bdoptions = c("aaf", "maf", "rsq")),
+                       bdfiles = c(bdfile3a, bdfam3a, bdmap3a),
+                       chromosome = "",
+                       format = 3),
                NA)
-  expect_error(bdinfo <- getbdinfo(bdfiles3a), NA)
+  expect_error(getbdinfo(bdfiles = c(bdfile3a, bdfam3a, bdmap3a)), NA)
 
   gen2afile <- system.file("extdata", "set2a.imp", package = "BinaryDosage")
   gen2asample <- system.file("extdata", "set2a.sample", package = "BinaryDosage")
-  bdfiles2a <- tempfile()
+  bdfile2a <- tempfile()
   expect_error(gentobd(genfiles = c(gen2afile, gen2asample),
                        snpcolumns = c(1L, 3L, 2L, 4L, 5L),
                        impformat = 1L,
-                       bdfiles = bdfiles2a),
+                       bdfiles = bdfile2a,
+                       bdoptions = c("aaf", "maf", "rsq")),
                NA)
-  expect_error(bdinfo <- getbdinfo(bdfiles2a), NA)})
+  expect_error(getbdinfo(bdfiles = bdfile2a), NA)
+
+  gen4afile <- system.file("extdata", "set4a.imp.gz", package = "BinaryDosage")
+  gen4asample <- system.file("extdata", "set4a.sample", package = "BinaryDosage")
+  bdfile4a <- tempfile()
+  expect_error(gentobd(genfiles = c(gen4afile, gen4asample),
+                       snpcolumns = c(1L:2L, 4L:6L),
+                       startcolumn = 7L,
+                       impformat = 2L,
+                       gz = TRUE,
+                       bdfile = bdfile4a),
+               NA)
+  expect_error(getbdinfo(bdfiles = bdfile4a), NA)
+})
+
+test_that("writecpp", {
+  expect_error(WriteBinaryDosageHeader4A(filename = "",
+                                         headerEntries = 1L,
+                                         numSubjects = 1L,
+                                         numSNPs = 1L,
+                                         groups = 1L,
+                                         fid = "",
+                                         sid = "",
+                                         snpid = "",
+                                         chromosome = "",
+                                         location = 1L,
+                                         reference = "",
+                                         alternate = "",
+                                         aaf = 1,
+                                         maf = 1,
+                                         avgCall = 1,
+                                         rsq = 1,
+                                         offsets = 1L,
+                                         numIndices = 1L),
+               "Unable to open file for read/write")
+  expect_error(WriteBinaryDosageIndicesC(filename = "",
+                                         headersize = 0L,
+                                         datasize = 1L),
+               "Unable to open file for read/write")
+  expect_error(updatesnpinfo(filename = "",
+                             offset = 0L,
+                             value = 1),
+               "Unable to open file for read/write")
+})

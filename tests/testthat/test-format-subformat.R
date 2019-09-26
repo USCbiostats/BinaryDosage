@@ -12,6 +12,8 @@ test_that("subformat2", {
                        format = 1L,
                        subformat = 2L),
                NA)
+  expect_error(getbdinfo(bdfile12),
+               "Binary dosage file format 1, 2, and 3 require family and map files")
   expect_error(bdinfo12 <- getbdinfo(c(bdfile12, famfile12, mapfile12)),
                NA)
   expect_equal(unlist(bdapply(bdinfo12, getaaf)),
@@ -76,7 +78,8 @@ test_that("subformat2", {
   expect_error(vcftobd(vcffiles = vcf1afile,
                        bdfiles = bdfile44,
                        format = 4L,
-                       subformat = 4L),
+                       subformat = 4L,
+                       bdoptions = c("aaf", "maf", "rsq")),
                NA)
   expect_error(bdinfo44 <- getbdinfo(bdfile44),
                NA)

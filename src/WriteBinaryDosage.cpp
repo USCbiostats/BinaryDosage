@@ -240,10 +240,8 @@ int WriteBDIndices(std::fstream &outfile, int numIndices,
 // If file already exists, data is lost
 int OpenBDFileNewWrite(std::ofstream &outfile, std::string &filename) {
   outfile.open(filename.c_str(), NEWBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to create output file" << std::endl;
-    return 1;
-  }
+  if (!outfile.good())
+    Rcpp::stop("Unable to create output file");
   return 0;
 }
 
@@ -262,10 +260,8 @@ int OpenBDFileAppend(std::ofstream &outfile, std::string &filename) {
 // Open a file for reading and writing
 int OpenBDFileReadWrite(std::fstream &outfile, std::string &filename) {
   outfile.open(filename.c_str(), READWRITEBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open file for read/write" << std::endl;
+  if (!outfile.good())
     return 1;
-  }
   return 0;
 }
 
@@ -367,7 +363,7 @@ int WriteBinaryDosageHeader4A(std::string &filename,
   std::fstream outfile;
 
   if (OpenBDFileReadWrite(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for read/write");
   outfile.seekp(8);
 
   // Zero out the rest of the data. It will be filled in later
@@ -634,7 +630,7 @@ int WriteBinaryDosageIndicesC(std::string &filename, int headersize, Rcpp::Integ
   std::fstream outfile;
 
   if (OpenBDFileReadWrite(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for read/write");
 
   indexloc = headersize - datasize.size() * sizeof(int);
   outfile.seekp(indexloc);
@@ -648,7 +644,7 @@ int updatesnpinfo(std::string &filename, int offset, Rcpp::NumericVector &value)
   std::fstream outfile;
 
   if (OpenBDFileReadWrite(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for read/write");
 
   outfile.seekp(offset);
   outfile.write((char *)&value[0], value.size() * sizeof(double));

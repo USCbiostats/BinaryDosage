@@ -37,16 +37,6 @@ SIDandFID4 <- function(genefileinfo) {
   return (list(sid = sid, fid = fid))
 }
 
-# Find a character vector in the SNP info data frame
-# Returns the vector if found, otherwise it returns
-# a character vector of length 1 with "" as its value.
-FindSNPInfoString <- function(tofind, snpinfo) {
-  infocol <- match(tofind, colnames(snpinfo))
-  if (is.na(infocol) == FALSE)
-    return (snpinfo[,infocol])
-  return ("")
-}
-
 # Find a numeric vector in the SNP info data frame or the
 # bdoptions. If option is specified, a vector of zeros is
 # return. If it is not found in the options, it
@@ -65,18 +55,15 @@ FindSNPInfoNumeric <- function(tofind, snpinfo, numsnps, bdoptions) {
 FindBDSNPInfo <- function(genefileinfo, bdoptions) {
   snpcolnames <- colnames(genefileinfo$snps)
   if (genefileinfo$snpidformat == 0)
-    snpid <- FindSNPInfoString("snpid", genefileinfo$snps)
+    snpid <- genefileinfo$snps$snpid
   else
     snpid <- ""
-  chr <- FindSNPInfoString("chromosome", genefileinfo$snps)
+  chr <- genefileinfo$snps$chromosome
   if (genefileinfo$onechr == TRUE)
     chr <- chr[1]
-  if (is.na(match("location", colnames(genefileinfo$snps))) == TRUE)
-    loc = rep(0L, nrow(genefileinfo$snps))
-  else
-    loc <- genefileinfo$snps$location
-  ref <- FindSNPInfoString("reference", genefileinfo$snps)
-  alt <- FindSNPInfoString("alternate", genefileinfo$snps)
+  loc <- genefileinfo$snps$location
+  ref <- genefileinfo$snps$reference
+  alt <- genefileinfo$snps$alternate
 
   aaf <- FindSNPInfoNumeric("aaf", genefileinfo$snpinfo, nrow(genefileinfo$snps), bdoptions)
   maf <- FindSNPInfoNumeric("maf", genefileinfo$snpinfo, nrow(genefileinfo$snps), bdoptions)
@@ -390,8 +377,6 @@ getrsq <- function(dosage, p0, p1, p2) {
 }
 
 updateaaf <- function (bdinfo) {
-  if (is.na(match("aaf", names(bdinfo$snpinfo))) == TRUE)
-    stop("Binary dosage file does not have aaf allocated")
   if (bdinfo$additionalinfo$subformat < 3)
     headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
   else
@@ -403,8 +388,6 @@ updateaaf <- function (bdinfo) {
 }
 
 updatemaf <- function (bdinfo) {
-  if (is.na(match("maf", names(bdinfo$snpinfo))) == TRUE)
-    stop("Binary dosage file does not have maf allocated")
   if (bdinfo$additionalinfo$subformat < 3)
     headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
   else
@@ -416,8 +399,6 @@ updatemaf <- function (bdinfo) {
 }
 
 updatersq <- function (bdinfo) {
-  if (is.na(match("rsq", names(bdinfo$snpinfo))) == TRUE)
-    stop("Binary dosage file does not have rsq allocated")
   if (bdinfo$additionalinfo$subformat < 3)
     headerinfo <- ReadBinaryDosageHeader4A(bdinfo$filename)
   else
