@@ -140,6 +140,10 @@ test_that("gentobd", {
 })
 
 test_that("writecpp", {
+  expect_error(WriteBinaryDosageBaseHeader(filename = "",
+                                           format = 1L,
+                                           subformat = 2L),
+               "Unable to create output file")
   expect_error(WriteBinaryDosageHeader4A(filename = "",
                                          headerEntries = 1L,
                                          numSubjects = 1L,
@@ -167,4 +171,49 @@ test_that("writecpp", {
                              offset = 0L,
                              value = 1),
                "Unable to open file for read/write")
+  expect_error(WriteBinaryDosageHeader3A(filename = "",
+                                         numSubjects = 1L),
+               "Unable to open file for appending")
+  expect_error(WriteBinaryDosageHeader3B(filename = "",
+                                         md5samples = "",
+                                         md5SNPs = "",
+                                         numIndices = 1L),
+               "Unable to open file for appending")
+  expect_error(WriteBinaryDosageDataC(filename = "",
+                                      dosage = 1,
+                                      us = 1L,
+                                      base = 1L),
+               "Unable to open file for appending")
+  expect_error(WriteBinaryP1P2Data(filename = "",
+                                   p1 = 1,
+                                   p2 = 1,
+                                   us = 1L,
+                                   base = 1L),
+               "Unable to open file for appending")
+  expect_error(WriteBinaryCompressed(filename = "",
+                                     dosage = 1,
+                                     p0 = 0,
+                                     p1 = 1,
+                                     p2 = 0,
+                                     snpnumber = -1L,
+                                     datasize = 1L,
+                                     us = 1L),
+               "Unable to open file for appending")
+  bdfile <- tempfile()
+  dosage <- c(NA, 1)
+  p0 <- c(NA, NA)
+  p1 <- c(NA, NA)
+  p2 <- c(NA, NA)
+  snpnumber = -1L
+  datasize = 0L
+  us <- integer(2)
+  expect_error(WriteBinaryCompressed(filename = bdfile,
+                                     dosage = dosage,
+                                     p0 = p0,
+                                     p1 = p1,
+                                     p2 = p2,
+                                     snpnumber = snpnumber,
+                                     datasize = datasize,
+                                     us = us),
+               NA)
 })

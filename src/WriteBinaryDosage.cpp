@@ -241,7 +241,7 @@ int WriteBDIndices(std::fstream &outfile, int numIndices,
 int OpenBDFileNewWrite(std::ofstream &outfile, std::string &filename) {
   outfile.open(filename.c_str(), NEWBINARY);
   if (!outfile.good())
-    Rcpp::stop("Unable to create output file");
+    return 1;
   return 0;
 }
 
@@ -250,10 +250,8 @@ int OpenBDFileNewWrite(std::ofstream &outfile, std::string &filename) {
 // set to the end of the file.
 int OpenBDFileAppend(std::ofstream &outfile, std::string &filename) {
   outfile.open(filename.c_str(), APPENDBINARY);
-  if (!outfile.good()) {
-    Rcpp::Rcerr << "Unable to open file for appending" << std::endl;
+  if (!outfile.good())
     return 1;
-  }
   return 0;
 }
 
@@ -282,7 +280,7 @@ int WriteBinaryDosageBaseHeader(std::string &filename, int format, int subformat
   std::ofstream outfile;
 
   if (OpenBDFileNewWrite(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to create output file");
 
   outfile.write((char *)&MAGICWORD, sizeof(int));
   outfile.write((char *)&FORMAT[format][subformat], sizeof(int));
@@ -302,7 +300,7 @@ int WriteBinaryDosageHeader3A(std::string &filename,
 
   // Open the file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for appending");
 
   outfile.write((char *)&numSubjects, sizeof(int));
 
@@ -325,7 +323,7 @@ int WriteBinaryDosageHeader3B(std::string &filename,
 
   // Open the file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for appending");
 
   outfile.write(md5samples.c_str(), 32);
   outfile.write(md5SNPs.c_str(), 32);
@@ -516,7 +514,7 @@ int WriteBinaryDosageDataC(std::string &filename,
 
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for appending");
 
   DoubleToUShort(dosage, us, base - 1);
   outfile.write((char *)&us[0], dosage.size() * sizeof(short));
@@ -542,7 +540,7 @@ int WriteBinaryP1P2Data(std::string &filename,
 
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for appending");
 
   DoubleToUShort(p1, us, base - 1);
   outfile.write((char *)&us[0], p1.size() * sizeof(short));
@@ -580,7 +578,7 @@ int WriteBinaryCompressed(std::string &filename,
 
   // Opens file for appending
   if (OpenBDFileAppend(outfile, filename) != 0)
-    return 1;
+    Rcpp::stop("Unable to open file for appending");
 
   DoubleToUShort(dosage, us, 2);
 
