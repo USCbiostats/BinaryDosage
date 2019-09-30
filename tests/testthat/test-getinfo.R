@@ -76,6 +76,32 @@ test_that("getvcfinfo", {
                           gz = TRUE,
                           index = FALSE),
                NA)
+
+  vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+  imp2asample <- system.file("extdata", "set2a.sample", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = c(vcf1afile, imp2asample)),
+               "Error reading information file - Wrong number of columns")
+  bad1info <- system.file("extdata", "bad1.info", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = c(vcf1afile, bad1info)),
+               "Error reading information file - Wrong column names")
+  vcf1bainfo <- system.file("extdata", "set1b_asnp.info", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = c(vcf1afile, vcf1bainfo)),
+               "Information file does not line up with VCF file - different number of SNPs")
+  bad2info <- system.file("extdata", "bad2.info", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = c(vcf1afile, bad2info)),
+               "Infromation file does not line up with VCF file - different SNPs")
+  vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = c(vcf1afile, vcf1ainfo),
+                          snpidformat = 1L),
+               "snpidformat 1 specified but VCF file uses snpidformat 2")
+  vcf1arsfile <- system.file("extdata", "set1ars.vcf", package = "BinaryDosage")
+  expect_error(getvcfinfo(vcffiles = vcf1arsfile,
+                          snpidformat = 1L),
+               NA)
+  expect_error(getvcfinfo(vcffiles = vcf1arsfile,
+                          snpidformat = 2L),
+               NA)
+
 })
 
 test_that("getgeninfo", {
@@ -189,4 +215,48 @@ test_that("getgeninfo", {
                           sep = ""),
                "sep values cannot be empty strings")
 
+  gen5afile <- system.file("extdata", "set5a.imp.gz", package = "BinaryDosage")
+  expect_error(getgeninfo(genfiles = gen5afile,
+                          snpcolumns = c(1L,3L,2L,4L,5L),
+                          header = TRUE,
+                          gz = TRUE,
+                          index = FALSE,
+                          snpidformat = 1L),
+               "snpidformat 1 specified but GEN file uses snpidformat 2")
+  gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
+  expect_error(getgeninfo(genfiles = gen3asample,
+                          snpcolumns = c(1L,3L,2L,4L,5L),
+                          header = TRUE),
+               "Number of values in header less than startcolumn")
+  genbad1file <- system.file("extdata", "bad1.imp", package = "BinaryDosage")
+  expect_error(getgeninfo(genfiles = genbad1file,
+                          snpcolumns = c(1L,3L,2L,4L,5L),
+                          header = TRUE),
+               "Odd number of values for family and subject ID")
+  gen3afile <- system.file("extdata", "set3a.imp", package = "BinaryDosage")
+  gen3asample1 <- system.file("extdata", "set3a.sample1", package = "BinaryDosage")
+  expect_error(getgeninfo(genfiles = c(gen3afile, gen3asample1),
+                          snpcolumns = c(-1L, 2L:5L),
+                          chromosome = "X",
+                          snpidformat = 3L),
+               NA)
+
+  gen4afile <- system.file("extdata", "set4a.imp.gz", package = "BinaryDosage")
+  gen4asample <- system.file("extdata", "set4a.sample", package = "BinaryDosage")
+  expect_error(getgeninfo(genfiles = c(gen4afile, gen4asample),
+                          snpcolumns = c(1L,2L,4L:6L),
+                          startcolumn = 7L,
+                          impformat = 2L,
+                          gz = TRUE,
+                          index = FALSE,
+                          snpidformat = 1L),
+               NA)
+  expect_error(getgeninfo(genfiles = c(gen4afile, gen4asample),
+                          snpcolumns = c(1L,2L,4L:6L),
+                          startcolumn = 7L,
+                          impformat = 2L,
+                          gz = TRUE,
+                          index = FALSE,
+                          snpidformat = 2L),
+               NA)
 })

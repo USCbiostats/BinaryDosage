@@ -67,11 +67,11 @@ summarizevcfadditionalinfo <- function(x) {
 readminimacinfofile <- function(filename) {
   addinfo <- read.table(filename, header = TRUE, stringsAsFactors = FALSE)
   if (ncol(addinfo) != 13)
-    stop("File dose not appear to be a minimac information file")
-  if (all(colnames(addinfo) != c("SNP", "REF.0.", "ALT.1.", "ALT_Frq", "MAF",
+    stop("Error reading information file - Wrong number of columns")
+  if (all(colnames(addinfo) == c("SNP", "REF.0.", "ALT.1.", "ALT_Frq", "MAF",
                                  "AvgCall", "Rsq", "Genotyped", "LooRsq",
-                                 "EmpR", "EmpRsq", "Dose0", "Dose1")))
-    stop("File dose not appear to be a minimac information file")
+                                 "EmpR", "EmpRsq", "Dose0", "Dose1")) == FALSE)
+    stop("Error reading information file - Wrong column names")
   return(addinfo)
 }
 
@@ -235,15 +235,19 @@ getvcfinfo <- function(vcffiles,
     snpinfo <- list()
   } else {
     minimacinfo <- readminimacinfofile(infofile)
-    if (all(minimacinfo$SNP == snps$snpid) == TRUE &
-        all(minimacinfo$REF.0. == snps$reference) == TRUE &
-        all(minimacinfo$ALT.1. == snps$alternate) == TRUE) {
-      snpinfo <- list(aaf = as.matrix(minimacinfo$ALT_Frq),
-                      maf = as.matrix(minimacinfo$MAF),
-                      avgcall = as.matrix(minimacinfo$AvgCall),
-                      rsq = as.matrix(minimacinfo$Rsq))
+    if (nrow(minimacinfo) == nrow(snps)) {
+      if (all(minimacinfo$SNP == snps$snpid) == TRUE &
+          all(minimacinfo$REF.0. == snps$reference) == TRUE &
+          all(minimacinfo$ALT.1. == snps$alternate) == TRUE) {
+        snpinfo <- list(aaf = as.matrix(minimacinfo$ALT_Frq),
+                        maf = as.matrix(minimacinfo$MAF),
+                        avgcall = as.matrix(minimacinfo$AvgCall),
+                        rsq = as.matrix(minimacinfo$Rsq))
+      } else {
+        stop("Infromation file does not line up with VCF file - different SNPs")
+      }
     } else {
-      stop("Imputation infromation file does not line up with VCF file")
+      stop("Information file does not line up with VCF file - different number of SNPs")
     }
   }
 
@@ -573,6 +577,11 @@ getgeninfo <- function(genfiles,
       }
     }
   } else if (snpidformat == 1) {
+    chrlocrefaltid <- unlist(paste(snps$chromosome, snps$location,
+                                   snps$reference, snps$alternate, sep = ':'))
+    if (all(chrlocrefaltid == snps$snpid)) {
+      stop("snpidformat 1 specified but GEN file uses snpidformat 2")
+    }
     snps$snpid <- unlist(paste(snps$chromosome, snps$location, sep = ':'))
   } else if (snpidformat == 2) {
     snps$snpid <- unlist(paste(snps$chromosome, snps$location,
