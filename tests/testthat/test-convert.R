@@ -200,13 +200,13 @@ test_that("writecpp", {
                                      us = 1L),
                "Unable to open file for appending")
   bdfile <- tempfile()
-  dosage <- c(NA, 1)
-  p0 <- c(NA, NA)
-  p1 <- c(NA, NA)
-  p2 <- c(NA, NA)
+  dosage <- as.numeric(c(NA, 1))
+  p0 <- as.numeric(c(NA, NA))
+  p1 <- as.numeric(c(NA, NA))
+  p2 <- as.numeric(c(NA, NA))
   snpnumber = -1L
   datasize = 0L
-  us <- integer(2)
+  us <- integer(4)
   expect_error(WriteBinaryCompressed(filename = bdfile,
                                      dosage = dosage,
                                      p0 = p0,
