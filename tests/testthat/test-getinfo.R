@@ -17,6 +17,15 @@ test_that("getbdinfo", {
   vcf1abdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
   expect_error(getbdinfo(bdfiles = c(vcf1abdfile, "", "")),
                NA)
+  bdtest1 <- system.file("extdata", "test1.bdose", package = "BinaryDosage")
+  expect_error(getbdinfo(bdtest1),
+               NA)
+  bdtest2 <- system.file("extdata", "test2.bdose", package = "BinaryDosage")
+  expect_error(getbdinfo(bdtest2),
+               NA)
+  bdtest3 <- system.file("extdata", "test3.bdose", package = "BinaryDosage")
+  expect_error(getbdinfo(bdtest3),
+               NA)
 })
 
 test_that("getvcfinfo", {

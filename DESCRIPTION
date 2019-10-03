@@ -7,17 +7,17 @@ Authors@R:
              role = c("aut", "cre"),
              email = "jmorr@usc.edu"),
       person(given = "NIEHS",
-             comment = "P01 CA196559",
-             role = c("fnd")),
+             role = "fnd",
+             comment = "P01 CA196559"),
       person(given = "NIEHS",
-             comment = "R01 CA201407",
-             role = c("fnd")),
+             role = "fnd",
+             comment = "R01 CA201407"),
       person(given = "NIEHS",
-             comment = "P30 ES007048",
-             role = c("fnd")),
+             role = "fnd",
+             comment = "P30 ES007048"),
       person(given = "NIEHS",
-             comment = "P01 HL115606",
-             role = c("fnd")))
+             role = "fnd",
+             comment = "P01 HL115606"))
 Description: Tools to create binary dosage from either vcf
     or gen files, merge binary dosage files, and read
     binary dosage files.

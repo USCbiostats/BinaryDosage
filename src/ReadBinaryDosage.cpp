@@ -63,6 +63,7 @@ Rcpp::List ReadBinaryDosageBaseHeader(std::string &filename) {
   }
 
   infile.close();
+
   return Rcpp::List::create(Rcpp::Named("format") = format,
                             Rcpp::Named("subformat") = subformat);
 }
