@@ -37,16 +37,14 @@ Rcpp::List ReadBinaryDosageBaseHeader(std::string &filename) {
   // Open the file - if file already exists, truncates to size 0.
   // Only opens for output
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
-  }
+  if (!infile.good())
+    return Rcpp::List::create(Rcpp::Named("error") = "Unable to open binary dosage file");
 
   infile.read((char *)&magicWord, sizeof(int));
   infile.read((char *)&formatInt, sizeof(int));
   if (magicWord != MAGICWORD) {
-    Rcpp::Rcerr << "File does not appear to be a binary dosage file" << std::endl;
-    return retVal;
+    infile.close();
+    return Rcpp::List::create(Rcpp::Named("error") = "File does not appear to be a binary dosage file");
   }
 
   format = 0;
@@ -63,6 +61,8 @@ Rcpp::List ReadBinaryDosageBaseHeader(std::string &filename) {
   }
 
   infile.close();
+  if (format == 0)
+    return Rcpp::List::create(Rcpp::Named("error") = "Unknown binary dosage file fromat");
 
   return Rcpp::List::create(Rcpp::Named("format") = format,
                             Rcpp::Named("subformat") = subformat);

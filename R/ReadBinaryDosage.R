@@ -20,6 +20,8 @@ ReadBinaryDosageHeader <- function(filename) {
                          f3 <- c(ReadBinaryDosageHeader31, ReadBinaryDosageHeader32, ReadBinaryDosageHeader33, ReadBinaryDosageHeader34),
                          f4 <- c(ReadBinaryDosageHeader41, ReadBinaryDosageHeader42, ReadBinaryDosageHeader43, ReadBinaryDosageHeader44))
   bdformat <- ReadBinaryDosageBaseHeader(filename[1])
+  if (is.na(match("error", names(bdformat))) == FALSE)
+    stop(bdformat$error)
   if (bdformat$format == 4) {
     if (length(filename) != 1)
       stop("Binary dosage file format 4 does not use family and map files")
