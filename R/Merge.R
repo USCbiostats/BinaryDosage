@@ -301,7 +301,6 @@ mergesnpinfo <- function (mergedinfo,
         setgroups <- geneticinfo[[i]]$additionalinfo$numgroups
       for (j in 1:numsnpinfo) {
         if (is.na(match(names(snpinfo)[j], names(geneticinfo[[i]]$snpinfo))) == FALSE) {
-          print(snpinfo[[j]])
           snpinfo[[j]][snpsbtom[[i]], currentgroup:(currentgroup + setgroups - 1)] <-
             geneticinfo[[i]]$snpinfo[[names(snpinfo)[j]]][snpsmtob[[i]],]
         }

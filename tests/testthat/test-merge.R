@@ -124,9 +124,57 @@ test_that("merge", {
   bdvcf1bfile <- system.file("extdata", "vcf1b.bdose", package = "BinaryDosage")
   mergefiles <- tempfile()
 
-  expect_error(BinaryDosage:::bdmerge(mergefiles = mergefiles,
-                                      bdfiles = c(bdvcf1afile, bdvcf1bfile),
-                                      bdoptions = "maf"),
+  expect_error(bdmerge(mergefiles = mergefiles,
+                       bdfiles = c(bdvcf1afile, bdvcf1bfile),
+                       bdoptions = c("aaf", "maf", "rsq")),
                NA)
   expect_error(bdinfo <- getbdinfo(mergefiles), NA)
+
+  vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+  vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
+  vcf1bfile <- system.file("extdata", "set1b.vcf", package = "BinaryDosage")
+  vcf1binfo <- system.file("extdata", "set1b.info", package = "BinaryDosage")
+  bdfile1a <- tempfile()
+  bdfile1b <- tempfile()
+  vcftobd(vcffiles = c(vcf1afile, vcf1ainfo),
+          bdfiles = bdfile1a)
+  vcftobd(vcffiles = c(vcf1bfile, vcf1binfo),
+          bdfiles = bdfile1b)
+
+  bdinfo1a <- getbdinfo(bdfile1a)
+  bdinfo1b <- getbdinfo(bdfile1b)
+
+  mergefiles1g <- tempfile()
+  expect_error(bdmerge(mergefiles = mergefiles1g,
+                       bdfiles = c(bdfile1a, bdfile1b),
+                       onegroup = FALSE),
+               NA)
+  expect_error(getbdinfo(mergefiles1g), NA)
+
+  vcf2afile <- system.file("extdata", "set2a.vcf", package = "BinaryDosage")
+  vcf2bfile <- system.file("extdata", "set2b.vcf", package = "BinaryDosage")
+
+  bdfile2a <- tempfile()
+  bdfam2a <- tempfile()
+  bdmap2a <- tempfile()
+  bdfile2b <- tempfile()
+  bdfam2b <- tempfile()
+  bdmap2b <- tempfile()
+  vcftobd(vcffiles = vcf2afile,
+          bdfiles = c(bdfile2a, bdfam2a, bdmap2a),
+          format = 3L)
+  vcftobd(vcffiles = vcf2bfile,
+          bdfiles = c(bdfile2b, bdfam2b, bdmap2b),
+          format = 3L)
+
+  bdinfo2a <- getbdinfo(c(bdfile2a, bdfam2a, bdmap2a))
+  bdinfo2b <- getbdinfo(c(bdfile2b, bdfam2b, bdmap2b))
+
+  mergefiles2g <- tempfile()
+  expect_error(bdmerge(mergefiles = mergefiles2g,
+                       bdfiles = c(bdfile2a, bdfile2b),
+                       famfiles = c(bdfam2a, bdfam2b),
+                       mapfiles = c(bdmap2a, bdmap2b)),
+               NA)
+  expect_error(getbdinfo(mergefiles2g), NA)
 })
