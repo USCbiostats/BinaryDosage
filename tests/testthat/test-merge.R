@@ -177,4 +177,40 @@ test_that("merge", {
                        mapfiles = c(bdmap2a, bdmap2b)),
                NA)
   expect_error(getbdinfo(mergefiles2g), NA)
+
+  vcf1brfile <- system.file("extdata", "set1b_rsub.vcf", package = "BinaryDosage")
+  bdfile1br <- tempfile()
+  vcftobd(vcffiles = vcf1brfile,
+          bdfiles = bdfile1br)
+  bdinfo1br <- getbdinfo(bdfile1br)
+
+  mergefile3 <- tempfile()
+  expect_error(bdmerge(mergefiles = mergefile3,
+                       bdfiles = c(bdfile1a, bdfile1br)),
+               "There are duplicate samples in the files to merge")
+
+  gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
+  gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
+  bdfile3b <- tempfile()
+  gentobd(genfiles = c(gen3bfile, gen3bsample),
+          snpcolumns = c(0L, 2L:5L),
+          bdfiles = bdfile3b)
+  bdinfo3b <- getbdinfo(bdfiles = bdfile3b)
+  mergefile3b <- tempfile()
+  expect_error(bdmerge(mergefiles = mergefile3b,
+                       bdfiles = c(bdfile1a, bdfile3b)),
+               "Some files use FID and others do not")
+
+  bdvcf1afile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+  vcf1brs <- system.file("extdata", "set1b_rssnp.vcf", package = "BinaryDosage")
+  bdinfo1a <- getbdinfo(bdvcf1afile)
+  bdfile1brs <- tempfile()
+  vcftobd(vcffiles = vcf1brs,
+          bdfiles = bdfile1brs)
+  bdinfo1brs <- getbdinfo(bdfiles = bdfile1brs)
+  merge1brs <- tempfile()
+  expect_error(bdmerge(mergefiles = merge1brs,
+                       bdfiles = c(bdvcf1afile, bdfile1brs)),
+               NA)
+  expect_error(getbdinfo(merge1brs), NA)
 })
