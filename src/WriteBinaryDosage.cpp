@@ -446,10 +446,12 @@ unsigned short DoubleToUShort(const double x, const int base) {
   r1 = r2 = 0;
   x1 = x2 = 0.;
 
-  if (x != x) {
+// Can never happen. Missingness was already checked.
+// Left in case something changes
+//  if (x != x) {
     // Missing
-    return 0xffff;
-  }
+//    return 0xffff;
+//  }
   r1 = (unsigned short)(x * USBASE[base]);
   // The following section checks if r1 or (r1 -1) or (r1 + 1)
   // gives the closest value to the double passed
@@ -589,8 +591,13 @@ int WriteBinaryCompressed(std::string &filename,
   for (i = 0; i < dosage.length(); ++i, ++usdose) {
     if (dosage[i] != dosage[i])
       continue;
-    if (fabs(p0[i] + p1[i] + p2[i] - 1.) < WRITINGTOLERANCE
-          && fabs(p1[i] + p2[i] + p2[i] - dosage[i]) < WRITINGTOLERANCE) {
+    if (p0[i] != p0[i] || p1[i] != p1[i] || p2[i] != p2[i]) {
+      *usdose |= 0x8000;
+      *usadd = 0xffff;
+      ++usadd;
+      ++additionallength;
+    } else if (fabs(p0[i] + p1[i] + p2[i] - 1.) < WRITINGTOLERANCE
+                 && fabs(p1[i] + p2[i] + p2[i] - dosage[i]) < WRITINGTOLERANCE) {
       if (p0[i] != 0 && p2[i] != 0) {
         *usdose |= 0x8000;
         *usadd = DoubleToUShort(p1[i], 2);

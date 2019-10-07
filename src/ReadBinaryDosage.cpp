@@ -80,10 +80,6 @@ Rcpp::List ReadBinaryDosageHeader3A(std::string &filename) {
   // Open the file for reading
   // Only opens for output
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
-  }
 
   infile.seekg(8);
   infile.read((char *)&numSubjects, sizeof(int));
@@ -105,10 +101,6 @@ Rcpp::List ReadBinaryDosageHeader3B(std::string &filename) {
   // Open the file for appending
   // Only opens for output
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
-  }
 
   infile.seekg(8);
   infile.read(md5hash, 32);
@@ -252,10 +244,6 @@ Rcpp::List ReadBinaryDosageHeader4A(std::string &filename) {
   // Open the file for appending
   // Only opens for output
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
-  }
 
   infile.seekg(8);
   infile.read((char *)&numSubjects, sizeof(int));
@@ -311,10 +299,6 @@ Rcpp::List ReadBinaryDosageHeader4B (std::string &filename) {
   // Open the file for appending
   // Only opens for output
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retVal;
-  }
 
   infile.seekg(8);
   infile.read((char *)&subjectOffset, sizeof(int));
@@ -359,10 +343,6 @@ Rcpp::List ReadBDIndices3C(std::string filename,
   Rcpp::List retval;
 
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retval;
-  }
 
   infile.seekg(indexStart);
   for (int i = 0; i < numSNPs; ++i) {
@@ -389,10 +369,6 @@ Rcpp::List ReadBDIndices4C(std::string filename,
   Rcpp::List retval;
 
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open output file" << std::endl;
-    return retval;
-  }
 
   indexstart = headersize - numSNPs * sizeof(int);
   infile.seekg(indexstart);
@@ -445,10 +421,6 @@ int ReadBinaryDosageDataC(std::string &filename,
   std::streampos loc;
 
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open input file" << std::endl;
-    return 1;
-  }
 
   loc = headersize + 2 * (snp - 1) * numsub;
   infile.seekg(loc);
@@ -474,10 +446,6 @@ int ReadBinaryDosageDataP1P2(std::string &filename,
   int readsize;
 
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open input file" << std::endl;
-    return 1;
-  }
 
   loc = headersize + 4 * (snp - 1) * numsub;
   readsize = numsub * sizeof(short);
@@ -513,10 +481,6 @@ int ReadBinaryDosageDataCompressed(std::string &filename,
   std::ifstream infile;
 
   infile.open(filename.c_str(), READBINARY);
-  if (!infile.good()) {
-    Rcpp::Rcerr << "Unable to open input file" << std::endl;
-    return 1;
-  }
 
   usbase = (unsigned short *)&us[0];
   usadd = usbase + numsub;
@@ -533,7 +497,12 @@ int ReadBinaryDosageDataCompressed(std::string &filename,
     }
     if (*usbase & 0x8000) {
       dosage[i] = (*usbase & 0x7fff) / 10000.;
-      if (*usadd & 0x8000) {
+      if (*usadd == 0xffff) {
+        p0[i] = NA_REAL;
+        p1[i] = NA_REAL;
+        p2[i] = NA_REAL;
+        ++usadd;
+      } else if (*usadd & 0x8000) {
         p1[i] = (*usadd & 0x7fff) / 10000.;
         ++usadd;
         p0[i] = *usadd / 10000.;

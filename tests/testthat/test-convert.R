@@ -204,7 +204,7 @@ test_that("writecpp", {
   p0 <- as.numeric(c(NA, NA))
   p1 <- as.numeric(c(NA, NA))
   p2 <- as.numeric(c(NA, NA))
-  snpnumber = -1L
+  snpnumber = 0L
   datasize = 0L
   us <- integer(4)
   expect_error(WriteBinaryCompressed(filename = bdfile,
@@ -216,4 +216,61 @@ test_that("writecpp", {
                                      datasize = datasize,
                                      us = us),
                NA)
+  rdosage <- numeric(2)
+  rp0 <- numeric(2)
+  rp1 <- numeric(2)
+  rp2 <- numeric(2)
+  rus <- integer(4)
+  expect_error(ReadBinaryDosageDataCompressed(filename = bdfile,
+                                              index = 0L,
+                                              datasize = datasize,
+                                              numsub = 2L,
+                                              dosage = rdosage,
+                                              p0 = rp0,
+                                              p1 = rp1,
+                                              p2 = rp2,
+                                              us = rus),
+               NA)
+  expect_true(is.na(rdosage[1]))
+  expect_equal(rdosage[2], 1)
+  expect_true(all(is.na(rp0)))
+  expect_true(all(is.na(rp1)))
+  expect_true(all(is.na(rp2)))
+
+  bdfile <- tempfile()
+  p1 <- as.numeric(c(NA, 0.0025))
+  p2 <- as.numeric(c(NA, 0.999))
+  us <- integer(4)
+  base <- 3L
+  expect_error(WriteBinaryP1P2Data(filename = bdfile,
+                                   p1 = p1,
+                                   p2 = p2,
+                                   us = us,
+                                   base = base),
+               NA)
+
+  rdosage <- numeric(2)
+  rp0 <- numeric(2)
+  rp1 <- numeric(2)
+  rp2 <- numeric(2)
+  rus <- integer(4)
+  expect_error(ReadBinaryDosageDataP1P2(filename = bdfile,
+                                        headersize = 0L,
+                                        numsub = 2L,
+                                        snp = 1L,
+                                        dosage = rdosage,
+                                        p0 = rp0,
+                                        p1 = rp1,
+                                        p2 = rp2,
+                                        us = rus,
+                                        base = base),
+               NA)
+  expect_true(is.na(rdosage[1]))
+  expect_equal(rdosage[2], 2)
+  expect_true(is.na(rp0[1]))
+  expect_true(is.na(rp1[1]))
+  expect_true(is.na(rp2[1]))
+  expect_equal(rp0[2], 0)
+  expect_equal(rp1[2], 0.0025)
+  expect_equal(rp2[2], 0.999)
 })
