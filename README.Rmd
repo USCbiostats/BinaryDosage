@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDosage?branch=UsingStandards&svg=true)](https://ci.appveyor.com/project/USCbiostats/BinaryDosage)
 [![Travis build status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=UsingStandards)](https://travis-ci.org/USCbiostats/BinaryDosage)
-[![Codecov test coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=UsingStandards)
+[![Codecov test coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/UsingStandards/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=UsingStandards)
 <!-- badges: end -->
 
 # Binary Dosage Files
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 Genotype imputation is an essential tool in genomics, enabling association testing with markers not directly genotyped, increasing statistical power, and facilitating data pooling between studies that employ different genotyping platforms. Two commonly used software packages for imputation are [minimac](https://genome.sph.umich.edu/wiki/Minimac) and [Impute2](http://mathgen.stats.ox.ac.uk/impute/impute_v2.html). Furthermore, services such as the [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) have made genotype imputation much more accessible and streamlined.   
 
-While a number of software options are available for analyses of imputed data (e.g. PLINK, EPACTS), fewer are available for Genomewide Gene x Environment Interaction Scan (GWIS). Furthermore, data management tasks such as parsing, subsetting, and merging, while manageable in smaller studies, quickly become unyieldy and prohibitively slow with very large samples sizes. We aim to address these limitations by converting imputation outputs into a binary data format, BDose (Binary Dosage). The benefits of a binary format are two fold - decreased hard drive storage requirements (compared to a VCF file), and speed of parsing/analyses. The BinaryDosage package contains functions to convert VCF and Impute2 formatted files into BDose format, along with functions to merge and subset samples/SNPs. 
+While a number of software options are available for analyses of imputed data (e.g. PLINK, EPACTS), fewer are available for Genomewide Gene x Environment Interaction Scan (GWIS). Furthermore, data management tasks such as parsing, subsetting, and merging, while manageable in smaller studies, quickly become unyieldy and prohibitively slow with very large samples sizes. We aim to address these limitations by converting imputation outputs into a binary data format, BDose (Binary Dosage). The benefits of a binary format are two fold - decreased hard drive storage requirements (compared to a VCF file), and speed of parsing/analyses. The BinaryDosage package contains functions to convert VCF and Impute2 formatted files into BDose format, along with functions to merge samples. 
 
 For GWAS/GWIS analysis of BinaryDosage files, please refer to the [**GxEScanR**](https://github.com/USCbiostats/GxEScanR) package. 
 
@@ -31,13 +31,16 @@ For GWAS/GWIS analysis of BinaryDosage files, please refer to the [**GxEScanR**]
 ### Description
 
 ##### Binary dosage files contain at minimum the following information:  
--	Subject IDs  
-- SNP information  
--	Chromosome number  
--	Location in base pairs  
--	Reference Allele  
--	Alternate Allele  
--	Dosage values  
+*	Sample information
+  + Family ID
+  + Subject ID
+* SNP information
+  +	Chromosome number
+  + SNP ID
+  +	Location in base pairs
+  +	Reference allele
+  +	Alternate allele
+*	Dosage values
 
 ##### Binary dosage files may contain any of the following information:
 -	Family IDs

@@ -8,7 +8,7 @@ status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDos
 [![Travis build
 status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=UsingStandards)](https://travis-ci.org/USCbiostats/BinaryDosage)
 [![Codecov test
-coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=UsingStandards)
+coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/UsingStandards/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=UsingStandards)
 <!-- badges: end -->
 
 # Binary Dosage Files
@@ -36,8 +36,8 @@ imputation outputs into a binary data format, BDose (Binary Dosage). The
 benefits of a binary format are two fold - decreased hard drive storage
 requirements (compared to a VCF file), and speed of parsing/analyses.
 The BinaryDosage package contains functions to convert VCF and Impute2
-formatted files into BDose format, along with functions to merge and
-subset samples/SNPs.
+formatted files into BDose format, along with functions to merge
+samples.
 
 For GWAS/GWIS analysis of BinaryDosage files, please refer to the
 [**GxEScanR**](https://github.com/USCbiostats/GxEScanR) package.
@@ -46,12 +46,15 @@ For GWAS/GWIS analysis of BinaryDosage files, please refer to the
 
 ##### Binary dosage files contain at minimum the following information:
 
-  - Subject IDs  
-  - SNP information  
-  - Chromosome number  
-  - Location in base pairs  
-  - Reference Allele  
-  - Alternate Allele  
+  - Sample information
+  - Family ID
+  - Subject ID
+  - SNP information
+      - Chromosome number
+      - SNP ID
+      - Location in base pairs
+      - Reference allele
+      - Alternate allele
   - Dosage values
 
 ##### Binary dosage files may contain any of the following information:
@@ -155,6 +158,7 @@ vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 bdfiles <- tempfile()
 # Convert the file
 vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
-# Verify the file was written correctly - an error will be returned if file wasn't written properly
+# Verify the file was written correctly - an error will be returned if file
+# wasn't written properly
 bdinfo <- getbdinfo(bdfiles)
 ```
