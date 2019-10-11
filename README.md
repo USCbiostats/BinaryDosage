@@ -65,6 +65,9 @@ file, and a genetic information file. Data sets in format 4 have just 1
 file. This file contains all the information listed above and may
 contain the following information.
 
+**Note:** Format 4 is recommended and is the default value for all
+function.
+
   - Additional SNP information
       - Alternate allele frequency
       - Minor allele frequency
@@ -132,10 +135,17 @@ The general workflow for using binary dosage data sets is as follows:
 #### Examples
 
 The examples below use the default values for the functions. More
-information about the functions and their optiions can be found using
-the help files.
+information about the functions and their options can be found using the
+help files and the vignettes.
 
 ##### Example files
+
+In the examples below the input files are included with the binary
+dosage package and the output files are written to R temporary files. In
+normal use, the user would provide the names of the input and output
+files.
+
+###### Input files
 
 Example datasets *set1a.vcf* and *set1b.vcf* are representative of VCF
 output files obtained from the Michigan Imputation Server. An
@@ -156,150 +166,217 @@ following:
 | 1a,3a | 60                 | 10             |
 | 1b,3b | 40                 | 10             |
 
-###### Converting VCF files to the Binary Dosage Format and Merging into one data set
-
-The first couple of lines of the code get the complete file names with
-path for the VCF and the information files for set 1a. The user would
-normally just enter the file name. The next line creates a temporary
-file name for the first binary dosage file that will be created. The
-user would normally enter a more permanent file name for the binary
-dosage file. Only a single file name is being created because the
-default binary dosage format is 4. The next line of code converts the
-VCF files into a binary dosage file using the default settings. The next
-section of code repeats the previous instructions to create a second
-binary dosage file for set 1b. The next line of code creates a temporary
-file name for the merged data. Again, the user would normally enter a
-more permanent file name. The last line of code merges the two binary
-dosage files using the default settings.
+Since these files are distributed with the Binary Dosage package, it is
+necessary to get the complete file name and path for use in the
+following examples. The following code gets all the file names needed
+for the examples.
 
 ``` r
 library(BinaryDosage)
 
-# Get the name of the first VCF and information file
+# Get the file names for the VCF and information files
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
-
-# Name of the first binary dosage file
-bdfiles1a <- tempfile()
-
-# Convert the file using the default format value of 4
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles1a)
-
-# Repeat the above steps for the second set of files
 vcf1bfile <- system.file("extdata", "set1b.vcf", package = "BinaryDosage")
 vcf1binfo <- system.file("extdata", "set1b.info", package = "BinaryDosage")
-bdfiles1b <- tempfile()
-vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfiles1b)
 
-# Merge data sets into one data set
-mergebd1 <- tempfile()
-bdmerge(mergefiles = mergebd1, bdfiles = c(bdfiles1a, bdfiles1b))
+# Get the file names for the GEN and sample files
+gen3afile <- system.file("extdata", "set3a.imp", package = "BinaryDosage")
+gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
+gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
+gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
 ```
 
-###### Converting GEN files to the Binary Dosage Format and Merging into one data set
+###### Output files
 
-The first couple of lines of the code get the complete file names with
-path for the GEN and the sample files for set 3a. The user would
-normally just enter the file name. The next line creates a temporary
-file name for the first binary dosage file that will be created. The
-user would normally enter a more permanent file name for the binary
-dosage file. Only a single file name is being created because the
-default binary dosage format is 4. The next line of code converts the
-GEN files into a binary dosage file. The snpcolumns option is used here
-to indicate that the chromosome number is part of the SNPID. More on
-this can be found in the help files. The next section of code repeats
-the previous instructions to create a second binary dosage file for set
-3b. The next line of code creates a temporary file name for the merged
-data. Again, the user would normally enter a more permanent file name.
-The last line of code merges the two binary dosage files using the
-default settings.
+The binary dosage output files will be written to temporary. There needs
+to be only one output file per data set because the examples use the
+default format value of 4. The following code creates these temporary
+output files.
 
 ``` r
 library(BinaryDosage)
 
-# Get the file names
-gen3afile <- system.file("extdata", "set3a.imp", package = "BinaryDosage")
-gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
+# The output files for set 1
+bdfile1a <- tempfile()
+bdfile1b <- tempfile()
+mergebd1 <- tempfile()
+
+# The output files for set 3
 bdfile3a <- tempfile()
+bdfile3b <- tempfile()
+mergebd3 <- tempfile()
+```
+
+##### Converting VCF files to a binary dosage data set
+
+Converting a VCF file into a binary dosage file is simple. The user
+passes that names of the VCF and information files along with the name
+for the binary dosage file to the vcftobd fucntion. There are some
+options available for the vcftobd functions such as using gz compressed
+files vcf files. More information about these options can be found using
+the help files or readin the vignette “usingvcffiles”.
+
+The following commands convert VCF data sets 1a and 1b into the binary
+dosage format.
+
+``` r
+library(BinaryDosage)
+
+vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a)
+vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
+```
+
+##### Converting GEN files to the Binary Dosage Format and Merging into one data set
+
+Converting GEN files to binary dosage files is a little more difficult
+than converting VCF files. This is because GEN files aren’t as strictly
+formatted as VCF files. The user needs to have knowledge of how the GEN
+file is formatted. More information on this can be found in the help
+files and the vignette “usinggenfiles”.
+
+In the example GEN file, the first column contains “--” for each SNP and
+the second column contains the SNP ID in the
+format
+
+<span style="font-family:Courier">\<chromosome\>:\<location\>\_\<reference
+allele\>\_\<alternate allele\></span>
+
+Because of this formatting, the function
+<span style="font-family:Courier">gentobd</span> requires the
+<span style="font-family:Courier">snpcolumns</span> parameter to have
+the value <span style="font-family:Courier">c(0L, 2L:5L)</span>. To
+convert the GEN data sets to binary dosage data sets, the names of the
+input and output files are passed to gentobd along with for the needed
+value for snpcolumns.
+
+The following commands convert the two GEN files into binary dosage
+files.
+
+``` r
+library(BinaryDosage)
 
 gentobd(genfiles = c(gen3afile, gen3asample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3a)
-
-gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
-gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
-bdfile3b <- tempfile()
-
 gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3b)
+```
 
-# Merge data sets into one data set
-mergebd3 <- tempfile()
+##### Merging binary dosage files
+
+Merging binary dosage files is done by SNP ID. The files to merge cannot
+have the same subject IDs. See the vignette “mergingfiles” for more
+information. In this example we are assuming two separate groups of
+subjects were imputed separately to the same reference panel.
+
+To merge files call the <span style="font-family:Courier">bdmerge</span>
+function and pass the names of the files to merge and a file name for
+the merged data set. Other options exist for bdmerge and can be found in
+the help files and the vignette “mergingfiles”
+
+The following code merges the binary files created earlier into two
+files, one for the VCF files, and one for the GEN files.
+
+``` r
+bdmerge(mergefiles = mergebd1, bdfiles = c(bdfile1a, bdfile1b))
 bdmerge(mergefiles = mergebd3, bdfiles = c(bdfile3a, bdfile3b))
 ```
 
-###### Applying a function to all the SNPs in a data set
+##### Applying a function to all the SNPs in a data set
 
-In this example a function will be applied to all the SNPs in the merged
-binary dosage data sets that weres created above. The first part of the
-code is a function to calculate the alternate allele frequency. The
-first step in applying a function to all the SNPs in a data set is to
-get the information about the data set by calling getbdinfo. Once the
-information about the data set is obtained, it along with the user
-function are passed to bdapply. The results are then placed in a data
-frame for easy
-displaying.
+Once binary dosage files have been created, a function can be applied to
+all the SNPs in a file.
+
+###### Defining the function
+
+The function applied to the SNPs in a binary dosage file must have the
+following four parameters, dosage, p0, p1, and p2. These are the dosage,
+Pr(*g=0*), Pr(*g=1*), and Pr(*g=2*), respectively. Other parameters can
+be passed. For more information on the defining the function see the
+vignette “applyingfunction”.
+
+The following code defines a function to calculate the alternate allele
+frequency.
 
 ``` r
-# Function to apply all SNPs in the merged data set This function calculates
-# the alternate allele frequency
 calculateaaf <- function(dosage, p0, p1, p2) {
     return(mean(dosage, na.rm = TRUE)/2)
 }
-
-# Get information about merged data set
-mergebd1info <- getbdinfo(mergebd1)
-# Apply the function
-aaf1 <- bdapply(mergebd1info, calculateaaf)
-
-# Get information about merged data set
-mergebd3info <- getbdinfo(mergebd3)
-# Apply the function
-aaf3 <- bdapply(mergebd3info, calculateaaf)
-
-# Display results
-aafdf <- cbind(mergebd1info$snps, aaf1 = unlist(aaf1), aaf3 = unlist(aaf3))
-aafdf
-#>    chromosome location       snpid reference alternate     aaf1     aaf3
-#> 1           1    10000 1:10000:C:A         C         A 0.352680 0.352685
-#> 2           1    11000 1:11000:T:C         T         C 0.013460 0.013465
-#> 3           1    12000 1:12000:T:C         T         C 0.240040 0.240035
-#> 4           1    13000 1:13000:T:C         T         C 0.337465 0.337465
-#> 5           1    14000 1:14000:G:C         G         C 0.190060 0.190060
-#> 6           1    15000 1:15000:A:C         A         C 0.562685 0.562695
-#> 7           1    16000 1:16000:G:A         G         A 0.456940 0.456940
-#> 8           1    17000 1:17000:C:A         C         A 0.457760 0.457750
-#> 9           1    18000 1:18000:C:G         C         G 0.259105 0.259100
-#> 10          1    19000 1:19000:T:G         T         G 0.243095 0.243100
 ```
 
-###### Extracing a SNP from the data set
+###### Applying the function
+
+To apply the function the user needs to call bdapply and pass
+information about the binary dosage file and the function. The
+information about the dosage file is obtained by calling the function
+getbdinfo. If the user is going to call bdapply multiple times, the user
+may wish to save the results of getbdinfo.
+
+``` r
+mergebd1info <- getbdinfo(mergebd1)
+aaf1 <- bdapply(mergebd1info, calculateaaf)
+
+mergebd3info <- getbdinfo(mergebd3)
+aaf3 <- bdapply(mergebd3info, calculateaaf)
+```
+
+###### Checking the results
+
+Since the VCF and GEN files contain the same information, the alternate
+allele frequencies should be the same. The following code creates a data
+frame with the SNP IDs and the alternate allele frequencies for both
+data
+sets.
+
+``` r
+aaf <- cbind(mergebd1info$snps, aaf_set1 = unlist(aaf1), aaf_set3 = unlist(aaf3))
+```
+
+Here is a table showing the
+results.
+
+| chromosome | location | snpid       | reference | alternate | aaf\_set1 | aaf\_set3 |
+| :--------- | -------: | :---------- | :-------- | :-------- | --------: | --------: |
+| 1          |    10000 | 1:10000:C:A | C         | A         |    0.3527 |    0.3527 |
+| 1          |    11000 | 1:11000:T:C | T         | C         |    0.0135 |    0.0135 |
+| 1          |    12000 | 1:12000:T:C | T         | C         |    0.2400 |    0.2400 |
+| 1          |    13000 | 1:13000:T:C | T         | C         |    0.3375 |    0.3375 |
+| 1          |    14000 | 1:14000:G:C | G         | C         |    0.1901 |    0.1901 |
+| 1          |    15000 | 1:15000:A:C | A         | C         |    0.5627 |    0.5627 |
+| 1          |    16000 | 1:16000:G:A | G         | A         |    0.4569 |    0.4569 |
+| 1          |    17000 | 1:17000:C:A | C         | A         |    0.4578 |    0.4578 |
+| 1          |    18000 | 1:18000:C:G | C         | G         |    0.2591 |    0.2591 |
+| 1          |    19000 | 1:19000:T:G | T         | G         |    0.2431 |    0.2431 |
+
+##### Extracting a SNP from the data set
+
+After doing an analysis, the user may want to extact a SNP from the data
+set for further analysis. This can be done using the getsnp function. By
+default the function returns a list with the dosage values for all the
+subjects. The genetype probabilities can be added to the list by setting
+the dosage only option to FALSE. See the help files or the vignette
+“extractingsnps” for more information.
 
 The following code extracts the 6th SNP from both the binary dosage data
-set generated above. The SNP is then put into a data frame for easier
-viewing
+sets generated above.
 
 ``` r
 # Get the dosage values for the 6th SNP
-snp1.6 <- getsnp(mergebd1info, 6)
+set1snp6 <- getsnp(mergebd1info, 6)
 # Get the dosage values for the 6th SNP
-snp3.6 <- getsnp(mergebd3info, 6)
-# Create a data base with the subject IDs as the row names and display the
-# first few lines
-snpdf <- data.frame(dosage1 = unlist(snp1.6), dosage3 = unlist(snp3.6), row.names = mergebd1info$samples$sid)
-head(snpdf)
-#>    dosage1 dosage3
-#> I1   1.000   1.000
-#> I2   1.849   1.849
-#> I3   1.000   1.000
-#> I4   2.000   2.000
-#> I5   1.046   1.046
-#> I6   1.915   1.915
+set3snp6 <- getsnp(mergebd3info, 6)
 ```
+
+The results from the above lines were merged into a data frame with the
+subject IDs. Here are the frist 10 lines of the data frame.
+
+| subjectid | set1snp6 | set3snp6 |
+| :-------- | -------: | -------: |
+| I1        |    1.000 |    1.000 |
+| I2        |    1.849 |    1.849 |
+| I3        |    1.000 |    1.000 |
+| I4        |    2.000 |    2.000 |
+| I5        |    1.046 |    1.046 |
+| I6        |    1.915 |    1.915 |
+| I7        |    2.000 |    2.000 |
+| I8        |    2.000 |    2.000 |
+| I9        |    1.000 |    1.000 |
+| I10       |    1.000 |    1.000 |
