@@ -79,7 +79,7 @@ function.
 
 ### Functions
 
-  - **vcftobd** - Converts a VCF file to abinary dosage data set
+  - **vcftobd** - Converts a VCF file to a binary dosage data set
   - **gentobd** - Converts a GEN (impute2) file to a binary dosage data
     set
   - **bdmerge** - Merges multiple binary dosage data sets into a single
@@ -121,10 +121,10 @@ library(BinaryDosage)
 
 The general workflow for using binary dosage data sets is as follows:
 
-  - Convert VCF or GEN files to a binary dosage data sets
+  - Convert VCF or GEN files to a binary dosage data set
       - Note: When converting a VCF file to a binary dosage data set,
         the information file associated with the vcf can be used to add
-        addition data to the binary dosage data set
+        additional imputation information to the binary dosage data set
       - Note: When converting a GEN file to a binary dosage data set,
         the subject IDs can either be on the first line of the GEN file
         or in a separate sample file
@@ -152,13 +152,13 @@ output files obtained from the Michigan Imputation Server. An
 information file is also included for each set, *set1a.info* and
 *set1b.info*.
 
-Example datasets *set3a.imp* and *set3b.imp* are representaive of files
+Example datasets *set3a.imp* and *set3b.imp* are representative of files
 return by the Impute imputation software. For GEN files the subject IDs
 are contained in separated files. For this example these are
 *set3a.sample* and *set3b.sample*.
 
 The VCF and GEN files contain the same data. These files are in the
-extdata directory of the BinaryDosage package.These sets contain the
+extdata directory of the BinaryDosage package. These sets contain the
 following:
 
 | Set   | Number of subjects | Number of SNPS |
@@ -189,13 +189,12 @@ gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
 
 ###### Output files
 
-The binary dosage output files will be written to temporary. There needs
-to be only one output file per data set because the examples use the
-default format value of 4. The following code creates these temporary
-output files.
+The binary dosage output files will be written to temporary files. There
+needs to be only one output file per data set because the examples use
+the default format value of 4. The following code creates these
+temporary output files.
 
 ``` r
-library(BinaryDosage)
 
 # The output files for set 1
 bdfile1a <- tempfile()
@@ -211,17 +210,16 @@ mergebd3 <- tempfile()
 ##### Converting VCF files to a binary dosage data set
 
 Converting a VCF file into a binary dosage file is simple. The user
-passes that names of the VCF and information files along with the name
-for the binary dosage file to the vcftobd fucntion. There are some
+passes the names of the VCF and information files along with the name
+for the binary dosage file to the vcftobd function. There are some
 options available for the vcftobd functions such as using gz compressed
 files vcf files. More information about these options can be found using
-the help files or readin the vignette “usingvcffiles”.
+the help files or reading the vignette “usingvcffiles”.
 
 The following commands convert VCF data sets 1a and 1b into the binary
 dosage format.
 
 ``` r
-library(BinaryDosage)
 
 vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a)
 vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
@@ -247,14 +245,13 @@ Because of this formatting, the function
 <span style="font-family:Courier">snpcolumns</span> parameter to have
 the value <span style="font-family:Courier">c(0L, 2L:5L)</span>. To
 convert the GEN data sets to binary dosage data sets, the names of the
-input and output files are passed to gentobd along with for the needed
-value for snpcolumns.
+input and output files are passed to gentobd along with the needed value
+for snpcolumns.
 
 The following commands convert the two GEN files into binary dosage
 files.
 
 ``` r
-library(BinaryDosage)
 
 gentobd(genfiles = c(gen3afile, gen3asample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3a)
 gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3b)
@@ -267,13 +264,16 @@ have the same subject IDs. See the vignette “mergingfiles” for more
 information. In this example we are assuming two separate groups of
 subjects were imputed separately to the same reference panel.
 
-To merge files call the <span style="font-family:Courier">bdmerge</span>
-function and pass the names of the files to merge and a file name for
-the merged data set. Other options exist for bdmerge and can be found in
-the help files and the vignette “mergingfiles”
+To merge files, the user calls the
+<span style="font-family:Courier">bdmerge</span> function and passes the
+names of the files to merge along with a file name for the merged data
+set. Other options exist for bdmerge and can be found in the help files
+and the vignette “mergingfiles”
 
-The following code merges the binary files created earlier into two
-files, one for the VCF files, and one for the GEN files.
+The following code first merges the binary files bdfile1a and bdfile1b
+created from the VCF files into a single file, mergedbd1, and then does
+the analogous action for the binary dosage files created from the GEN
+files.
 
 ``` r
 bdmerge(mergefiles = mergebd1, bdfiles = c(bdfile1a, bdfile1b))
@@ -290,8 +290,8 @@ all the SNPs in a file.
 The function applied to the SNPs in a binary dosage file must have the
 following four parameters, dosage, p0, p1, and p2. These are the dosage,
 Pr(*g=0*), Pr(*g=1*), and Pr(*g=2*), respectively. Other parameters can
-be passed. For more information on the defining the function see the
-vignette “applyingfunction”.
+also be passed. For more information on defining the function see the
+vignette “applyingfunctions”.
 
 The following code defines a function to calculate the alternate allele
 frequency.
@@ -348,12 +348,12 @@ results.
 
 ##### Extracting a SNP from the data set
 
-After doing an analysis, the user may want to extact a SNP from the data
-set for further analysis. This can be done using the getsnp function. By
-default the function returns a list with the dosage values for all the
-subjects. The genetype probabilities can be added to the list by setting
-the dosage only option to FALSE. See the help files or the vignette
-“extractingsnps” for more information.
+After doing an analysis, the user may want to extract a SNP from the
+data set for further analysis. This can be done using the getsnp
+function. By default the function returns a list with the dosage values
+for all the subjects. The genetype probabilities can be added to the
+list by setting the dosageonly option to FALSE. See the help files or
+the vignette “extractingsnps” for more information.
 
 The following code extracts the 6th SNP from both the binary dosage data
 sets generated above.
@@ -366,7 +366,7 @@ set3snp6 <- getsnp(mergebd3info, 6)
 ```
 
 The results from the above lines were merged into a data frame with the
-subject IDs. Here are the frist 10 lines of the data frame.
+subject IDs. Here are the first 10 lines of the data frame.
 
 | subjectid | set1snp6 | set3snp6 |
 | :-------- | -------: | -------: |
