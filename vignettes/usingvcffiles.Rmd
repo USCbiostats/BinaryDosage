@@ -1,0 +1,89 @@
+---
+title: "Using VCF files"
+output:
+  rmarkdown::html_vignette:
+vignette: >
+  %\VignetteIndexEntry{usingvcffiles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BinaryDosage)
+```
+## Introduction
+
+VCF files are a useful way to store genetic data. They have a well defined format and can be easily parsed. The output files returned from the imputation software [minimac](https://genome.sph.umich.edu/wiki/Minimac) are returned in this format. The minimac software also returns an information file that is supported by the BinaryDosage package. The [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) using minimac for imputation and returns VCF and information. Functions in the BinaryDosage package have default settings to use the files return from mimimac.
+
+Uncompressed VCF files are text files and can be very large, 100s of GB. Because of this they are quite often compressed. Files returned from the Michigan Imputation Server are compressed using gzip. This makes the files much smaller but greatly increases the read time. The BinaryDosage package supports reading of gzip compressed VCF files.
+
+The BinaryDosage package was orginally designed for use with files return from the Michigan Imputation Server. It was quickly learned that if any manipulation was done to these files by various tools such as vcftools, The conversion routine in the BinaryDosage package would not work. 
+The BinaryDosage package has a routine to convert VCF files into a binary format that maintains the dosage, genetic probabilities, and imputation statistics. This results in a file about 10-15% the size of the uncompressed VCF file with much faster, 200-300x, read times. In comparison, Using gzip to compress the VCF file reduces the size of the file to about 5% its original size but makes run times slower.
+
+The BinaryDosage package was orginally designed for use with files return from the Michigan Imputation Server. It was quickly learned that if any manipulation was done to these files by various tools such as vcftools, The conversion routine in the BinaryDosage package would not work. The conversion routine was modified to allow it to support more generic VCF files.
+
+Routines were written to help debug the conversion routine. It was discovered these routines were quite useful for accessing data in the VCF file and were included in the package. This document contains instructions on how to use these routines.
+
+## Example files
+
+There are several sample files included with the BinaryDosage package. The file name will be found by using the <span style="font-family:Courier">system.file</span> command in the examples. This will be used many times in the examples.
+
+The binary dosage files created will be temporary files. They will be created using the <span style="font-family:Courier">tempfile</span> command. This will also be used many times in the examples. All output files will use the default format of 4. For information on other formats see the vignette "binarydosageformats".
+
+## Converting a VCF file to the Binary Dosage format
+
+The <span style="font-family:Courier">vcftobd</span> routine converts VCF files to the binary dosage format. Many different formats of VCF files by the BinaryDosage package. The following sections show how to convert VCF files in various formats to the binary dosage format.
+
+### Minimac files
+
+Since the binary dosage format was intialized created for use with files produced by minimac, the default options for calling the routine to convert a VCF file to a binary dosage format are for this type of file.
+
+#### Uncompressed VCF files
+
+Uncompressed VCF files are the easiest to convert to the binary dosage format since the default values for <span style="font-family:Courier">vcftobd</span> are set for this format.
+
+##### No imputation information file
+
+An imputation information file is not required to convert a VCF file into the binary dosage format. In this case, the parameter value for <span style="font-family:Courier">vcffiles</span> is set to the VCF file name.
+
+The following commands convert the VCF file *set1a.vcf* into the binary dosage format.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+bdfile1a_woinfo <- tempfile()
+vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_woinfo)
+
+```
+
+##### Using the imputation information file
+
+The minimac program returns an imputation information file that can be passed to the <span style="font-family:Courier">vcftobd</span> routine. This is done by setting the parameter <span style="font-family:Courier">vcffiles</span> to a vector of characters containing the VCF and the imputation information file names.
+
+The following commands convert the VCF file *set1a.vcf* into the binary dosage format using the information file *set1a.info*.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
+bdfile1a_winfo <- tempfile()
+vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a_winfo)
+
+```
+
+The differences between the two binary dosage datasets can be checked by running the <span style="font-family:Courier">getbdinfo</span> routine on both files. The value of <span style="font-family:Courier">snpinfo</span> returned by <span style="font-family:Courier">getbdinfo</span> will be an empty for the first file and will contain the imputation information for the second file. For more information on the information returned by <span style="font-family:Courier">getbdinfo</span> see the vignette "gettingbdinfo".
+
+The following commands show the first file does not contain any imputation information and the the second one does. The imputation information for the second file is converted to a table for easier dispalying.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+bdinfo1a_woinfo <- getbdinfo(bdfiles = bdfile1a_woinfo)
+bdinfo1a_woinfo$snpinfo
+
+bdinfo1a_winfo <- getbdinfo(bdfiles = bdfile1a_winfo)
+knitr::kable(data.frame(bdinfo1a_winfo$snpinfo), caption = "bdinfo1a_winfo$snpinfo")
+```

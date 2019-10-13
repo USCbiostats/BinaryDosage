@@ -47,7 +47,7 @@ For GWAS/GWIS analysis of BinaryDosage files, please refer to the [**GxEScanR**]
 
 There are 4 formats for a binary dosage data set. Data sets in formats 1, 2, and 3 have 3 files, a sample information file, a SNP information file, and a genetic information file. Data sets in format 4 have just 1 file. This file contains all the information listed above and may contain the following information.
 
-**Note:** Format 4 is recommended and is the default value for all function.
+**Note:** Format 4 is recommended and is the default value for all functions.
 
 - Additional SNP information
   + Alternate allele frequency

@@ -18,3 +18,5 @@ vignettes/*.pdf
 .Rproj.user
 *.dll
 /Test/
+doc
+Meta

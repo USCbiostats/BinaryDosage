@@ -66,7 +66,7 @@ file. This file contains all the information listed above and may
 contain the following information.
 
 **Note:** Format 4 is recommended and is the default value for all
-function.
+functions.
 
   - Additional SNP information
       - Alternate allele frequency
