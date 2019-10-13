@@ -1,7 +1,7 @@
+inst/doc
 .Rhistory
 .Rapp.History
 .RData
-.Rbuildignore
 *-ex.R
 /*.tar.gz
 /*.Rcheck/
@@ -18,3 +18,5 @@ vignettes/*.pdf
 .Rproj.user
 *.dll
 /Test/
+doc
+Meta

@@ -5,178 +5,316 @@
 
 using namespace Rcpp;
 
-// BDConvertC
-Rcpp::List BDConvertC(const Rcpp::List& bdInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
-RcppExport SEXP _BinaryDosage_BDConvertC(SEXP bdInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type bdInfo(bdInfoSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type newFile(newFileSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type famFile(famFileSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type mapFile(mapFileSEXP);
-    Rcpp::traits::input_parameter< int >::type newFormat(newFormatSEXP);
-    Rcpp::traits::input_parameter< int >::type newVersion(newVersionSEXP);
-    rcpp_result_gen = Rcpp::wrap(BDConvertC(bdInfo, newFile, famFile, mapFile, newFormat, newVersion));
-    return rcpp_result_gen;
-END_RCPP
-}
-// BDConvertVCFC
-int BDConvertVCFC(const Rcpp::List& vcfInfo, const std::string& newFile, const std::string& famFile, const std::string& mapFile, int newFormat, int newVersion);
-RcppExport SEXP _BinaryDosage_BDConvertVCFC(SEXP vcfInfoSEXP, SEXP newFileSEXP, SEXP famFileSEXP, SEXP mapFileSEXP, SEXP newFormatSEXP, SEXP newVersionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type vcfInfo(vcfInfoSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type newFile(newFileSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type famFile(famFileSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type mapFile(mapFileSEXP);
-    Rcpp::traits::input_parameter< int >::type newFormat(newFormatSEXP);
-    Rcpp::traits::input_parameter< int >::type newVersion(newVersionSEXP);
-    rcpp_result_gen = Rcpp::wrap(BDConvertVCFC(vcfInfo, newFile, famFile, mapFile, newFormat, newVersion));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetBDose4Header
-Rcpp::List GetBDose4Header(std::string& filename);
-RcppExport SEXP _BinaryDosage_GetBDose4Header(SEXP filenameSEXP) {
+// GetLineLocations
+std::vector<double> GetLineLocations(std::string& filename);
+RcppExport SEXP _BinaryDosage_GetLineLocations(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetBDose4Header(filename));
+    rcpp_result_gen = Rcpp::wrap(GetLineLocations(filename));
     return rcpp_result_gen;
 END_RCPP
 }
-// GetBDoseFormatC
-Rcpp::List GetBDoseFormatC(const std::string& bdFilename);
-RcppExport SEXP _BinaryDosage_GetBDoseFormatC(SEXP bdFilenameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetBDoseFormatC(bdFilename));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetBinaryDosage1Info
-Rcpp::List GetBinaryDosage1Info(const std::string& bdFilename, const Rcpp::DataFrame& subjects, const Rcpp::DataFrame& snps, const int index);
-RcppExport SEXP _BinaryDosage_GetBinaryDosage1Info(SEXP bdFilenameSEXP, SEXP subjectsSEXP, SEXP snpsSEXP, SEXP indexSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::DataFrame& >::type subjects(subjectsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::DataFrame& >::type snps(snpsSEXP);
-    Rcpp::traits::input_parameter< const int >::type index(indexSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetBinaryDosage1Info(bdFilename, subjects, snps, index));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetBinaryDosage4Info
-Rcpp::List GetBinaryDosage4Info(const std::string& bdFilename, const int index);
-RcppExport SEXP _BinaryDosage_GetBinaryDosage4Info(SEXP bdFilenameSEXP, SEXP indexSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type bdFilename(bdFilenameSEXP);
-    Rcpp::traits::input_parameter< const int >::type index(indexSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetBinaryDosage4Info(bdFilename, index));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetSNPValuesC
-int GetSNPValuesC(const std::string& filename, const std::string& filetype, int geneProb, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericMatrix& valueMatrix, const int numSubjects, const int numSNPs);
-RcppExport SEXP _BinaryDosage_GetSNPValuesC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP geneProbSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP valueMatrixSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
-    Rcpp::traits::input_parameter< int >::type geneProb(geneProbSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type valueMatrix(valueMatrixSEXP);
-    Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
-    Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetSNPValuesC(filename, filetype, geneProb, subVec, snpVec, indices, valueMatrix, numSubjects, numSNPs));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetAlleleFreqC
-int GetAlleleFreqC(const std::string& filename, const std::string& filetype, const Rcpp::IntegerVector& subVec, const Rcpp::IntegerVector snpVec, const Rcpp::IntegerVector& indices, Rcpp::NumericVector& freqVec, const int numSubjects, const int numSNPs);
-RcppExport SEXP _BinaryDosage_GetAlleleFreqC(SEXP filenameSEXP, SEXP filetypeSEXP, SEXP subVecSEXP, SEXP snpVecSEXP, SEXP indicesSEXP, SEXP freqVecSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type filetype(filetypeSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type subVec(subVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type snpVec(snpVecSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type freqVec(freqVecSEXP);
-    Rcpp::traits::input_parameter< const int >::type numSubjects(numSubjectsSEXP);
-    Rcpp::traits::input_parameter< const int >::type numSNPs(numSNPsSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetAlleleFreqC(filename, filetype, subVec, snpVec, indices, freqVec, numSubjects, numSNPs));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetVCFHeaderC
-Rcpp::List GetVCFHeaderC(std::string& vcfFile);
-RcppExport SEXP _BinaryDosage_GetVCFHeaderC(SEXP vcfFileSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string& >::type vcfFile(vcfFileSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetVCFHeaderC(vcfFile));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GetVCFSNPInfoC
-Rcpp::List GetVCFSNPInfoC(std::string& filename, int startData, int reserve);
-RcppExport SEXP _BinaryDosage_GetVCFSNPInfoC(SEXP filenameSEXP, SEXP startDataSEXP, SEXP reserveSEXP) {
+// ReadBinaryDosageBaseHeader
+Rcpp::List ReadBinaryDosageBaseHeader(std::string& filename);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageBaseHeader(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< int >::type startData(startDataSEXP);
-    Rcpp::traits::input_parameter< int >::type reserve(reserveSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetVCFSNPInfoC(filename, startData, reserve));
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageBaseHeader(filename));
     return rcpp_result_gen;
 END_RCPP
 }
-// MergeBDC
-int MergeBDC(const std::string& mergeFilename, const Rcpp::StringVector& filenames, const Rcpp::List& mergeInfo, const Rcpp::List& bdInfoList, const std::string& famFilename, const std::string& mapFilename, int format, int version);
-RcppExport SEXP _BinaryDosage_MergeBDC(SEXP mergeFilenameSEXP, SEXP filenamesSEXP, SEXP mergeInfoSEXP, SEXP bdInfoListSEXP, SEXP famFilenameSEXP, SEXP mapFilenameSEXP, SEXP formatSEXP, SEXP versionSEXP) {
+// ReadBinaryDosageHeader3A
+Rcpp::List ReadBinaryDosageHeader3A(std::string& filename);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageHeader3A(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type mergeFilename(mergeFilenameSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type filenames(filenamesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type mergeInfo(mergeInfoSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type bdInfoList(bdInfoListSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type famFilename(famFilenameSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type mapFilename(mapFilenameSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageHeader3A(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageHeader3B
+Rcpp::List ReadBinaryDosageHeader3B(std::string& filename);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageHeader3B(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageHeader3B(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageHeader4A
+Rcpp::List ReadBinaryDosageHeader4A(std::string& filename);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageHeader4A(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageHeader4A(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageHeader4B
+Rcpp::List ReadBinaryDosageHeader4B(std::string& filename);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageHeader4B(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageHeader4B(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBDIndices3C
+Rcpp::List ReadBDIndices3C(std::string filename, int numSNPs, int indexStart);
+RcppExport SEXP _BinaryDosage_ReadBDIndices3C(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP indexStartSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type indexStart(indexStartSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBDIndices3C(filename, numSNPs, indexStart));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBDIndices4C
+Rcpp::List ReadBDIndices4C(std::string filename, int numSNPs, int headersize);
+RcppExport SEXP _BinaryDosage_ReadBDIndices4C(SEXP filenameSEXP, SEXP numSNPsSEXP, SEXP headersizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBDIndices4C(filename, numSNPs, headersize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageDataC
+int ReadBinaryDosageDataC(std::string& filename, int headersize, int numsub, int snp, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& us, int base);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageDataC(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP numsubSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP usSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    Rcpp::traits::input_parameter< int >::type numsub(numsubSEXP);
+    Rcpp::traits::input_parameter< int >::type snp(snpSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageDataC(filename, headersize, numsub, snp, dosage, us, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageDataP1P2
+int ReadBinaryDosageDataP1P2(std::string& filename, int headersize, int numsub, int snp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& us, int base);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageDataP1P2(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP numsubSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    Rcpp::traits::input_parameter< int >::type numsub(numsubSEXP);
+    Rcpp::traits::input_parameter< int >::type snp(snpSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageDataP1P2(filename, headersize, numsub, snp, dosage, p0, p1, p2, us, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ReadBinaryDosageDataCompressed
+int ReadBinaryDosageDataCompressed(std::string& filename, double index, double datasize, int numsub, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& us);
+RcppExport SEXP _BinaryDosage_ReadBinaryDosageDataCompressed(SEXP filenameSEXP, SEXP indexSEXP, SEXP datasizeSEXP, SEXP numsubSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< double >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< double >::type datasize(datasizeSEXP);
+    Rcpp::traits::input_parameter< int >::type numsub(numsubSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadBinaryDosageDataCompressed(filename, index, datasize, numsub, dosage, p0, p1, p2, us));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageBaseHeader
+int WriteBinaryDosageBaseHeader(std::string& filename, int format, int subformat);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageBaseHeader(SEXP filenameSEXP, SEXP formatSEXP, SEXP subformatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< int >::type format(formatSEXP);
-    Rcpp::traits::input_parameter< int >::type version(versionSEXP);
-    rcpp_result_gen = Rcpp::wrap(MergeBDC(mergeFilename, filenames, mergeInfo, bdInfoList, famFilename, mapFilename, format, version));
+    Rcpp::traits::input_parameter< int >::type subformat(subformatSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageBaseHeader(filename, format, subformat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader3A
+int WriteBinaryDosageHeader3A(std::string& filename, int numSubjects);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader3A(SEXP filenameSEXP, SEXP numSubjectsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader3A(filename, numSubjects));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader3B
+int WriteBinaryDosageHeader3B(std::string& filename, std::string& md5samples, std::string& md5SNPs, int numIndices);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader3B(SEXP filenameSEXP, SEXP md5samplesSEXP, SEXP md5SNPsSEXP, SEXP numIndicesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type md5samples(md5samplesSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type md5SNPs(md5SNPsSEXP);
+    Rcpp::traits::input_parameter< int >::type numIndices(numIndicesSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader3B(filename, md5samples, md5SNPs, numIndices));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageHeader4A
+int WriteBinaryDosageHeader4A(std::string& filename, int headerEntries, int numSubjects, int numSNPs, Rcpp::IntegerVector& groups, std::string& sid, std::string& fid, std::string& snpid, std::string& chromosome, Rcpp::IntegerVector& location, std::string& reference, std::string& alternate, Rcpp::NumericVector& aaf, Rcpp::NumericVector& maf, Rcpp::NumericVector& avgCall, Rcpp::NumericVector& rsq, Rcpp::IntegerVector& offsets, int numIndices);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageHeader4A(SEXP filenameSEXP, SEXP headerEntriesSEXP, SEXP numSubjectsSEXP, SEXP numSNPsSEXP, SEXP groupsSEXP, SEXP sidSEXP, SEXP fidSEXP, SEXP snpidSEXP, SEXP chromosomeSEXP, SEXP locationSEXP, SEXP referenceSEXP, SEXP alternateSEXP, SEXP aafSEXP, SEXP mafSEXP, SEXP avgCallSEXP, SEXP rsqSEXP, SEXP offsetsSEXP, SEXP numIndicesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headerEntries(headerEntriesSEXP);
+    Rcpp::traits::input_parameter< int >::type numSubjects(numSubjectsSEXP);
+    Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type sid(sidSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type fid(fidSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type snpid(snpidSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type chromosome(chromosomeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type location(locationSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type reference(referenceSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type alternate(alternateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type aaf(aafSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type maf(mafSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type avgCall(avgCallSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type rsq(rsqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type offsets(offsetsSEXP);
+    Rcpp::traits::input_parameter< int >::type numIndices(numIndicesSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageHeader4A(filename, headerEntries, numSubjects, numSNPs, groups, sid, fid, snpid, chromosome, location, reference, alternate, aaf, maf, avgCall, rsq, offsets, numIndices));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageDataC
+int WriteBinaryDosageDataC(std::string& filename, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& us, int base);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageDataC(SEXP filenameSEXP, SEXP dosageSEXP, SEXP usSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageDataC(filename, dosage, us, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryP1P2Data
+int WriteBinaryP1P2Data(std::string& filename, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& us, int base);
+RcppExport SEXP _BinaryDosage_WriteBinaryP1P2Data(SEXP filenameSEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP usSEXP, SEXP baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    Rcpp::traits::input_parameter< int >::type base(baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryP1P2Data(filename, p1, p2, us, base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryCompressed
+int WriteBinaryCompressed(std::string& filename, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2, Rcpp::IntegerVector& snpnumber, Rcpp::IntegerVector& datasize, Rcpp::IntegerVector& us);
+RcppExport SEXP _BinaryDosage_WriteBinaryCompressed(SEXP filenameSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP, SEXP snpnumberSEXP, SEXP datasizeSEXP, SEXP usSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type snpnumber(snpnumberSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type datasize(datasizeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type us(usSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryCompressed(filename, dosage, p0, p1, p2, snpnumber, datasize, us));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WriteBinaryDosageIndicesC
+int WriteBinaryDosageIndicesC(std::string& filename, int headersize, Rcpp::IntegerVector& datasize);
+RcppExport SEXP _BinaryDosage_WriteBinaryDosageIndicesC(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP datasizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type datasize(datasizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(WriteBinaryDosageIndicesC(filename, headersize, datasize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// updatesnpinfo
+int updatesnpinfo(std::string& filename, int offset, Rcpp::NumericVector& value);
+RcppExport SEXP _BinaryDosage_updatesnpinfo(SEXP filenameSEXP, SEXP offsetSEXP, SEXP valueSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type value(valueSEXP);
+    rcpp_result_gen = Rcpp::wrap(updatesnpinfo(filename, offset, value));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BinaryDosage_BDConvertC", (DL_FUNC) &_BinaryDosage_BDConvertC, 6},
-    {"_BinaryDosage_BDConvertVCFC", (DL_FUNC) &_BinaryDosage_BDConvertVCFC, 6},
-    {"_BinaryDosage_GetBDose4Header", (DL_FUNC) &_BinaryDosage_GetBDose4Header, 1},
-    {"_BinaryDosage_GetBDoseFormatC", (DL_FUNC) &_BinaryDosage_GetBDoseFormatC, 1},
-    {"_BinaryDosage_GetBinaryDosage1Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage1Info, 4},
-    {"_BinaryDosage_GetBinaryDosage4Info", (DL_FUNC) &_BinaryDosage_GetBinaryDosage4Info, 2},
-    {"_BinaryDosage_GetSNPValuesC", (DL_FUNC) &_BinaryDosage_GetSNPValuesC, 9},
-    {"_BinaryDosage_GetAlleleFreqC", (DL_FUNC) &_BinaryDosage_GetAlleleFreqC, 8},
-    {"_BinaryDosage_GetVCFHeaderC", (DL_FUNC) &_BinaryDosage_GetVCFHeaderC, 1},
-    {"_BinaryDosage_GetVCFSNPInfoC", (DL_FUNC) &_BinaryDosage_GetVCFSNPInfoC, 3},
-    {"_BinaryDosage_MergeBDC", (DL_FUNC) &_BinaryDosage_MergeBDC, 8},
+    {"_BinaryDosage_GetLineLocations", (DL_FUNC) &_BinaryDosage_GetLineLocations, 1},
+    {"_BinaryDosage_ReadBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageBaseHeader, 1},
+    {"_BinaryDosage_ReadBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3A, 1},
+    {"_BinaryDosage_ReadBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader3B, 1},
+    {"_BinaryDosage_ReadBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4A, 1},
+    {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
+    {"_BinaryDosage_ReadBDIndices3C", (DL_FUNC) &_BinaryDosage_ReadBDIndices3C, 3},
+    {"_BinaryDosage_ReadBDIndices4C", (DL_FUNC) &_BinaryDosage_ReadBDIndices4C, 3},
+    {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 7},
+    {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 10},
+    {"_BinaryDosage_ReadBinaryDosageDataCompressed", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataCompressed, 9},
+    {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
+    {"_BinaryDosage_WriteBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3A, 2},
+    {"_BinaryDosage_WriteBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3B, 4},
+    {"_BinaryDosage_WriteBinaryDosageHeader4A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader4A, 18},
+    {"_BinaryDosage_WriteBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageDataC, 4},
+    {"_BinaryDosage_WriteBinaryP1P2Data", (DL_FUNC) &_BinaryDosage_WriteBinaryP1P2Data, 5},
+    {"_BinaryDosage_WriteBinaryCompressed", (DL_FUNC) &_BinaryDosage_WriteBinaryCompressed, 8},
+    {"_BinaryDosage_WriteBinaryDosageIndicesC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageIndicesC, 3},
+    {"_BinaryDosage_updatesnpinfo", (DL_FUNC) &_BinaryDosage_updatesnpinfo, 3},
     {NULL, NULL, 0}
 };
 

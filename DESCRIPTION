@@ -1,18 +1,40 @@
 Package: BinaryDosage
-Type: Package
-Title: Tools for working with Binary Dosage files
-Version: 1.0
-Date: 2017-04-14
-Author: John Morrison
-Maintainer: John Morrison <jmorr@usc.edu>
-Description: A program to perform Genome-Environment wide interaction scans
-    using several one and two step procedures. An Excel spreadsheet is produced
-    showing the results of all the requested procedures. The output included
-    Manhattan and qq plots. Tools are provided to read data that are in plink
-    format.
+Title: Creates, Merges, and Reads Binary Dosage Files
+Version: 0.0.0.9000
+Authors@R:
+    c(person(given = "John",
+             family = "Morrison",
+             role = c("aut", "cre"),
+             email = "jmorr@usc.edu"),
+      person(given = "NIEHS",
+             role = "fnd",
+             comment = "P01 CA196559"),
+      person(given = "NIEHS",
+             role = "fnd",
+             comment = "R01 CA201407"),
+      person(given = "NIEHS",
+             role = "fnd",
+             comment = "P30 ES007048"),
+      person(given = "NIEHS",
+             role = "fnd",
+             comment = "P01 HL115606"))
+Description: Tools to create binary dosage from either vcf
+    or gen files, merge binary dosage files, and read
+    binary dosage files.
 License: GPL-3
-Imports:
-    Rcpp (>= 0.12.9),
-LinkingTo: Rcpp
 Encoding: UTF-8
-RoxygenNote: 6.1.0
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 2.1.0),
+    covr
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
+Roxygen: list(markdown = TRUE)
+LinkingTo: 
+    Rcpp
+Imports: 
+    Rcpp,
+    digest,
+    prodlim
