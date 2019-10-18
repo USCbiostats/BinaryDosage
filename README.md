@@ -211,10 +211,12 @@ mergebd3 <- tempfile()
 
 Converting a VCF file into a binary dosage file is simple. The user
 passes the names of the VCF and information files along with the name
-for the binary dosage file to the vcftobd function. There are some
-options available for the vcftobd functions such as using gz compressed
-files vcf files. More information about these options can be found using
-the help files or reading the vignette “usingvcffiles”.
+for the binary dosage file to the
+<span style="font-family:Courier">vcftobd</span> function. There are
+some options available for the
+<span style="font-family:Courier">vcftobd</span> functions such as using
+gz compressed files vcf files. More information about these options can
+be found using the help files or reading the vignette “usingvcffiles”.
 
 The following commands convert VCF data sets 1a and 1b into the binary
 dosage format.
@@ -245,8 +247,9 @@ Because of this formatting, the function
 <span style="font-family:Courier">snpcolumns</span> parameter to have
 the value <span style="font-family:Courier">c(0L, 2L:5L)</span>. To
 convert the GEN data sets to binary dosage data sets, the names of the
-input and output files are passed to gentobd along with the needed value
-for snpcolumns.
+input and output files are passed to
+<span style="font-family:Courier">gentobd</span> along with the needed
+value for snpcolumns.
 
 The following commands convert the two GEN files into binary dosage
 files.
