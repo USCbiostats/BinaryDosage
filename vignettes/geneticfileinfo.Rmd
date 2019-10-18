@@ -1,0 +1,21 @@
+---
+title: "Genetic File Information"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Genetic File Information}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Under construction
+
+```{r setup}
+library(BinaryDosage)
+```

@@ -1,8 +1,8 @@
 ---
-title: "Binary Dosage Format"
+title: "Binary Dosage Formats"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Binary Dosage Format}
+  %\VignetteIndexEntry{Binary Dosage Formats}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+# Under construction
 
 ```{r setup}
 library(BinaryDosage)
