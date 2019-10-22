@@ -174,3 +174,9 @@ When the snpidformat is set to 2, the SNP ID is written in the format
 
 <span style="font-family:Courier">Chromosome:Location:Reference Allele:Alternate Allele</span>
 
+Setting the snpidformat to 1 or 2 reduces the size of the binary dosage file. There is no difference in the size of the binary dosage files when using snpidformat 1 or 2.
+
+**Note:** If the SNP IDs in the VCF are in snpidformat 1 or 2, the code recognizes this and writes the smaller binary dosage files.
+
+**Note:** If the SNP IDs in the VCF are in snpidformat 2, and the snpidformat option is set to 1, an error will be returned. This is because of possible information loss and the binary dosage file does not change.
+
