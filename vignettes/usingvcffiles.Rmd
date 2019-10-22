@@ -154,4 +154,23 @@ snp1 <- cbind(SubjectID = bdinfo2a$samples$sid, snp1_2a)
 knitr::kable(snp1[1:10,], caption = "Dosage and Genotype Probabilities")
 ```
 
- 
+### Other vcftobd options
+
+There are other options for <span style="font-family:Courier">vcftobd</span>. These options effect how the information is written to the binary dosage file.
+
+#### format and subformat options
+
+The format and subformat options determine the format of the binary dosage files. These format are documented in the [Binary Dosage Formats](bdformats.html).
+
+#### snpidformat
+
+The <span style="font-family:Courier">snpidformat</span> options specifies how the SNP ID is written to the binary dosage file. The default value is 0. This tells the code to use the SNP IDs that are in the VCF file. Other values that can be supplied to the function creates a SNP ID from the chromosome, location, reference, and alternate allele values.
+
+When the snpidformat is set to 1, the SNP ID is written in the format
+
+<span style="font-family:Courier">Chromosome:Location</span>
+
+When the snpidformat is set to 2, the SNP ID is written in the format
+
+<span style="font-family:Courier">Chromosome:Location:Reference Allele:Alternate Allele</span>
+
