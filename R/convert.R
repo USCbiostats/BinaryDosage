@@ -46,6 +46,18 @@ validatebdinput <- function(bdfiles,
   if (is.na(match("", bdfiles)) == FALSE)
     stop("Output file names cannot be blank")
 
+  if (is.numeric(snpidformat) == FALSE && is.integer(snpidformat) == FALSE)
+    stop("snpidformat must be an integer value")
+  if (length(snpidformat) != 1)
+    stop("snpidformat must be an integer vector of length 1")
+  if (is.numeric(snpidformat) == TRUE) {
+    if (floor(snpidformat) != snpidformat)
+      stop("snpidformat must be an integer")
+    snpidformat = floor(snpidformat)
+  }
+  if (snpidformat < -1 | snpidformat > 3)
+    stop("snpidformat must be and integer from -1 to 3")
+
   if (is.character(bdoptions) == FALSE)
     stop("bdoptions must be a character array")
   if (length(bdoptions) > 0 & format != 4)
@@ -97,6 +109,7 @@ validatebdinput <- function(bdfiles,
 #' used for formats 1 and 2, and subformat 3 will be used for
 #' formats 3 and 4. The default value is 0.
 #' @param snpidformat The format that the SNP ID will be saved as.
+#' -1 - SNP ID not written
 #' 0 - same as in the VCF file
 #' 1 - <chromosome>:<location>
 #' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
@@ -142,10 +155,19 @@ vcftobd <- function(vcffiles,
   format <- validation$format
   subformat <- validation$subformat
 
+  if (snpidformat == -1)
+    readsnpformat = 0
+  else
+    readsnpformat = snpidformat
   vcfinfo <- getvcfinfo(vcffiles = vcffiles,
                         gz = gz,
                         index = FALSE,
-                        snpidformat = snpidformat)
+                        snpidformat = readsnpformat)
+  if (snpidformat == -1)
+    vcfinfo$snpidformat = 1
+  else
+    vcfinfo$snpidformat = 0
+
   if (subformat == 0) {
     if (anyNA(vcfinfo$additionalinfo$datacolumns$genotypeprob) == TRUE)
       subformat <- 1
@@ -170,6 +192,7 @@ vcftobd <- function(vcffiles,
     updatemaf(bdinfo)
   if (is.na(match("rsq", bdoptions)) == FALSE)
     updatersq(bdinfo)
+  ##return (0)
 }
 
 ###########################################################
@@ -233,6 +256,7 @@ vcftobd <- function(vcffiles,
 #' used for formats 1 and 2, and subformat 3 will be used for
 #' formats 3 and 4. The default value is 0.
 #' @param snpidformat The format that the SNP ID will be saved as.
+#' -1 - SNP ID not written
 #' 0 - same as in the VCF file
 #' 1 - <chromosome>:<location>
 #' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
@@ -287,6 +311,10 @@ gentobd <- function(genfiles,
   format <- validation$format
   subformat <- validation$subformat
 
+  if (snpidformat == -1)
+    readsnpformat = 0L
+  else
+    readsnpformat = as.integer(snpidformat)
   geninfo <- getgeninfo(genfiles = genfiles,
                         snpcolumns = snpcolumns,
                         startcolumn = startcolumn,
@@ -295,8 +323,12 @@ gentobd <- function(genfiles,
                         header = header,
                         gz = gz,
                         index = FALSE,
-                        snpidformat = snpidformat,
+                        snpidformat = readsnpformat,
                         sep = sep)
+  if (snpidformat == -1)
+    geninfo$snpidformat = 1
+  else
+    geninfo$snpidformat = 0
 
   if (subformat == 0) {
     if (geninfo$additionalinfo$format == 1L)

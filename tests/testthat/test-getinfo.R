@@ -59,10 +59,10 @@ test_that("getvcfinfo", {
 
   expect_error(getvcfinfo(vcffiles = "file1",
                           snpidformat = ""),
-               "snpidformat must be an intger value")
+               "snpidformat must be an integer value")
   expect_error(getvcfinfo(vcffiles = "file1",
                           snpidformat = c(1L, 2L)),
-               "snpidformat must be a singe integer value")
+               "snpidformat must be an interger vector of length 1")
   expect_error(getvcfinfo(vcffiles = "file1",
                           snpidformat = 1.1),
                "snpidformat must be an integer value")
@@ -209,7 +209,10 @@ test_that("getgeninfo", {
                "snpidformat must be an integer value")
   expect_error(getgeninfo(genfiles = c("file1", "file2"),
                           snpidformat = 1L:3L),
-               "snpidformat must be an integer vector of length 1")
+               "snpidformat must be an interger vector of length 1")
+  expect_error(getgeninfo(genfiles = c("file1", "file2"),
+                          snpidformat = 1.1),
+               "snpidformat must be an integer value")
   expect_error(getgeninfo(genfiles = c("file1", "file2"),
                           snpidformat = 5L),
                "snpidformat must have a value of 0, 1, 2, or 3")

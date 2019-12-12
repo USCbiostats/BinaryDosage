@@ -61,6 +61,23 @@ test_that("vcftobd", {
 
   expect_error(vcftobd(vcffiles = "file1",
                        bdfiles = "file2",
+                       snpidformat = "A"),
+               "snpidformat must be an integer value")
+  expect_error(vcftobd(vcffiles = "file1",
+                       bdfiles = "file2",
+                       snpidformat = 1:2),
+               "snpidformat must be an integer vector of length 1")
+  expect_error(vcftobd(vcffiles = "file1",
+                       bdfiles = "file2",
+                       snpidformat = 1.2),
+               "snpidformat must be an integer")
+  expect_error(vcftobd(vcffiles = "file1",
+                       bdfiles = "file2",
+                       snpidformat = 4),
+               "snpidformat must be and integer from -1 to 3")
+
+  expect_error(vcftobd(vcffiles = "file1",
+                       bdfiles = "file2",
                        bdoptions = 4),
                "bdoptions must be a character array")
   expect_error(vcftobd(vcffiles = "file1",
@@ -85,7 +102,8 @@ test_that("vcftobd", {
   vcf2afile = system.file("extdata", "set2a.vcf", package = "BinaryDosage")
   bdfiles2 <- tempfile()
   expect_error(vcftobd(vcffiles = c(vcf2afile),
-                       bdfiles = bdfiles2),
+                       bdfiles = bdfiles2,
+                       snpidformat = -1),
                NA)
   expect_error(bdinfo <- getbdinfo(bdfiles = bdfiles2), NA)
 
@@ -122,6 +140,7 @@ test_that("gentobd", {
                        snpcolumns = c(1L, 3L, 2L, 4L, 5L),
                        impformat = 1L,
                        bdfiles = bdfile2a,
+                       snpidformat = -1L,
                        bdoptions = c("aaf", "maf", "rsq")),
                NA)
   expect_error(getbdinfo(bdfiles = bdfile2a), NA)
