@@ -1,6 +1,8 @@
 ---
 title: "Using GEN Files"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Using GEN Files}
   %\VignetteEngine{knitr::rmarkdown}
@@ -80,7 +82,15 @@ The <span style="font-family:Courier">gentobd</span> takes the following paramet
 - <span style="font-family:Courier">snpcolumns</span> - Columns containing the values for chromosome, SNP ID, location, reference allele, and alternate allele.
 - <span style="font-family:Courier">startcolumn</span> - Column where genotype probabilities start.
 - <span style="font-family:Courier">impformat</span> - Number of genotype probabilities for each subject.
-
+- <span style="font-family:Courier">chromoxome</span> - Optional chromosome, provided if chromosome is not include in GEN file
+- <span style="font-family:Courier">header</span> - Vector of one or two logical values indciating if GEN and sample files have headers respecitively.
+- <span style="font-family:Courier">gz</span> - Logical value indicating if GEN file is compressed.
+- <span style="font-family:Courier">sep</span> - Separator used in GEN file.
+- <span style="font-family:Courier">bdfiles</span> - Vector of character values give the names of the binary dosage file. If the binary dosage format is 3 or less there are three files names, binary dosage file, family file, and map file names. For format 4 there is only the binary dosage file name. 
+- <span style="font-family:Courier">format</span> - Format of the binary dosage file.
+- <span style="font-family:Courier">subformat</span> - Subformat of the binary dosage file.
+- <span style="font-family:Courier">snpidformat</span> - Format to store the SNP ID in.
+- <span style="font-family:Courier">bdoptions</span> - Options for calculating additional SNP data.
 
 ## Default options
 
@@ -89,11 +99,43 @@ The default values for the <span style="font-family:Courier">gentobd</span> requ
 The following code reads the gen file *set3b.chr.imp* using the *set3b.sample* sample file. These files are in the format mentioned above.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-gen3bchrfile <- system.file("extdata", ".set3b.chr.imp", package = "BinaryDosage")
-sample3bfile <- system.file("extdata", ".set3b.sample", package = "BinaryDosage")
+gen3bchrfile <- system.file("extdata", "set3b.chr.imp", package = "BinaryDosage")
+sample3bfile <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
 bdfile3b_chr <- tempfile()
 gentobd(genfiles = c(gen3bchrfile, sample3bfile), bdfiles = bdfile3b_chr)
 
 bdinfo3b_chr <- getbdinfo(bdfiles = bdfile3b_chr)
+
+```
+
+## snpcolumns
+
+The <span style="font-family:Courier">snpcolumns</span> parameter lists the column numbers for the chromosome, SNP ID, location, reference allele, and alternate allele, respectively.
+
+The following code reads in *set1b.imp*. This file has the SNP data in the following order, chromosome, location, SNP ID, reference allele, alternate allele. The file also has a header so there is no sample file.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen1bfile <- system.file("extdata", "set1b.imp", package = "BinaryDosage")
+bdfile1b <- tempfile()
+gentobd(genfiles = gen1bfile,
+        bdfiles = bdfile1b,
+        snpcolumns = c(1L, 3L, 2L, 4L, 5L),
+        header = TRUE)
+
+bdinfo1b <- getbdinfo(bdfiles = bdfile1b)
+
+```
+
+Quite often the chromosome is not part of the GEN file and first column has the value '\-\-'. In this case  the SNP ID is often in the format <span style="font-family:Courier">\<chromosome\>:\<additional SNP data\></span>. In this case, the chromosome column number (first value in snpcolumns) can be set to -1 and the <span style="font-family:Courier">gentobd</span> routine will extract the chromosome from the SNP ID value.
+
+The following code reads in *set3b.imp*. This is in same format as *set3b.chr.imp* except that there is no column for the chromosome value. The value of -1L will be used for the chromosome column to indicate to get the chromosome value from the SNP ID value.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
+sample3bfile <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
+bdfile3b <- tempfile()
+gentobd(genfiles = c(gen3bfile, sample3bfile), bdfiles = bdfile3b)
+
+bdinfo3b_chr <- getbdinfo(bdfiles = bdfile3b)
 
 ```
