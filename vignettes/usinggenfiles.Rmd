@@ -126,16 +126,116 @@ bdinfo1b <- getbdinfo(bdfiles = bdfile1b)
 
 ```
 
-Quite often the chromosome is not part of the GEN file and first column has the value '\-\-'. In this case  the SNP ID is often in the format <span style="font-family:Courier">\<chromosome\>:\<additional SNP data\></span>. In this case, the chromosome column number (first value in snpcolumns) can be set to -1 and the <span style="font-family:Courier">gentobd</span> routine will extract the chromosome from the SNP ID value.
+Quite often the chromosome is not part of the GEN file and first column has the value '\-\-'. In this case  the SNP ID is often in the format <span style="font-family:Courier">\<chromosome\>:\<additional SNP data\></span>. In this case, the chromosome column number (first value in snpcolumns) can be set to 0L and the <span style="font-family:Courier">gentobd</span> routine will extract the chromosome from the SNP ID value.
 
-The following code reads in *set3b.imp*. This is in same format as *set3b.chr.imp* except that there is no column for the chromosome value. The value of -1L will be used for the chromosome column to indicate to get the chromosome value from the SNP ID value.
+The following code reads in *set3b.imp*. This is in same format as *set3b.chr.imp* except that there is no column for the chromosome value. The value of 0L will be used for the chromosome column to indicate to get the chromosome value from the SNP ID value.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
 sample3bfile <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
 bdfile3b <- tempfile()
-gentobd(genfiles = c(gen3bfile, sample3bfile), bdfiles = bdfile3b)
+gentobd(genfiles = c(gen3bfile, sample3bfile),
+        bdfiles = bdfile3b,
+        snpcolumns = c(0L,2L:5L))
 
-bdinfo3b_chr <- getbdinfo(bdfiles = bdfile3b)
+bdinfo3b <- getbdinfo(bdfiles = bdfile3b)
+
+```
+
+## startcolumn
+
+Sometimes the GEN file has more SNP information than the five values mentioned earlier. In this case the genotype probabilities start in a column number other than 6. The value of the <span style="font-family:Courier">startcolumn</span> is the column number that the genotype probabilities start
+
+The following code reads in *set4b.imp*. It has an extra column in the SNP data in column 2. The <span style="font-family:Courier">snpcolumns</span> and <span style="font-family:Courier">startcolumn</span> has been set to handle this. The value of <span style="font-family:Courier">impformat</span> has also been set since there are only 2 genotype probabilities in the file.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen4bfile <- system.file("extdata", "set4b.imp", package = "BinaryDosage")
+sample4bfile <- system.file("extdata", "set4b.sample", package = "BinaryDosage")
+bdfile4b <- tempfile()
+gentobd(genfiles = c(gen4bfile, sample4bfile),
+        bdfiles = bdfile4b,
+        snpcolumns = c(1L,2L,4L,5L,6L),
+        startcolumn = 7L,
+        impformat = 2L)
+
+bdinfo4b <- getbdinfo(bdfiles = bdfile4b)
+
+```
+
+## impformat
+
+The <span style="font-family:Courier">impformat</span> parameter is an integer from 1 to 3 that indicates how many genotype probabilies are in the file for each person. The value of 1 indicates that the value is the dosage value for the subject.
+
+The following codes reads in file *set2b.imp*. This file contains only the dosage values for the subjects. The SNP information is not in the default order so the values of snpcolumns has to be specified (see above).
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen2bfile <- system.file("extdata", "set2b.imp", package = "BinaryDosage")
+sample2bfile <- system.file("extdata", "set2b.sample", package = "BinaryDosage")
+bdfile2b <- tempfile()
+gentobd(genfiles = c(gen2bfile, sample2bfile),
+        bdfiles = bdfile2b,
+        snpcolumns = c(1L,3L,2L,4L,5L),
+        impformat = 1L)
+
+bdinfo2b <- getbdinfo(bdfiles = bdfile2b)
+
+```
+
+## chromosome
+
+The <span style="font-family:Courier">chromosome</span> parameter is a character value that used when the chromosome column value in <span style="font-family:Courier">snpcolumns</span> is set to -1L.
+
+The following code reads in *set3b.imp*, setting the chromosome value to 1.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
+sample3bfile <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
+bdfile3bm1 <- tempfile()
+gentobd(genfiles = c(gen3bfile, sample3bfile),
+        bdfiles = bdfile3bm1,
+        snpcolumns = c(-1L,2L:5L),
+        chromosome = "1")
+
+bdinfo3bm1 <- getbdinfo(bdfiles = bdfile3bm1)
+
+```
+
+## The header parameter
+
+The <span style="font-family:Courier">header</span> parameter is a character vector of length 1 or 2. These indicate if the GEN file an sample file have headers, respectively. If the first value is <span style="font-family:Courier">TRUE</span>, the second value is ignored as the subjects IDs are in the header of the GEN file.
+
+The following code reads in *set3b.imp* using the sample file *set3bnh.sample* which has no header.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen3bfile <- system.file("extdata", "set3b.imp", package = "BinaryDosage")
+sample3bnhfile <- system.file("extdata", "set3bnh.sample", package = "BinaryDosage")
+bdfile3bnh <- tempfile()
+gentobd(genfiles = c(gen3bfile, sample3bnhfile),
+        bdfiles = bdfile3bnh,
+        snpcolumns = c(0L,2L:5L),
+        header = c(FALSE, FALSE))
+
+bdinfo3bnh <- getbdinfo(bdfiles = bdfile3bnh)
+
+```
+
+## gz
+
+The <span style="font-family:Courier">gz</span> parameter is a logical value that indicates if the GEN file is compressed using gzip. The sample file is always assumed to be uncompressed.
+
+The following code reads in *set4b.imp.gz* file using the sample file *set4b.sample*.
+
+``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
+gen4bgzfile <- system.file("extdata", "set4b.imp.gz", package = "BinaryDosage")
+sample4bfile <- system.file("extdata", "set4b.sample", package = "BinaryDosage")
+bdfile4bgz <- tempfile()
+gentobd(genfiles = c(gen4bgzfile, sample4bfile),
+        bdfiles = bdfile4bgz,
+        snpcolumns = c(1L,2L,4L,5L,6L),
+        startcolumn = 7L,
+        impformat = 2L,
+        gz = TRUE)
+
+bdinfo4bgz <- getbdinfo(bdfiles = bdfile4bgz)
 
 ```
