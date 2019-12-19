@@ -271,15 +271,15 @@ The parameters passed to <span style="font-family:Courier">getvcfinfo</span> are
 
 ## vcfapply
 
-The <span style="font-family:Courier">vcfapply</span> routine applies a function to all SNPs in the VCF file. The routine return a list with length equal to the number of SNPs in the VCF file. Each element in the list is the value returned by the user supplied function. The routine takes the following parameters.
+The <span style="font-family:Courier">vcfapply</span> routine applies a function to all SNPs in the VCF file. The routine returns a list with length equal to the number of SNPs in the VCF file. Each element in the list is the value returned by the user supplied function. The routine takes the following parameters.
 
-- <span style="font-family:Courier">vcfnfo</span> - list with information about the VCF file returned by <span style="font-family:Courier">getvcfinfo</span>.
+- <span style="font-family:Courier">vcfinfo</span> - list with information about the VCF file returned by <span style="font-family:Courier">getvcfinfo</span>.
 - <span style="font-family:Courier">func</span> - user supplied function to be applied to each SNP in the VCF file.
 - <span style="font-family:Courier">...</span> - additional parameters needed by the user supplied function
 
 The user supplied function must have the following parameters.
 
-- <span style="font-family:Courier">vcfnfo</span> - A numeric vector with the dosage values for each subject.
+- <span style="font-family:Courier">vcfinfo</span> - A numeric vector with the dosage values for each subject.
 - <span style="font-family:Courier">p0</span> - A numeric vector with the probabilities the subject has no alternate alleles for each subject.
 - <span style="font-family:Courier">p1</span> - A numeric vector with the probabilities the subject has one alternate allele for each subject.
 - <span style="font-family:Courier">p2</span> - A numeric vector with the probabilities the subject has two alternate alleles for each subject.
