@@ -25,7 +25,7 @@ This is an estimate for the impuation r squared returned from
 minimac and impute2. The r squared values are calculated slightly
 differently between the programs. This estimate is based on the
 method used by minimac. It does well for minor allele frequencies
-above 5%. This function is used internally and is exported for
+above 5\%. This function is used internally and is exported for
 use in examples.
 }
 \examples{

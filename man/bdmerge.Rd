@@ -4,9 +4,17 @@
 \alias{bdmerge}
 \title{Merge binary dosage files together}
 \usage{
-bdmerge(mergefiles, format = 4, subformat = 0L, bdfiles,
-  famfiles = character(), mapfiles = character(), onegroup = TRUE,
-  bdoptions = character(), snpjoin = "inner")
+bdmerge(
+  mergefiles,
+  format = 4,
+  subformat = 0L,
+  bdfiles,
+  famfiles = character(),
+  mapfiles = character(),
+  onegroup = TRUE,
+  bdoptions = character(),
+  snpjoin = "inner"
+)
 }
 \arguments{
 \item{mergefiles}{Vector of file names for the merged binary

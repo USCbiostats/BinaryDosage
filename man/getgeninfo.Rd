@@ -4,10 +4,18 @@
 \alias{getgeninfo}
 \title{Get information about a gen, impute2, file}
 \usage{
-getgeninfo(genfiles, snpcolumns = 1L:5L, startcolumn = 6L,
-  impformat = 3L, chromosome = character(), header = c(FALSE, TRUE),
-  gz = FALSE, index = TRUE, snpidformat = 0L, sep = c("\\t",
-  "\\t"))
+getgeninfo(
+  genfiles,
+  snpcolumns = 1L:5L,
+  startcolumn = 6L,
+  impformat = 3L,
+  chromosome = character(),
+  header = c(FALSE, TRUE),
+  gz = FALSE,
+  index = TRUE,
+  snpidformat = 0L,
+  sep = c("\\t", "\\t")
+)
 }
 \arguments{
 \item{genfiles}{A vector of file names.
@@ -23,7 +31,7 @@ The value for the chromosome may be -1 or -0.
 -1 indicates that the chromosome value is passed to
 the routine using the chromosome parameter.
 0 indicates that the chromosome value is in the snpid
-and that the snpid has the format <chromosome>:<other data>.
+and that the snpid has the format chromosome:other_data.
 Default value is c(1L, 2L, 3L, 4L, 5L).}
 
 \item{startcolumn}{Column number of first column with
@@ -63,7 +71,7 @@ is the alternate allele. Default value is 0.}
 
 \item{sep}{Seperators used in the gen file and sample files,
 respectively. If only value is provided it is used for both
-files. Default value is c("\\t", "\\t")}
+files. Default value is c(\code{"\\t"}, \code{"\\t"})}
 }
 \value{
 List with information about the gen file.

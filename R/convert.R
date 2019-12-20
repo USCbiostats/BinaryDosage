@@ -109,10 +109,10 @@ validatebdinput <- function(bdfiles,
 #' used for formats 1 and 2, and subformat 3 will be used for
 #' formats 3 and 4. The default value is 0.
 #' @param snpidformat The format that the SNP ID will be saved as.
-#' -1 - SNP ID not written
+#' -1 SNP ID not written
 #' 0 - same as in the VCF file
-#' 1 - <chromosome>:<location>
-#' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+#' 1 - chromosome:location
+#' 2 - chromosome:location:reference_allele:alternate_allele
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containg any of the following
@@ -217,7 +217,7 @@ vcftobd <- function(vcffiles,
 #' -1 indicates that the chromosome value is passed to
 #' the routine using the chromosome parameter.
 #' 0 indicates that the chromosome value is in the snpid
-#' and that the snpid has the format <chromosome>:<other data>.
+#' and that the snpid has the format chromosome:other_data.
 #' Default value is c(1L, 2L, 3L, 4L, 5L).
 #' @param startcolumn Column number of first column with
 #' genetic probabilities or dosages. Must
@@ -236,7 +236,7 @@ vcftobd <- function(vcffiles,
 #' @param gz Indicator if file is compressed using gzip.
 #' Default value is FALSE.
 #' @param sep Seperator used in the gen file. Default
-#' value is "\\\t"
+#' value is `"\t"`
 #' @param bdfiles Vector of names of the output files.
 #' The binary dosage file name is first. The family and
 #' map files follow. For format 4, no family and map file
@@ -256,10 +256,10 @@ vcftobd <- function(vcffiles,
 #' used for formats 1 and 2, and subformat 3 will be used for
 #' formats 3 and 4. The default value is 0.
 #' @param snpidformat The format that the SNP ID will be saved as.
-#' -1 - SNP ID not written
-#' 0 - same as in the VCF file
-#' 1 - <chromosome>:<location>
-#' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+#' -1 - SNP ID not written.
+#' 0 - same as in the VCF file.
+#' 1 - chromosome:location.
+#' 2 - chromosome:location:reference_allele:alternate_allele.
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containg any of the following

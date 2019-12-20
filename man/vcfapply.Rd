@@ -46,7 +46,8 @@ aaf <- vcfapply(vcfinfo = vcfinfo,
                 func = BinaryDosage:::getaaf)
 }
 \seealso{
-Other Iterating functions: \code{\link{bdapply}},
-  \code{\link{genapply}}
+Other Iterating functions: 
+\code{\link{bdapply}()},
+\code{\link{genapply}()}
 }
 \concept{Iterating functions}

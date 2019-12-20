@@ -95,8 +95,8 @@ readminimacinfofile <- function(filename) {
 #' Default value is TRUE.
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' 0 - same as in the VCF file
-#' 1 - <chromosome>:<location>
-#' 2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+#' 1 - chromosome:location
+#' 2 - chromosome:location:reference_allele:alternate_allele
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #'
@@ -328,7 +328,7 @@ getvcfinfo <- function(vcffiles,
 #' -1 indicates that the chromosome value is passed to
 #' the routine using the chromosome parameter.
 #' 0 indicates that the chromosome value is in the snpid
-#' and that the snpid has the format <chromosome>:<other data>.
+#' and that the snpid has the format chromosome:other_data.
 #' Default value is c(1L, 2L, 3L, 4L, 5L).
 #' @param startcolumn Column number of first column with
 #' genetic probabilities or dosages. Must
@@ -360,7 +360,7 @@ getvcfinfo <- function(vcffiles,
 #' is the alternate allele. Default value is 0.
 #' @param sep Seperators used in the gen file and sample files,
 #' respectively. If only value is provided it is used for both
-#' files. Default value is c("\\\t", "\\\t")
+#' files. Default value is c(`"\t"`, `"\t"`)
 #'
 #' @return List with information about the gen file.
 #' This includes family and subject IDs along with

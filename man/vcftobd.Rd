@@ -4,8 +4,15 @@
 \alias{vcftobd}
 \title{Convert a VCF file to a binary dosage file}
 \usage{
-vcftobd(vcffiles, gz = FALSE, bdfiles, format = 4L, subformat = 0L,
-  snpidformat = 0, bdoptions = character(0))
+vcftobd(
+  vcffiles,
+  gz = FALSE,
+  bdfiles,
+  format = 4L,
+  subformat = 0L,
+  snpidformat = 0,
+  bdoptions = character(0)
+)
 }
 \arguments{
 \item{vcffiles}{A vector of file names.
@@ -39,9 +46,10 @@ used for formats 1 and 2, and subformat 3 will be used for
 formats 3 and 4. The default value is 0.}
 
 \item{snpidformat}{The format that the SNP ID will be saved as.
+-1 SNP ID not written
 0 - same as in the VCF file
-1 - <chromosome>:<location>
-2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+1 - chromosome:location
+2 - chromosome:location:reference_allele:alternate_allele
 If snpidformat is 1 and the VCF file uses format 2, an error is
 generated. Default value is 0.}
 

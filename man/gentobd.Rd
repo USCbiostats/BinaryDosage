@@ -4,10 +4,21 @@
 \alias{gentobd}
 \title{Convert a gen file to a binary dosage file}
 \usage{
-gentobd(genfiles, snpcolumns = 1L:5L, startcolumn = 6L,
-  impformat = 3L, chromosome = character(), header = c(FALSE, TRUE),
-  gz = FALSE, sep = "\\t", bdfiles, format = 4L, subformat = 0L,
-  snpidformat = 0L, bdoptions = character(0))
+gentobd(
+  genfiles,
+  snpcolumns = 1L:5L,
+  startcolumn = 6L,
+  impformat = 3L,
+  chromosome = character(),
+  header = c(FALSE, TRUE),
+  gz = FALSE,
+  sep = "\\t",
+  bdfiles,
+  format = 4L,
+  subformat = 0L,
+  snpidformat = 0L,
+  bdoptions = character(0)
+)
 }
 \arguments{
 \item{genfiles}{A vector of file names.
@@ -23,7 +34,7 @@ The value for the chromosome may be -1 or -0.
 -1 indicates that the chromosome value is passed to
 the routine using the chromosome parameter.
 0 indicates that the chromosome value is in the snpid
-and that the snpid has the format <chromosome>:<other data>.
+and that the snpid has the format chromosome:other_data.
 Default value is c(1L, 2L, 3L, 4L, 5L).}
 
 \item{startcolumn}{Column number of first column with
@@ -48,7 +59,7 @@ Default value is c(FALSE, TRUE).}
 Default value is FALSE.}
 
 \item{sep}{Seperator used in the gen file. Default
-value is "\\t"}
+value is \code{"\\t"}}
 
 \item{bdfiles}{Vector of names of the output files.
 The binary dosage file name is first. The family and
@@ -72,9 +83,10 @@ used for formats 1 and 2, and subformat 3 will be used for
 formats 3 and 4. The default value is 0.}
 
 \item{snpidformat}{The format that the SNP ID will be saved as.
-0 - same as in the VCF file
-1 - <chromosome>:<location>
-2 - <chromosome>:<location>:<reference allele>:<alternate allele>
+-1 - SNP ID not written.
+0 - same as in the VCF file.
+1 - chromosome:location.
+2 - chromosome:location:reference_allele:alternate_allele.
 If snpidformat is 1 and the VCF file uses format 2, an error is
 generated. Default value is 0.}
 
