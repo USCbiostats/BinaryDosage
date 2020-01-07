@@ -294,7 +294,7 @@ The function applied to the SNPs in a binary dosage file must have the
 following four parameters, dosage, p0, p1, and p2. These are the dosage,
 Pr(*g=0*), Pr(*g=1*), and Pr(*g=2*), respectively. Other parameters can
 also be passed. For more information on defining the function see the
-vignette “applyingfunctions”.
+vignettes [Using Binary Dosage files](usingbdfiles.html).
 
 The following code defines a function to calculate the alternate allele
 frequency.

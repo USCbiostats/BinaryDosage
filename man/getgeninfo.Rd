@@ -66,7 +66,7 @@ Default value is TRUE.}
 2 indicates to change the snpid into CHR:LOC:REF:ALT,
 3 indicates to change the snpid into CHR:LOC_REF_ALT,
 where CHR is the chromosome number, LOC is the
-location in bp, REF is the reference allele, andALT
+location in bp, REF is the reference allele, and ALT
 is the alternate allele. Default value is 0.}
 
 \item{sep}{Seperators used in the gen file and sample files,

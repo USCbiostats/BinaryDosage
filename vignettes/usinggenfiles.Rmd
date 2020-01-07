@@ -275,7 +275,7 @@ When the snpidformat is set to -1, the SNP ID is not written to the binary dosag
 
 ## bdoptions
 
-When using binary dosage format 4.x it is possible to store addtional information about the SNPs in the file. This is information consists of the following values
+When using binary dosage format 4.x it is possible to store additional information about the SNPs in the file. This is information consists of the following values
 
 - Alternate allele frequency
 - Minor allele frequency

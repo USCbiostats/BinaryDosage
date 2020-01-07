@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(BinaryDosage)
 ```
 
-The routines <span style="font-family:Courier">getbdinfo</span>, <span style="font-family:Courier">getvcfinfo</span>, and <span style="font-family:Courier">getgeninfo</span> return a list withinformation about the data in the files. The list returned by each of these routines a section common to them all and a list <span style="font-family:Courier">additioninfo</span> that is specific to the file type.
+The routines <span style="font-family:Courier">getbdinfo</span>, <span style="font-family:Courier">getvcfinfo</span>, and <span style="font-family:Courier">getgeninfo</span> return a list withinformation about the data in the files. The list returned by each of these routines a section common to them all and a list <span style="font-family:Courier">additionalinfo</span> that is specific to the file type.
 
 ## Common section
 
