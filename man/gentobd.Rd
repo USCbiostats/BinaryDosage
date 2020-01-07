@@ -58,7 +58,7 @@ Default value is c(FALSE, TRUE).}
 \item{gz}{Indicator if file is compressed using gzip.
 Default value is FALSE.}
 
-\item{sep}{Seperator used in the gen file. Default
+\item{sep}{Separator used in the gen file. Default
 value is \code{"\\t"}}
 
 \item{bdfiles}{Vector of names of the output files.
@@ -70,12 +70,12 @@ names are needed.}
 Allowed values are 1, 2, 3, and 4. The default value is 4.
 Using the default value is recommended.}
 
-\item{subformat}{The subsubformat of the format of the output
+\item{subformat}{The subformat of the format of the output
 binary dosage file. A value of 1 or 3 indicates that only the
 dosage value is saved. A value of 2 or 4 indicates
 the dosage and genetic probabilities will be output. Values
 of 3 or 4 are only allowed with formats 3 and 4. If a value
-of zero if provided, and genetic probabilites are in the vcf
+of zero if provided, and genetic probabilities are in the vcf
 file, subformat 2 will be used for formats 1 and 2, and
 subformat 4 will be used for formats 3 and 4. If the vcf file
 does not contain genetic probabilities, subformat 1 will be
@@ -90,10 +90,10 @@ formats 3 and 4. The default value is 0.}
 If snpidformat is 1 and the VCF file uses format 2, an error is
 generated. Default value is 0.}
 
-\item{bdoptions}{Character array containg any of the following
+\item{bdoptions}{Character array containing any of the following
 value, "aaf", "maf", "rsq". The presence of any of these
 values indicates that the specified values should be
-calculates and stored in the bdosage file. These values only
+calculates and stored in the binary dosage file. These values only
 apply to format 4.}
 }
 \value{

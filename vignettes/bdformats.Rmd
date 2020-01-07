@@ -96,7 +96,7 @@ $$\Pr(g=2) = \frac{d - \Pr(g=1)}{2}$$
 
 $$\Pr(g=0) = 1 - \Pr(g=1) - \Pr(g=2)$$
 
-These formulae work well but sometimes there is round off error in the imputation values. In these cases the above equations can't be used to get the exact imputation values. In these situations all four imputations values, $d$, $\Pr(g=0)$,$\Pr(g=1)$, and $\Pr(g=2)$ have to be saved. Fortunately this is not a common occurance.
+These formulae work well but sometimes there is round off error in the imputation values. In these cases the above equations can't be used to get the exact imputation values. In these situations all four imputations values, $d$, $\Pr(g=0)$,$\Pr(g=1)$, and $\Pr(g=2)$ have to be saved. Fortunately this is not a common occurrence.
 
 Since the values stored are short integers of 2 bytes in length, only the last 15 bits are used. This allows the 16th bit to be used as an indicator. For each SNP for each subject the first value saved is the dosage. If the 16th bit is 0, this indicates that either $\Pr(g=0)$ or $\Pr(g=2)$ is 0 and the other values can be calculated as described above. If the 16th bit is set to 1, this indicates that the value of $\Pr(g=1)$ follows. If the 16th bit is set to 0, this indicates that the above equations can be used to calculate $\Pr(g=0)$ and $\Pr(g=2)$. If the 16th bit is set to one, this indicates the next two values are $\Pr(g=0)$ and $\Pr(g=2)$ respectively.
 

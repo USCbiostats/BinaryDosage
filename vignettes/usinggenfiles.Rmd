@@ -25,7 +25,7 @@ library(BinaryDosage)
 ```
 # Introduction
 
-GeN files are a useful way to store genetic data. They are text files and can be easily parsed. The output files returned from the imputation software [Impute2](http://mathgen.stats.ox.ac.uk/impute/impute_v2.html) are returned in this format.
+GEN files are a useful way to store genetic data. They are text files and can be easily parsed. The output files returned from the imputation software [Impute2](http://mathgen.stats.ox.ac.uk/impute/impute_v2.html) are returned in this format.
 
 Uncompressed GEN files can be very large, 100s of GB. Because of this they are quite often compressed. This makes the files much smaller but greatly increases the read time. The BinaryDosage package supports reading of gzip compressed GEN files.
 
@@ -82,8 +82,8 @@ The <span style="font-family:Courier">gentobd</span> takes the following paramet
 - <span style="font-family:Courier">snpcolumns</span> - Columns containing the values for chromosome, SNP ID, location, reference allele, and alternate allele.
 - <span style="font-family:Courier">startcolumn</span> - Column where genotype probabilities start.
 - <span style="font-family:Courier">impformat</span> - Number of genotype probabilities for each subject.
-- <span style="font-family:Courier">chromoxome</span> - Optional chromosome, provided if chromosome is not include in GEN file
-- <span style="font-family:Courier">header</span> - Vector of one or two logical values indciating if GEN and sample files have headers respecitively.
+- <span style="font-family:Courier">chromosome</span> - Optional chromosome, provided if chromosome is not include in GEN file
+- <span style="font-family:Courier">header</span> - Vector of one or two logical values indicating if GEN and sample files have headers respectively.
 - <span style="font-family:Courier">gz</span> - Logical value indicating if GEN file is compressed.
 - <span style="font-family:Courier">sep</span> - Separator used in GEN file.
 - <span style="font-family:Courier">bdfiles</span> - Vector of character values give the names of the binary dosage file. If the binary dosage format is 3 or less there are three files names, binary dosage file, family file, and map file names. For format 4 there is only the binary dosage file name. 
@@ -164,7 +164,7 @@ bdinfo4b <- getbdinfo(bdfiles = bdfile4b)
 
 ## impformat
 
-The <span style="font-family:Courier">impformat</span> parameter is an integer from 1 to 3 that indicates how many genotype probabilies are in the file for each person. The value of 1 indicates that the value is the dosage value for the subject.
+The <span style="font-family:Courier">impformat</span> parameter is an integer from 1 to 3 that indicates how many genotype probabilities are in the file for each person. The value of 1 indicates that the value is the dosage value for the subject.
 
 The following codes reads in file *set2b.imp*. This file contains only the dosage values for the subjects. The SNP information is not in the default order so the values of snpcolumns has to be specified (see above).
 
@@ -302,14 +302,14 @@ The parameters passed to <span style="font-family:Courier">getgeninfo</span> are
 - <span style="font-family:Courier">snpcolumns</span> - Columns containing the values for chromosome, SNP ID, location, reference allele, and alternate allele.
 - <span style="font-family:Courier">startcolumn</span> - Column where genotype probabilities start.
 - <span style="font-family:Courier">impformat</span> - Number of genotype probabilities for each subject.
-- <span style="font-family:Courier">chromoxome</span> - Optional chromosome, provided if chromosome is not include in GEN file
-- <span style="font-family:Courier">header</span> - Vector of one or two logical values indciating if GEN and sample files have headers respecitively.
+- <span style="font-family:Courier">chromosome</span> - Optional chromosome, provided if chromosome is not include in GEN file
+- <span style="font-family:Courier">header</span> - Vector of one or two logical values indicating if GEN and sample files have headers respectively.
 - <span style="font-family:Courier">gz</span> - Logical value indicating if GEN file is compressed.
 - <span style="font-family:Courier">index</span> - Logical value indicating if the GEN file is to be indexed.
 - <span style="font-family:Courier">snpidformat</span> - Format to create the SNP ID in.
 - <span style="font-family:Courier">sep</span> - Separator used in GEN file.
 
-All of these parameters have the same meaning as in the <span style="font-family:Courier">gentobd</span> routine above. There is on additional paramter <span style="font-family:Courier">index</span>. This is a logical value indicating if the GEN file should be indexed for quicker reading. This is useful when using <span style="font-family:Courier">genapply</span>. However the <span style="font-family:Courier">index</span> parameter can not be TRUE if the file is compressed.
+All of these parameters have the same meaning as in the <span style="font-family:Courier">gentobd</span> routine above. There is on additional parameter <span style="font-family:Courier">index</span>. This is a logical value indicating if the GEN file should be indexed for quicker reading. This is useful when using <span style="font-family:Courier">genapply</span>. However the <span style="font-family:Courier">index</span> parameter can not be TRUE if the file is compressed.
 
 ## genapply
 

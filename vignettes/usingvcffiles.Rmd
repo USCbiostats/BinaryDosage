@@ -25,11 +25,11 @@ library(BinaryDosage)
 ```
 # Introduction
 
-VCF files are a useful way to store genetic data. They have a well defined format and can be easily parsed. The output files returned from the imputation software [minimac](https://genome.sph.umich.edu/wiki/Minimac) are returned in this format. The minimac software also returns an information file that is supported by the BinaryDosage package. The [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) using minimac for imputation and returns VCF and information. Functions in the BinaryDosage package have default settings to use the files return from mimimac.
+VCF files are a useful way to store genetic data. They have a well defined format and can be easily parsed. The output files returned from the imputation software [minimac](https://genome.sph.umich.edu/wiki/Minimac) are returned in this format. The minimac software also returns an information file that is supported by the BinaryDosage package. The [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) using minimac for imputation and returns VCF and information. Functions in the BinaryDosage package have default settings to use the files return from minimac.
 
 Uncompressed VCF files are text files and can be very large, 100s of GB. Because of this they are quite often compressed. Files returned from the Michigan Imputation Server are compressed using gzip. This makes the files much smaller but greatly increases the read time. The BinaryDosage package supports reading of gzip compressed VCF files.
 
-The BinaryDosage package was orginally designed for use with files return from the Michigan Imputation Server. It was quickly learned that if any manipulation was done to these files by various tools such as [vcftools](https://vcftools.github.io), The conversion routine in the BinaryDosage package would not work. The routine was modified to support additional VCF file formats.
+The BinaryDosage package was originally designed for use with files return from the Michigan Imputation Server. It was quickly learned that if any manipulation was done to these files by various tools such as [vcftools](https://vcftools.github.io), The conversion routine in the BinaryDosage package would not work. The routine was modified to support additional VCF file formats.
 
 The BinaryDosage package has a routine to convert VCF files into a binary format that maintains the dosage, genetic probabilities, and imputation statistics. This results in a file about 10-15% the size of the uncompressed VCF file with much faster, 200-300x, read times. In comparison, Using gzip to compress the VCF file reduces the size of the file to about 5% its original size but makes run times slower.
 
@@ -47,7 +47,7 @@ The <span style="font-family:Courier">vcftobd</span> routine converts VCF files 
 
 ## Minimac files
 
-Since the binary dosage format was intialized created for use with files produced by minimac, the default options for calling the routine to convert a VCF file to a binary dosage format are for this type of file.
+Since the binary dosage format was initially created for use with files produced by minimac, the default options for calling the routine to convert a VCF file to a binary dosage format are for this type of file.
 
 ### Uncompressed VCF files
 

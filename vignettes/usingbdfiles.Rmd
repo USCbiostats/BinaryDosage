@@ -38,7 +38,7 @@ bd1ainfo <- getbdinfo(bdfiles = bd1afile)
 
 ## bdapply
 
-The <span style="font-family:Courier">bdapply</span> routine applies a function to all SNPs in the binary dosage file. The routine returns a list with length equal to the number of SNPs in the binary doage file. Each element in the list is the value returned by the user supplied function. The routine takes the following parameters.
+The <span style="font-family:Courier">bdapply</span> routine applies a function to all SNPs in the binary dosage file. The routine returns a list with length equal to the number of SNPs in the binary dosage file. Each element in the list is the value returned by the user supplied function. The routine takes the following parameters.
 
 - <span style="font-family:Courier">bdinfo</span> - list with information about the binary dosage file returned by <span style="font-family:Courier">getbdinfo</span>.
 - <span style="font-family:Courier">func</span> - user supplied function to be applied to each SNP in the VCF file.
@@ -66,7 +66,7 @@ knitr::kable(altallelefreq, caption = "Information vs Calculated aaf", digits = 
 
 The <span style="font-family:Courier">getsnp</span> routine return the dosage and genotype probabilities for each subject for a given SNP in a binary dosage file.
 
-The routine takes the following paramters.
+The routine takes the following parameters.
 
 - <span style="font-family:Courier">bdinfo</span> - list with information about the binary dosage file returned by <span style="font-family:Courier">getbdinfo</span>.
 - <span style="font-family:Courier">snp</span> - the SNP to return information about. This can either be the index of the SNP in the binary dosage file or its SNP ID.

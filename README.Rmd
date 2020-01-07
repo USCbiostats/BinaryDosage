@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 Genotype imputation is an essential tool in genomics, enabling association testing with markers not directly genotyped, increasing statistical power, and facilitating data pooling between studies that employ different genotyping platforms. Two commonly used software packages for imputation are [minimac](https://genome.sph.umich.edu/wiki/Minimac) and [Impute2](http://mathgen.stats.ox.ac.uk/impute/impute_v2.html). Furthermore, services such as the [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) have made genotype imputation much more accessible and streamlined.   
 
-While a number of software options are available for analyses of imputed data (e.g. PLINK, EPACTS), fewer are available for Genomewide Gene x Environment Interaction Scan (GWIS). Furthermore, data management tasks such as parsing, subsetting, and merging, while manageable in smaller studies, quickly become unyieldy and prohibitively slow with very large samples sizes. We aim to address these limitations by converting imputation outputs into a binary data format, BDose (Binary Dosage). The benefits of a binary format are two fold - decreased hard drive storage requirements (compared to a VCF file), and speed of parsing/analyses. The BinaryDosage package contains functions to convert VCF and Impute2 formatted files into BDose format, along with functions to merge samples. 
+While a number of software options are available for analyses of imputed data (e.g. PLINK, EPACTS), fewer are available for Genomewide Gene x Environment Interaction Scan (GWIS). Furthermore, data management tasks such as parsing, subsetting, and merging, while manageable in smaller studies, quickly become unwieldy and prohibitively slow with very large samples sizes. We aim to address these limitations by converting imputation outputs into a binary dosage file. The benefits of a binary format are two fold - decreased hard drive storage requirements (compared to a VCF file), and speed of parsing/analyses. The BinaryDosage package contains functions to convert VCF and Impute2 formatted files into binary dosage files, along with functions to merge samples. 
 
 For GWAS/GWIS analysis of BinaryDosage files, please refer to the [**GxEScanR**](https://github.com/USCbiostats/GxEScanR) package. 
 
@@ -155,7 +155,7 @@ mergebd3 <- tempfile()
 
 ##### Converting VCF files to a binary dosage data set
 
-Converting a VCF file into a binary dosage file is simple. The user passes the names of the VCF and information files along with the name for the binary dosage file to the <span style="font-family:Courier">vcftobd</span> function. There are some options available for the <span style="font-family:Courier">vcftobd</span> functions such as using gz compressed files vcf files. More information about these options can be found using the help files or reading the vignette "usingvcffiles".
+Converting a VCF file into a binary dosage file is simple. The user passes the names of the VCF and information files along with the name for the binary dosage file to the <span style="font-family:Courier">vcftobd</span> function. There are some options available for the <span style="font-family:Courier">vcftobd</span> functions such as using gz compressed files vcf files. More information about these options can be found using the help files or reading the vignette [Using VCF files](usingvcffiles.html).
 
 The following commands convert VCF data sets 1a and 1b into the binary dosage format.
 
@@ -168,7 +168,7 @@ vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
 
 ##### Converting GEN files to the Binary Dosage Format and Merging into one data set
 
-Converting GEN files to binary dosage files is a little more difficult than converting VCF files. This is because GEN files aren't as strictly formatted as VCF files. The user needs to have knowledge of how the GEN file is formatted. More information on this can be found in the help files and the vignette "usinggenfiles".
+Converting GEN files to binary dosage files is a little more difficult than converting VCF files. This is because GEN files aren't as strictly formatted as VCF files. The user needs to have knowledge of how the GEN file is formatted. More information on this can be found in the help files and the vignette [Using GEN files](usinggenfiles.html).
 
 In the example GEN file, the first column contains "\-\-" for each SNP and the second column contains the SNP ID in the format
 
@@ -191,9 +191,9 @@ gentobd(genfiles = c(gen3bfile, gen3bsample),
 
 ##### Merging binary dosage files
 
-Merging binary dosage files is done by SNP ID. The files to merge cannot have the same subject IDs. See the vignette "mergingfiles" for more information. In this example we are assuming two separate groups of subjects were imputed separately to the same reference panel.
+Merging binary dosage files is done by SNP ID. The files to merge cannot have the same subject IDs. See the vignette [Merging Files](mergingfiles.html) for more information. In this example we are assuming two separate groups of subjects were imputed separately to the same reference panel.
 
-To merge files, the user calls the <span style="font-family:Courier">bdmerge</span> function and passes the names of the files to merge along with a file name for the merged data set. Other options exist for bdmerge and can be found in the help files and the vignette "mergingfiles"
+To merge files, the user calls the <span style="font-family:Courier">bdmerge</span> function and passes the names of the files to merge along with a file name for the merged data set. Other options exist for bdmerge and can be found in the help files and the vignette [Merging Files](mergingfiles.html)
 
 The following code first merges the binary files bdfile1a and bdfile1b created from the VCF files into a single file, mergedbd1, and then does the analogous action for the binary dosage files created from the GEN files.
 
@@ -250,7 +250,7 @@ knitr::kable(aaf, row.names = FALSE, digits = 4)
 
 ##### Extracting a SNP from the data set
 
-After doing an analysis, the user may want to extract a SNP from the data set for further analysis. This can be done using the getsnp function. By default the function returns a list with the dosage values for all the subjects. The genetype probabilities can be added to the list by setting the dosageonly option to FALSE. See the help files or the vignette "extractingsnps" for more information.
+After doing an analysis, the user may want to extract a SNP from the data set for further analysis. This can be done using the getsnp function. By default the function returns a list with the dosage values for all the subjects. The genotype probabilities can be added to the list by setting the dosageonly option to FALSE. See the help files or the vignette [Using Binary Dosage files](usingbdfiles.html) for more information.
 
 The following code extracts the 6th SNP from both the binary dosage data sets generated above.
 

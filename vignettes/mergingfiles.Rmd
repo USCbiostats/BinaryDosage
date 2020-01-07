@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(BinaryDosage)
 ```
 
-Quite often subjects have their genotypes imputed in batches. The files returned by these imputation can be converted into binary dosage files. These ginary files can be merged into a single file if they have the same SNPs and different subjects using the bdmerge routine.
+Quite often subjects have their genotypes imputed in batches. The files returned by these imputation can be converted into binary dosage files. These binary files can be merged into a single file if they have the same SNPs and different subjects using the bdmerge routine.
 
 ## bdmerge
 

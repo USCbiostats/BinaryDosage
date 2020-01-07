@@ -20,10 +20,10 @@ Default value is TRUE}
 }
 \value{
 A list with either the dosages or the dosages and the genetic
-probabilites.
+probabilities.
 }
 \description{
-Routine to read the dosage and genetic probabilites about
+Routine to read the dosage and genetic probabilities about
 a SNP from a binary dosage file
 }
 \examples{

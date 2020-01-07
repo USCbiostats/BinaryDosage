@@ -13,7 +13,7 @@
 #' binary dosage file returned from getbdinfo
 #' @param func A user supplied function to apply
 #' to the data for each snp. The function must be
-#' provide with the following paramters, dosage,
+#' provide with the following parameters, dosage,
 #' p0, p1, and p2, where dosage is the dosage values
 #' for each subject and p0, p1, and p2 are the
 #' probabilities that a subject has zero, one,
@@ -83,7 +83,7 @@ bdapply <- function(bdinfo, func, ...) {
 #' vcf file returned from getvcfinfo
 #' @param func A user supplied function to apply
 #' to the data for each snp. The function must be
-#' provide with the following paramters, dosage,
+#' provide with the following parameters, dosage,
 #' p0, p1, and p2, where dosage is the dosage values
 #' for each subject and p0, p1, and p2 are the
 #' probabilities that a subject has zero, one,
@@ -191,7 +191,7 @@ vcfapply <- function(vcfinfo, func, ...) {
 #' gen, impute2, file returned from [getgeninfo]
 #' @param func A user supplied function to apply
 #' to the data for each snp. The function must be
-#' provide with the following paramters, dosage,
+#' provide with the following parameters, dosage,
 #' p0, p1, and p2, where dosage is the dosage values
 #' for each subject and p0, p1, and p2 are the
 #' probabilities that a subject has zero, one,

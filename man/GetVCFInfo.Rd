@@ -24,7 +24,7 @@ Default value is TRUE.}
 \item{snpidformat}{The format that the SNP ID will be saved as.
 0 - same as in the VCF file
 1 - chromosome:location
-2 - chromosome:location:reference_allele:alternate_allele
+2 - chromosome:location:referenceallele:alternateallele
 If snpidformat is 1 and the VCF file uses format 2, an error is
 generated. Default value is 0.}
 }

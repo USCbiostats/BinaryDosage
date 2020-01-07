@@ -20,23 +20,23 @@ bdmerge(
 \item{mergefiles}{Vector of file names for the merged binary
 files. The first is the
 binary dosage data containing the dosages and genetic
-probabilites. The second file name is the family information
-file. The thrid file name is the SNP information file.
+probabilities. The second file name is the family information
+file. The third file name is the SNP information file.
 The family and SNP information files are not used if the
 binary dosage file is in format 4. For this format the
 family and SNP information are in the file with the dosages
-and genetic probabilites.}
+and genetic probabilities.}
 
 \item{format}{The format of the output binary dosage file.
 Allowed values are 1, 2, 3, and 4. The default value is 4.
 Using the default value is recommended.}
 
-\item{subformat}{The subsubformat of the format of the output
+\item{subformat}{The subformat of the format of the output
 binary dosage file. A value of 1 or 3 indicates that only the
 dosage value is saved. A value of 2 or 4 indicates
 the dosage and genetic probabilities will be output. Values
 of 3 or 4 are only allowed with formats 3 and 4. If a value
-of zero if provided, and genetic probabilites are in the vcf
+of zero if provided, and genetic probabilities are in the vcf
 file, subformat 2 will be used for formats 1 and 2, and
 subformat 4 will be used for formats 3 and 4. If the vcf file
 does not contain genetic probabilities, subformat 1 will be
@@ -74,7 +74,7 @@ None
 Routine to merge binary dosage files together. The files
 don't have to be in the same format. They will be merged
 into a file with the format specified. Information about
-the SNPs, aaf, maf, avgCall, rsq, can be maintaned for
+the SNPs, aaf, maf, avgcall, rsq, can be maintained for
 each file, or recalculated for the merged set.
 }
 \examples{

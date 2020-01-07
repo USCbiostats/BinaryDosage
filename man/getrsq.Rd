@@ -21,7 +21,7 @@ Imputation r squared
 \description{
 Routine to calculate the imputation r squared given the dosages
 and Pr(g=2).
-This is an estimate for the impuation r squared returned from
+This is an estimate for the imputation r squared returned from
 minimac and impute2. The r squared values are calculated slightly
 differently between the programs. This estimate is based on the
 method used by minimac. It does well for minor allele frequencies

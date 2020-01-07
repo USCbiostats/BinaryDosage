@@ -1,6 +1,6 @@
 #' Read SNP data from a binary dosage file
 #'
-#' Routine to read the dosage and genetic probabilites about
+#' Routine to read the dosage and genetic probabilities about
 #' a SNP from a binary dosage file
 #'
 #' @param bdinfo Information about a binary dosage file return
@@ -14,7 +14,7 @@
 #'
 #' @return
 #' A list with either the dosages or the dosages and the genetic
-#' probabilites.
+#' probabilities.
 #' @export
 #'
 #' @examples

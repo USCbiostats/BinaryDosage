@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(BinaryDosage)
 ```
 
-The routines <span style="font-family:Courier">getbdinfo</span>, <span style="font-family:Courier">getvcfinfo</span>, and <span style="font-family:Courier">getgeninfo</span> return a list withinformation about the data in the files. The list returned by each of these routines a section common to them all and a list <span style="font-family:Courier">additionalinfo</span> that is specific to the file type.
+The routines <span style="font-family:Courier">getbdinfo</span>, <span style="font-family:Courier">getvcfinfo</span>, and <span style="font-family:Courier">getgeninfo</span> return a list with information about the data in the files. The list returned by each of these routines a section common to them all and a list <span style="font-family:Courier">additionalinfo</span> that is specific to the file type.
 
 ## Common section
 
@@ -32,9 +32,9 @@ The common section has the following elements
 - onchr - Logical value indicating if all the SNPs are on the same chromosome
 - snpidformat - Integer indicating the format of the SNP IDs as follows
   + 0 - Unknown for VCF and GEN files or user specified for binary dosage files
-  + 1 - Chromosome:Location
-  + 2 - Chromosome:Location:ReferenceAllele:AlternateAllele
-  + 3 - Chromosome:Location_ReferenceAllele_AlternateAllele
+  + 1 - chromosome:location
+  + 2 - chromosome:location:referenceallele:alternateallele
+  + 3 - chromosome:location_referenceallele_alternateallele
 - snps - Data frame containing the following values
   + chromosome - Character value indicating what chromosome the SNP is on
   + location - Integer value with the location of the SNP on the chromosome
@@ -42,8 +42,8 @@ The common section has the following elements
   + reference - Character value of the reference allele
   + alternate - Character value of the alternate allele
 - snpinfo - List that contain the following information
-  + aaf - Numberic vector with the alternate allele frequencies
-  + maf - Numberic vector with the minor allele frequencies
+  + aaf - numeric vector with the alternate allele frequencies
+  + maf - numeric vector with the minor allele frequencies
   + avgcall - Numeric vector with the imputation average call
   + rsq - Numeric vector with the imputation r squared value
 - datasize - Numeric vector indicating the size of data in the file for each SNP

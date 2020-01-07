@@ -11,12 +11,12 @@
 #'
 #' @param bdfiles Vector of file names. The first is the
 #' binary dosage data containing the dosages and genetic
-#' probabilites. The second file name is the family information
-#' file. The thrid file name is the SNP information file.
+#' probabilities. The second file name is the family information
+#' file. The third file name is the SNP information file.
 #' The family and SNP information files are not used if the
 #' binary dosage file is in format 4. For this format the
 #' family and SNP information are in the file with the dosages
-#' and genetic probabilites.
+#' and genetic probabilities.
 #'
 #' @return List with information about the binary dosage file.
 #' This includes family and subject IDs along with
@@ -96,7 +96,7 @@ readminimacinfofile <- function(filename) {
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' 0 - same as in the VCF file
 #' 1 - chromosome:location
-#' 2 - chromosome:location:reference_allele:alternate_allele
+#' 2 - chromosome:location:referenceallele:alternateallele
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #'
@@ -352,13 +352,11 @@ getvcfinfo <- function(vcffiles,
 #' Default value is TRUE.
 #' @param snpidformat Format to change the snpid to.
 #' 0 indicates to use the snpid format in the file.
-#' 1 indicates to change the snpid into CHR:LOC,
-#' 2 indicates to change the snpid into CHR:LOC:REF:ALT,
-#' 3 indicates to change the snpid into CHR:LOC_REF_ALT,
-#' where CHR is the chromosome number, LOC is the
-#' location in bp, REF is the reference allele, and ALT
-#' is the alternate allele. Default value is 0.
-#' @param sep Seperators used in the gen file and sample files,
+#' 1 indicates to change the snpid into chromosome:location,
+#' 2 indicates to change the snpid into chromosome:location:referenceallele:alternateallele,
+#' 3 indicates to change the snpid into chromosome:location_referenceallele_alternateallele,
+#' Default value is 0.
+#' @param sep Separators used in the gen file and sample files,
 #' respectively. If only value is provided it is used for both
 #' files. Default value is c(`"\t"`, `"\t"`)
 #'

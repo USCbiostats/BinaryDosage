@@ -30,13 +30,13 @@ While a number of software options are available for analyses of imputed
 data (e.g. PLINK, EPACTS), fewer are available for Genomewide Gene x
 Environment Interaction Scan (GWIS). Furthermore, data management tasks
 such as parsing, subsetting, and merging, while manageable in smaller
-studies, quickly become unyieldy and prohibitively slow with very large
+studies, quickly become unwieldy and prohibitively slow with very large
 samples sizes. We aim to address these limitations by converting
-imputation outputs into a binary data format, BDose (Binary Dosage). The
-benefits of a binary format are two fold - decreased hard drive storage
-requirements (compared to a VCF file), and speed of parsing/analyses.
-The BinaryDosage package contains functions to convert VCF and Impute2
-formatted files into BDose format, along with functions to merge
+imputation outputs into a binary dosage file. The benefits of a binary
+format are two fold - decreased hard drive storage requirements
+(compared to a VCF file), and speed of parsing/analyses. The
+BinaryDosage package contains functions to convert VCF and Impute2
+formatted files into binary dosage files, along with functions to merge
 samples.
 
 For GWAS/GWIS analysis of BinaryDosage files, please refer to the
@@ -236,8 +236,7 @@ file is formatted. More information on this can be found in the help
 files and the vignette “usinggenfiles”.
 
 In the example GEN file, the first column contains “--” for each SNP and
-the second column contains the SNP ID in the
-format
+the second column contains the SNP ID in the format
 
 <span style="font-family:Courier">\<chromosome\>:\<location\>\_\<reference
 allele\>\_\<alternate allele\></span>
@@ -263,9 +262,10 @@ gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles
 ##### Merging binary dosage files
 
 Merging binary dosage files is done by SNP ID. The files to merge cannot
-have the same subject IDs. See the vignette “mergingfiles” for more
-information. In this example we are assuming two separate groups of
-subjects were imputed separately to the same reference panel.
+have the same subject IDs. See the vignette [Merging
+Files](mergingfiles.html) for more information. In this example we are
+assuming two separate groups of subjects were imputed separately to the
+same reference panel.
 
 To merge files, the user calls the
 <span style="font-family:Courier">bdmerge</span> function and passes the
@@ -326,15 +326,13 @@ aaf3 <- bdapply(mergebd3info, calculateaaf)
 Since the VCF and GEN files contain the same information, the alternate
 allele frequencies should be the same. The following code creates a data
 frame with the SNP IDs and the alternate allele frequencies for both
-data
-sets.
+data sets.
 
 ``` r
 aaf <- cbind(mergebd1info$snps, aaf_set1 = unlist(aaf1), aaf_set3 = unlist(aaf3))
 ```
 
-Here is a table showing the
-results.
+Here is a table showing the results.
 
 | chromosome | location | snpid       | reference | alternate | aaf\_set1 | aaf\_set3 |
 | :--------- | -------: | :---------- | :-------- | :-------- | --------: | --------: |
@@ -354,7 +352,7 @@ results.
 After doing an analysis, the user may want to extract a SNP from the
 data set for further analysis. This can be done using the getsnp
 function. By default the function returns a list with the dosage values
-for all the subjects. The genetype probabilities can be added to the
+for all the subjects. The genotype probabilities can be added to the
 list by setting the dosageonly option to FALSE. See the help files or
 the vignette “extractingsnps” for more information.
 

@@ -62,14 +62,12 @@ Default value is TRUE.}
 
 \item{snpidformat}{Format to change the snpid to.
 0 indicates to use the snpid format in the file.
-1 indicates to change the snpid into CHR:LOC,
-2 indicates to change the snpid into CHR:LOC:REF:ALT,
-3 indicates to change the snpid into CHR:LOC_REF_ALT,
-where CHR is the chromosome number, LOC is the
-location in bp, REF is the reference allele, and ALT
-is the alternate allele. Default value is 0.}
+1 indicates to change the snpid into chromosome:location,
+2 indicates to change the snpid into chromosome:location:referenceallele:alternateallele,
+3 indicates to change the snpid into chromosome:location_referenceallele_alternateallele,
+Default value is 0.}
 
-\item{sep}{Seperators used in the gen file and sample files,
+\item{sep}{Separators used in the gen file and sample files,
 respectively. If only value is provided it is used for both
 files. Default value is c(\code{"\\t"}, \code{"\\t"})}
 }
