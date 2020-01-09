@@ -216,7 +216,8 @@ for the binary dosage file to the
 some options available for the
 <span style="font-family:Courier">vcftobd</span> functions such as using
 gz compressed files vcf files. More information about these options can
-be found using the help files or reading the vignette “usingvcffiles”.
+be found using the help files or reading the vignette
+<span style="font-family:Courier">usingvcffiles</span>.
 
 The following commands convert VCF data sets 1a and 1b into the binary
 dosage format.
@@ -233,7 +234,8 @@ Converting GEN files to binary dosage files is a little more difficult
 than converting VCF files. This is because GEN files aren’t as strictly
 formatted as VCF files. The user needs to have knowledge of how the GEN
 file is formatted. More information on this can be found in the help
-files and the vignette “usinggenfiles”.
+files and the vignette
+<span style="font-family:Courier">usinggenfiles</span>.
 
 In the example GEN file, the first column contains “--” for each SNP and
 the second column contains the SNP ID in the format
@@ -262,16 +264,16 @@ gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles
 ##### Merging binary dosage files
 
 Merging binary dosage files is done by SNP ID. The files to merge cannot
-have the same subject IDs. See the vignette [Merging
-Files](mergingfiles.html) for more information. In this example we are
-assuming two separate groups of subjects were imputed separately to the
-same reference panel.
+have the same subject IDs. See the vignette
+<span style="font-family:Courier">usingbdfiles</span> for more
+information. In this example we are assuming two separate groups of
+subjects were imputed separately to the same reference panel.
 
 To merge files, the user calls the
 <span style="font-family:Courier">bdmerge</span> function and passes the
 names of the files to merge along with a file name for the merged data
 set. Other options exist for bdmerge and can be found in the help files
-and the vignette “mergingfiles”
+and the vignette <span style="font-family:Courier">mergingfiles</span>.
 
 The following code first merges the binary files bdfile1a and bdfile1b
 created from the VCF files into a single file, mergedbd1, and then does
@@ -294,7 +296,7 @@ The function applied to the SNPs in a binary dosage file must have the
 following four parameters, dosage, p0, p1, and p2. These are the dosage,
 Pr(*g=0*), Pr(*g=1*), and Pr(*g=2*), respectively. Other parameters can
 also be passed. For more information on defining the function see the
-vignettes [Using Binary Dosage files](usingbdfiles.html).
+vignette <span style="font-family:Courier">usingbdfiles</span>.
 
 The following code defines a function to calculate the alternate allele
 frequency.
@@ -354,7 +356,8 @@ data set for further analysis. This can be done using the getsnp
 function. By default the function returns a list with the dosage values
 for all the subjects. The genotype probabilities can be added to the
 list by setting the dosageonly option to FALSE. See the help files or
-the vignette “extractingsnps” for more information.
+the vignette <span style="font-family:Courier">usingbdfiles</span> for
+more information.
 
 The following code extracts the 6th SNP from both the binary dosage data
 sets generated above.
