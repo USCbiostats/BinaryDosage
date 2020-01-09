@@ -18,8 +18,8 @@ Authors@R:
       person(given = "NIEHS",
              role = "fnd",
              comment = "P01 HL115606"))
-Description: Tools to create binary dosage from either vcf
-    or gen files, merge binary dosage files, and read
+Description: Tools to create binary dosage from either VCF
+    or GEN files, merge binary dosage files, and read
     binary dosage files.
 License: GPL-3
 Encoding: UTF-8
