@@ -6,21 +6,23 @@ Authors@R:
              family = "Morrison",
              role = c("aut", "cre"),
              email = "jmorr@usc.edu"),
+      person(given = "NCI",
+             role = "fnd",
+             comment = "CA196559"),
+      person(given = "NCI",
+             role = "fnd",
+             comment = "CA201407"),
       person(given = "NIEHS",
              role = "fnd",
-             comment = "P01 CA196559"),
-      person(given = "NIEHS",
+             comment = "ES007048"),
+      person(given = "NHLBI",
              role = "fnd",
-             comment = "R01 CA201407"),
-      person(given = "NIEHS",
-             role = "fnd",
-             comment = "P30 ES007048"),
-      person(given = "NIEHS",
-             role = "fnd",
-             comment = "P01 HL115606"))
-Description: Tools to create binary dosage from either VCF
+             comment = "HL115606"))
+Description: Tools to create binary dosage files from either VCF
     or GEN files, merge binary dosage files, and read
-    binary dosage files.
+    binary dosage files. Binary dosage files tend to have quicker
+    read times than VCF and GEN formats. There is a small increase
+    increase in size compared to compressed VCF and GEN files. 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
