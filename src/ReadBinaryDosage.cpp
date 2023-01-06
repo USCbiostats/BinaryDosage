@@ -422,7 +422,7 @@ int ReadBinaryDosageDataC(std::string &filename,
 
   infile.open(filename.c_str(), READBINARY);
 
-  loc = headersize + 2 * (snp - 1) * numsub;
+  loc = headersize + 2 * (snp - 1) * (long long)numsub;
   infile.seekg(loc);
   infile.read((char *)&us[0], numsub * sizeof(short));
   UShortToDouble(us, dosage, numsub, base - 1);
