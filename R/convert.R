@@ -3,7 +3,24 @@
 #' @importFrom digest digest
 #' @importFrom prodlim row.match
 #' @importFrom utils read.table
+#' @importFrom methods is
 NULL
+
+isVCFfile <- function(filename) {
+  vcfbegin <- c(35L, 35L, 102L, 105L, 108L, 101L, 102L, 111L, 114L,
+                109L, 97L, 116L, 61L, 86L, 67L, 70L, 118L)
+  if (file.exists(filename) == FALSE)
+    stop("File does not exist")
+  infile <- file(filename, "rb")
+  x <- readBin(infile, integer(), 17, 1)
+  if (x[1] == 31 && x[2] == -117) {
+    close(infile)
+    infile <- gzfile(filename, "rb")
+    x <- readBin(infile, integer(), 17, 1)
+  }
+  close(infile)
+  return(all(vcfbegin == x))
+}
 
 validatebdinput <- function(bdfiles,
                             format,
@@ -22,8 +39,8 @@ validatebdinput <- function(bdfiles,
       stop("format must be an integer")
     format <- floor(format)
   }
-  if (format < 1 || format > 4)
-    stop("format must be an integer value from 1 to 4")
+  if (format < 1 || format > 5)
+    stop("format must be an integer value from 1 to 5")
 
   if (is.numeric(subformat) == FALSE && is.integer(subformat) == FALSE)
     stop("subformat must be an integer value")
@@ -38,13 +55,20 @@ validatebdinput <- function(bdfiles,
     stop("subformat must be an integer value from 0 to 4")
   if (format < 3 && subformat > 2)
     stop("subformat must be an integer value from 0 to 2 for formats 1 and 2")
+  if (format == 5 & subformat == 0)
+    stop("subformat must be specified when using format 5")
+  if (format == 5 & (subformat < 1 | subformat > 2))
+    stop("subformat must be 1 or 2 when using format 5")
 
   if (format == 4 & length(bdfiles) != 1)
     stop("Only one output file name is needed when using format 4")
   if (format < 4 & length(bdfiles) != 3)
     stop("Three output file names are required when using formats 1, 2, and 3")
+  if (format == 5 & length(bdfiles) != 2)
+    stop("Two output file names are needed when using format 5")
   if (is.na(match("", bdfiles)) == FALSE)
     stop("Output file names cannot be blank")
+
 
   if (is.numeric(snpidformat) == FALSE && is.integer(snpidformat) == FALSE)
     stop("snpidformat must be an integer value")
@@ -66,6 +90,7 @@ validatebdinput <- function(bdfiles,
     if (any(is.na(match(bdoptions, c("aaf", "maf", "rsq")))) == TRUE)
       stop("Only valid bdoptions are aaf, maf, and rsq")
   }
+
   return(list(format = format,
               subformat = subformat))
 }
@@ -122,7 +147,8 @@ validatebdinput <- function(bdfiles,
 #' apply to format 4.
 #'
 #' @return
-#' None
+#' None with formats 1 through 4. A list with the BinaryDosage information
+#' when using format 5
 #' @export
 #'
 #' @examples
@@ -137,8 +163,8 @@ validatebdinput <- function(bdfiles,
 vcftobd <- function(vcffiles,
                     gz = FALSE,
                     bdfiles,
-                    format = 4L,
-                    subformat = 0L,
+                    format = 5L,
+                    subformat = 2L,
                     snpidformat = 0,
                     bdoptions = character(0)) {
   if (missing(vcffiles) == TRUE)
@@ -154,6 +180,9 @@ vcftobd <- function(vcffiles,
                                 bdoptions = bdoptions)
   format <- validation$format
   subformat <- validation$subformat
+
+  if (format == 5)
+    return(vcftobd5(vcffiles, bdfiles[1], bdfiles[2], subformat == 1))
 
   if (snpidformat == -1)
     readsnpformat = 0
@@ -193,6 +222,63 @@ vcftobd <- function(vcffiles,
   if (is.na(match("rsq", bdoptions)) == FALSE)
     updatersq(bdinfo)
   ##return (0)
+}
+
+#' Convert VCF file to a Binary Dosage file format 5
+#'
+#' @param vcffile Name of VCF file
+#' @param bdfile Name of Binary Dosage file
+#' @param bdinfo Name of Binary Dosage information file
+#' @param dosageOnly Indicator if only dosage values should be saved.
+#' default:FALSE
+#'
+#' @return
+#' List containing Binary Dosage information on success, Empty List on failure.
+#' @export
+#'
+#' @examples
+#' vcftobd5("chr22.vcf", "chr22.bdose", "chr22.bdinfo")
+vcftobd5 <- function(vcffile, bdfile, bdinfo, dosageonly = FALSE) {
+  if (missing(vcffile) == TRUE)
+    stop("No VCF file specified")
+  if (is.character(vcffile) == FALSE)
+    stop("vcfiles must be a character value")
+  if (length(vcffile) != 1)
+    stop("vcffiles must be a character vector of length 1")
+  if (vcffile[1] == "")
+    stop("No VCF file specified")
+
+  if (missing(bdfile) == TRUE)
+    stop("No Binary Dosage file specified")
+  if (is.character(bdfile) == FALSE)
+    stop("bdfile must be a character value")
+  if (length(bdfile) != 1)
+    stop("bdfile must be a character vector of length 1")
+  if (bdfile[1] == "")
+    stop("No Binary Dosage file specified")
+
+  if (missing(bdinfo) == TRUE)
+    stop("No bdinfo file specified")
+  if (is.character(bdinfo) == FALSE)
+    stop("bdinfo must be a character value")
+  if (length(bdinfo) != 1)
+    stop("bdinfo must be a character vector of length 1")
+  if (bdinfo[1] == "")
+    stop("No Binary Dosage file specified")
+
+  if (file.exists(vcffile) == FALSE)
+    stop("File does not exist")
+  if (isVCFfile(vcffile) == FALSE)
+    stop("Not a VCF file")
+
+  vcffilename <- normalizePath(vcffile[1], winslash = '/')
+  if (dosageonly)
+    x <- writeVectorsToFile(bdfile[1], vcffilename, 1)
+  else
+    x <- writeVectorsToFile(bdfile[1], vcffilename, 0)
+  x$filename <- normalizePath(bdfile[1], winslash = '/')
+  saveRDS(x, bdinfo)
+  return(x)
 }
 
 ###########################################################

@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // GetLineLocations
 std::vector<double> GetLineLocations(std::string& filename);
 RcppExport SEXP _BinaryDosage_GetLineLocations(SEXP filenameSEXP) {
@@ -153,6 +158,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// readVectorFromFile1
+void readVectorFromFile1(Rcpp::CharacterVector bd_file_name0, int nsub, int datasize, double index, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_readVectorFromFile1(SEXP bd_file_name0SEXP, SEXP nsubSEXP, SEXP datasizeSEXP, SEXP indexSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bd_file_name0(bd_file_name0SEXP);
+    Rcpp::traits::input_parameter< int >::type nsub(nsubSEXP);
+    Rcpp::traits::input_parameter< int >::type datasize(datasizeSEXP);
+    Rcpp::traits::input_parameter< double >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    readVectorFromFile1(bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2);
+    return R_NilValue;
+END_RCPP
+}
+// readVectorFromFile2
+void readVectorFromFile2(Rcpp::CharacterVector bd_file_name0, int nsub, int datasize, double index, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_readVectorFromFile2(SEXP bd_file_name0SEXP, SEXP nsubSEXP, SEXP datasizeSEXP, SEXP indexSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bd_file_name0(bd_file_name0SEXP);
+    Rcpp::traits::input_parameter< int >::type nsub(nsubSEXP);
+    Rcpp::traits::input_parameter< int >::type datasize(datasizeSEXP);
+    Rcpp::traits::input_parameter< double >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    readVectorFromFile2(bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2);
+    return R_NilValue;
+END_RCPP
+}
 // WriteBinaryDosageBaseHeader
 int WriteBinaryDosageBaseHeader(std::string& filename, int format, int subformat);
 RcppExport SEXP _BinaryDosage_WriteBinaryDosageBaseHeader(SEXP filenameSEXP, SEXP formatSEXP, SEXP subformatSEXP) {
@@ -293,6 +332,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// writeVectorsToFile
+Rcpp::List writeVectorsToFile(CharacterVector bd_file_name0, CharacterVector vcf_name0, int dosageOnly);
+RcppExport SEXP _BinaryDosage_writeVectorsToFile(SEXP bd_file_name0SEXP, SEXP vcf_name0SEXP, SEXP dosageOnlySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type bd_file_name0(bd_file_name0SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type vcf_name0(vcf_name0SEXP);
+    Rcpp::traits::input_parameter< int >::type dosageOnly(dosageOnlySEXP);
+    rcpp_result_gen = Rcpp::wrap(writeVectorsToFile(bd_file_name0, vcf_name0, dosageOnly));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_GetLineLocations", (DL_FUNC) &_BinaryDosage_GetLineLocations, 1},
@@ -306,6 +358,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 7},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 10},
     {"_BinaryDosage_ReadBinaryDosageDataCompressed", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataCompressed, 9},
+    {"_BinaryDosage_readVectorFromFile1", (DL_FUNC) &_BinaryDosage_readVectorFromFile1, 8},
+    {"_BinaryDosage_readVectorFromFile2", (DL_FUNC) &_BinaryDosage_readVectorFromFile2, 8},
     {"_BinaryDosage_WriteBinaryDosageBaseHeader", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageBaseHeader, 3},
     {"_BinaryDosage_WriteBinaryDosageHeader3A", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3A, 2},
     {"_BinaryDosage_WriteBinaryDosageHeader3B", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageHeader3B, 4},
@@ -315,6 +369,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_WriteBinaryCompressed", (DL_FUNC) &_BinaryDosage_WriteBinaryCompressed, 8},
     {"_BinaryDosage_WriteBinaryDosageIndicesC", (DL_FUNC) &_BinaryDosage_WriteBinaryDosageIndicesC, 3},
     {"_BinaryDosage_updatesnpinfo", (DL_FUNC) &_BinaryDosage_updatesnpinfo, 3},
+    {"_BinaryDosage_writeVectorsToFile", (DL_FUNC) &_BinaryDosage_writeVectorsToFile, 3},
     {NULL, NULL, 0}
 };
 

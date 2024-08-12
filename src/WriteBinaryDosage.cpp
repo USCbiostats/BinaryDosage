@@ -2,6 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <htslib/hts.h>
+#include <htslib/vcf.h>
+#include <htslib/kstring.h>
+#include <htslib/kseq.h>
+#include <zlib.h>
 
 //***************************************************************************//
 //                                                                           //
@@ -23,7 +28,8 @@ extern const std::vector<std::vector<int> > FORMAT = {
   { 0x01000100, 0x02000100},
   { 0x01000200, 0x02000200},
   { 0x01000300, 0x02000300, 0x03000300, 0x04000300},
-  { 0x01000400, 0x02000400, 0x03000400, 0x04000400}
+  { 0x01000400, 0x02000400, 0x03000400, 0x04000400},
+  { 0x01000500, 0x02000500}
 };
 // Various modes of opening the binary dosage file
 extern const std::ios_base::openmode NEWBINARY = std::ios_base::out | std::ios_base::binary;
@@ -427,11 +433,18 @@ extern const unsigned short USBASE[NUMBEROFBASES] = {
 };
 
 // Values the short integers are multiplied by to get dosage and genetic
-// probabilities
+// probabilities when using doubles
 extern const double DBASE[NUMBEROFBASES] = {
   1. / USBASE[0],
   1. / USBASE[1],
   1. / USBASE[2]
+};
+// Values the short integers are multiplied by to get dosage and genetic
+// probabilities when using floats
+extern const float FBASE[NUMBEROFBASES] = {
+  (float)1. / USBASE[0],
+  (float)1. / USBASE[1],
+  (float)1. / USBASE[2]
 };
 
 // Routine to convert a double value to an unsigned short

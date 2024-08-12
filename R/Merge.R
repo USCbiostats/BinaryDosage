@@ -297,7 +297,7 @@ mergesnpinfo <- function (mergedinfo,
     currentgroup <- 1L
     for (i in 1:length(geneticinfo)) {
       setgroups <- 1L
-      if (class(geneticinfo[[i]]$additionalinfo) == "bdose-info")
+      if (methods::is(geneticinfo[[i]]$additionalinfo) == "bdose-info")
         setgroups <- geneticinfo[[i]]$additionalinfo$numgroups
       for (j in 1:numsnpinfo) {
         if (is.na(match(names(snpinfo)[j], names(geneticinfo[[i]]$snpinfo))) == FALSE) {

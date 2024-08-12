@@ -8,8 +8,8 @@ vcftobd(
   vcffiles,
   gz = FALSE,
   bdfiles,
-  format = 4L,
-  subformat = 0L,
+  format = 5L,
+  subformat = 2L,
   snpidformat = 0,
   bdoptions = character(0)
 )
@@ -60,7 +60,8 @@ calculates and stored in the binary dosage file. These values only
 apply to format 4.}
 }
 \value{
-None
+None with formats 1 through 4. A list with the BinaryDosage information
+when using format 5
 }
 \description{
 Routine to read information from a VCF file and create

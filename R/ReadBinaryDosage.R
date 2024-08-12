@@ -22,6 +22,8 @@ ReadBinaryDosageHeader <- function(filename) {
   bdformat <- ReadBinaryDosageBaseHeader(filename[1])
   if (is.na(match("error", names(bdformat))) == FALSE)
     stop(bdformat$error)
+  if (bdformat$format == 5)
+    stop("Binary dosage file format 5 has file information stored in separate file that was generated when the binary dosage file was created")
   if (bdformat$format == 4) {
     if (length(filename) != 1)
       stop("Binary dosage file format 4 does not use family and map files")
@@ -307,7 +309,8 @@ ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
   ReadHeaderFunc <- list(f1 <- c(ReadBinaryDosageData1, ReadBinaryDosageData2),
                          f2 <- c(ReadBinaryDosageData3, ReadBinaryDosageData4),
                          f3 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5),
-                         f4 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5))
+                         f4 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5),
+                         f5 <- c(ReadBinaryDosageData51, ReadBinaryDosageData52))
   return (ReadHeaderFunc[[bdInfo$additionalinfo$format]][[bdInfo$additionalinfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
 }
 
@@ -369,3 +372,24 @@ ReadBinaryDosageData5 <- function(bdInfo, snp, d, p0, p1, p2, us) {
                                          us = us))
 }
 
+ReadBinaryDosageData51 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (BinaryDosage:::readVectorFromFile1(bdInfo$filename,
+                                             nrow(bdInfo$samples),
+                                             bdInfo$datasize[snp],
+                                             bdInfo$indices[snp],
+                                             dosage = d,
+                                             p0 = p0,
+                                             p1 = p1,
+                                             p2 = p2))
+}
+
+ReadBinaryDosageData52 <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  return (BinaryDosage:::readVectorFromFile2(bdInfo$filename,
+                                             nrow(bdInfo$samples),
+                                             bdInfo$datasize[snp],
+                                             bdInfo$indices[snp],
+                                             dosage = d,
+                                             p0 = p0,
+                                             p1 = p1,
+                                             p2 = p2))
+}

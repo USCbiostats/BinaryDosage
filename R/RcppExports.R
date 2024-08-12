@@ -45,6 +45,14 @@ ReadBinaryDosageDataCompressed <- function(filename, index, datasize, numsub, do
     .Call(`_BinaryDosage_ReadBinaryDosageDataCompressed`, filename, index, datasize, numsub, dosage, p0, p1, p2, us)
 }
 
+readVectorFromFile1 <- function(bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2) {
+    invisible(.Call(`_BinaryDosage_readVectorFromFile1`, bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2))
+}
+
+readVectorFromFile2 <- function(bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2) {
+    invisible(.Call(`_BinaryDosage_readVectorFromFile2`, bd_file_name0, nsub, datasize, index, dosage, p0, p1, p2))
+}
+
 WriteBinaryDosageBaseHeader <- function(filename, format, subformat) {
     .Call(`_BinaryDosage_WriteBinaryDosageBaseHeader`, filename, format, subformat)
 }
@@ -79,5 +87,9 @@ WriteBinaryDosageIndicesC <- function(filename, headersize, datasize) {
 
 updatesnpinfo <- function(filename, offset, value) {
     .Call(`_BinaryDosage_updatesnpinfo`, filename, offset, value)
+}
+
+writeVectorsToFile <- function(bd_file_name0, vcf_name0, dosageOnly) {
+    .Call(`_BinaryDosage_writeVectorsToFile`, bd_file_name0, vcf_name0, dosageOnly)
 }
 

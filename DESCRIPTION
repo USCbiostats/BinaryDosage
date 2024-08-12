@@ -32,11 +32,15 @@ Suggests:
     testthat (>= 2.1.0),
     covr
 VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+RoxygenNote: 7.3.1
 Roxygen: list(markdown = TRUE)
 LinkingTo: 
-    Rcpp
+    Rcpp,
+    Rhtslib
 Imports: 
     Rcpp,
     digest,
-    prodlim
+    prodlim,
+    methods,
+    Rhtslib
+NeedsCompilation: yes

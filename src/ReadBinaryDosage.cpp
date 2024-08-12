@@ -2,6 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <htslib/hts.h>
+#include <htslib/vcf.h>
+#include <htslib/kstring.h>
+#include <htslib/kseq.h>
+#include <zlib.h>
 
 extern const std::ios_base::openmode READWRITEBINARY;
 extern const std::ios_base::openmode READBINARY;
@@ -10,6 +15,7 @@ extern const std::ios_base::openmode WRITEBINARY;
 extern const int NUMBEROFBASES;
 extern const unsigned short USBASE[];
 extern const double DBASE[];
+extern const double FBASE[];
 
 //***************************************************************************//
 //                        Reading the header                                 //
@@ -531,4 +537,104 @@ int ReadBinaryDosageDataCompressed(std::string &filename,
 
   infile.close();
   return 0;
+}
+
+std::vector<Bytef> readCompressedData(std::ifstream &infile, size_t datasize) {
+  std::vector<Bytef> compressedData(datasize);
+  infile.read(reinterpret_cast<char*>(compressedData.data()), datasize);
+  return compressedData;
+}
+
+
+// [[Rcpp::export]]
+void readVectorFromFile1(Rcpp::CharacterVector bd_file_name0, int nsub, int datasize, double index,
+                         Rcpp::NumericVector &dosage, Rcpp::NumericVector &p0,
+                         Rcpp::NumericVector &p1, Rcpp::NumericVector &p2) {
+  std::string bd_file_name_str = Rcpp::as<std::string>(bd_file_name0[0]);
+  const char* bd_file_name = bd_file_name_str.c_str();
+  std::ifstream infile(bd_file_name, std::ios::binary);
+  std::vector<Bytef> compressedData;
+  uint16_t *usbase;
+
+  infile.seekg(index);
+  compressedData = readCompressedData(infile, (size_t)datasize);
+  std::vector<uint16_t> decompressedData(4*nsub);
+  uLongf decompressedSize = decompressedData.size() * sizeof(uint16_t);
+  uncompress(reinterpret_cast<Bytef*>(decompressedData.data()), &decompressedSize,
+             compressedData.data(), compressedData.size());
+
+  usbase = &decompressedData[0];
+  for (int i = 0; i < nsub; ++i, ++usbase) {
+    if (*usbase == 0xffff) {
+      dosage[i] = NA_REAL;
+    } else {
+      dosage[i] = *usbase / 10000.;
+    }
+  }
+
+  infile.close();
+}
+
+// [[Rcpp::export]]
+void readVectorFromFile2(Rcpp::CharacterVector bd_file_name0, int nsub, int datasize, double index,
+                         Rcpp::NumericVector &dosage, Rcpp::NumericVector &p0,
+                         Rcpp::NumericVector &p1, Rcpp::NumericVector &p2) {
+  std::string bd_file_name_str = Rcpp::as<std::string>(bd_file_name0[0]);
+  const char* bd_file_name = bd_file_name_str.c_str();
+  std::ifstream infile(bd_file_name, std::ios::binary);
+  std::vector<Bytef> compressedData;
+  uint16_t *usbase, *usadd;
+
+  infile.seekg(index);
+  compressedData = readCompressedData(infile, (size_t)datasize);
+  std::vector<uint16_t> decompressedData(4*nsub);
+  uLongf decompressedSize = decompressedData.size() * sizeof(uint16_t);
+  uncompress(reinterpret_cast<Bytef*>(decompressedData.data()), &decompressedSize,
+             compressedData.data(), compressedData.size());
+
+  usbase = &decompressedData[0];
+  usadd = usbase + nsub;
+  for (int i = 0; i < nsub; ++i, ++usbase) {
+    if (*usbase == 0xffff) {
+      dosage[i] = NA_REAL;
+      p0[i] = NA_REAL;
+      p1[i] = NA_REAL;
+      p2[i] = NA_REAL;
+      continue;
+    }
+    if (*usbase & 0x8000) {
+      dosage[i] = (*usbase & 0x7fff) / 10000.;
+      if (*usadd == 0xffff) {
+        p0[i] = NA_REAL;
+        p1[i] = NA_REAL;
+        p2[i] = NA_REAL;
+        ++usadd;
+      } else if (*usadd & 0x8000) {
+        p1[i] = (*usadd & 0x7fff) / 10000.;
+        ++usadd;
+        p0[i] = *usadd / 10000.;
+        ++usadd;
+        p2[i] = *usadd / 10000.;
+        ++usadd;
+      } else {
+        p1[i] = *usadd / 10000.;
+        ++usadd;
+        p2[i] = (dosage[i] - p1[i]) / 2.;
+        p0[i] = 1. - p2[i] - p1[i];
+      }
+    } else {
+      dosage[i] = *usbase / 10000.;
+      if (dosage[i] > 1.) {
+        p2[i] = dosage[i] - 1.;
+        p1[i] = dosage[i] - p2[i] - p2[i];
+        p0[i] = 0.;
+      } else {
+        p0[i] = 1. - dosage[i];
+        p1[i] = dosage[i];
+        p2[i] = 0.;
+      }
+    }
+  }
+
+  infile.close();
 }
