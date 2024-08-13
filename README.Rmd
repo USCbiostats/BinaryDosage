@@ -19,6 +19,34 @@ knitr::opts_chunk$set(
 
 # Binary Dosage Files
 
+### Important News
+
+A new version of BinaryDosage has been developed. This new version uses the hstlib libraries which greatly improves the read speed of VCF files. To compile this new version requires the installation of the Rhtslib library from Bioconductor. This has reduced the read times by significantly over 10 times.
+
+Data compression of the BinaryDosage formatted files has also been improved. We have had reports that the BinaryDosage formatted files were over 3 times larger than the gzipped VCF file. This was due to the compression routine not compressing SNPs with low minor allele frequencies, <0.01, well. When BinaryDosage was first written imputation servers did not include many rare SNPs. This has changed since BinaryDosage was first written. Updates to rtools for Windows has also allowed for better compression. When devoloping BinaryDosage we have striven to make it work on all operating systems. For Windows, updates to R tools 4.3 and 4.4 have allowed for better compression.
+
+To install the latest version of BinaryDosage, it is recommend the user have R 4.3.x or higher. If the user is using Windows, they will need to verify that the current version of [R tools](https://cran.r-project.org/bin/windows/Rtools/) is installed. If the user is using Linux or Mac OS X, the zlib development tools need to be installed, often named zlib1g-dev. For most systems, these tools are usually already loaded.
+
+The package [Rhtslib](https://bioconductor.org/packages/release/bioc/html/Rhtslib.html) from BioConductor needs to be installed using the following code.
+``` {r, eval = F}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("Rhtslib")
+```
+
+Once the preceding prerequisites are met the follow code will install the latest version of BinaryDosage.
+``` {r, eval = F}
+remove.packages("BinaryDosage")
+devtools::install_github("https://github.com/USCbiostats/BinaryDosage@htslib")
+
+library(BinaryDosage)
+```
+
+#### Important
+
+All BinaryDosage formatted files created with older versions are fully compatible with this new version of BinaryDosage. GxEScanR works with files created by this new version of BinaryDosage.
+
 ### Introduction
 
 Genotype imputation is an essential tool in genomics, enabling association testing with markers not directly genotyped, increasing statistical power, and facilitating data pooling between studies that employ different genotyping platforms. Two commonly used software packages for imputation are [minimac](https://genome.sph.umich.edu/wiki/Minimac) and [Impute2](http://mathgen.stats.ox.ac.uk/impute/impute_v2.html). Furthermore, services such as the [Michigan Imputation Server](https://imputationserver.sph.umich.edu/index.html) have made genotype imputation much more accessible and streamlined.   
@@ -140,7 +168,6 @@ gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
 The binary dosage output files will be written to temporary files. There needs to be only one output file per data set because the examples use the default format value of 4. The following code creates these temporary output files.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-
 # The output files for set 1
 bdfile1a <- tempfile()
 bdfile1b <- tempfile()
@@ -160,9 +187,8 @@ Converting a VCF file into a binary dosage file is simple. The user passes the n
 The following commands convert VCF data sets 1a and 1b into the binary dosage format.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a)
-vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
+vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
+vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
 
 ```
 
@@ -179,7 +205,6 @@ Because of this formatting, the function <span style="font-family:Courier">gento
 The following commands convert the two GEN files into binary dosage files.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-
 gentobd(genfiles = c(gen3afile, gen3asample),
         snpcolumns = c(0L, 2L:5L),
         bdfiles = bdfile3a)

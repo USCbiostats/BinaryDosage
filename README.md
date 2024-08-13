@@ -13,6 +13,60 @@ coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/bad
 
 # Binary Dosage Files
 
+### Important News
+
+A new version of BinaryDosage has been developed. This new version uses
+the hstlib libraries which greatly improves the read speed of VCF files.
+To compile this new version requires the installation of the Rhtslib
+library from Bioconductor. This has reduced the read times by
+significantly over 10 times.
+
+Data compression of the BinaryDosage formatted files has also been
+improved. We have had reports that the BinaryDosage formatted files were
+over 3 times larger than the gzipped VCF file. This was due to the
+compression routine not compressing SNPs with low minor allele
+frequencies, \<0.01, well. When BinaryDosage was first written
+imputation servers did not include many rare SNPs. This has changed
+since BinaryDosage was first written. Updates to rtools for Windows has
+also allowed for better compression. When devoloping BinaryDosage we
+have striven to make it work on all operating systems. For Windows,
+updates to R tools 4.3 and 4.4 have allowed for better compression.
+
+To install the latest version of BinaryDosage, it is recommend the user
+have R 4.3.x or higher. If the user is using Windows, they will need to
+verify that the current version of [R
+tools](https://cran.r-project.org/bin/windows/Rtools/) is installed. If
+the user is using Linux or Mac OS X, the zlib development tools need to
+be installed, often named zlib1g-dev. For most systems, these tools are
+usually already loaded.
+
+The package
+[Rhtslib](https://bioconductor.org/packages/release/bioc/html/Rhtslib.html)
+from BioConductor needs to be installed using the following code.
+
+``` r
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("Rhtslib")
+```
+
+Once the preceding prerequisites are met the follow code will install
+the latest version of BinaryDosage.
+
+``` r
+remove.packages("BinaryDosage")
+devtools::install_github("https://github.com/USCbiostats/BinaryDosage@htslib")
+
+library(BinaryDosage)
+```
+
+#### Important
+
+All BinaryDosage formatted files created with older versions are fully
+compatible with this new version of BinaryDosage. GxEScanR works with
+files created by this new version of BinaryDosage.
+
 ### Introduction
 
 Genotype imputation is an essential tool in genomics, enabling
@@ -46,18 +100,18 @@ For GWAS/GWIS analysis of BinaryDosage files, please refer to the
 
 ##### Binary dosage data sets contain the following information:
 
-  - Sample information
-      - Family ID
-      - Subject ID
-  - SNP information
-      - Chromosome number  
-      - SNP ID  
-      - Location in base pairs  
-      - Reference allele  
-      - Alternate allele  
-  - Genetic information
-      - Dosage values
-      - Genotype probabilities, Pr(*g=0*), Pr(*g=1*), Pr(*g=2*)
+- Sample information
+  - Family ID
+  - Subject ID
+- SNP information
+  - Chromosome number  
+  - SNP ID  
+  - Location in base pairs  
+  - Reference allele  
+  - Alternate allele  
+- Genetic information
+  - Dosage values
+  - Genotype probabilities, Pr(*g=0*), Pr(*g=1*), Pr(*g=2*)
 
 There are 4 formats for a binary dosage data set. Data sets in formats
 1, 2, and 3 have 3 files, a sample information file, a SNP information
@@ -68,36 +122,36 @@ contain the following information.
 **Note:** Format 4 is recommended and is the default value for all
 functions.
 
-  - Additional SNP information
-      - Alternate allele frequency
-      - Minor allele frequency
-      - Average call rate
-      - Imputation r squared
-  - Merging information
-      - Number of data sets merged
-      - Sample size of each data set merged
+- Additional SNP information
+  - Alternate allele frequency
+  - Minor allele frequency
+  - Average call rate
+  - Imputation r squared
+- Merging information
+  - Number of data sets merged
+  - Sample size of each data set merged
 
 ### Functions
 
-  - **vcftobd** - Converts a VCF file to a binary dosage data set
-  - **gentobd** - Converts a GEN (impute2) file to a binary dosage data
-    set
-  - **bdmerge** - Merges multiple binary dosage data sets into a single
-    data set
-  - **getbdinfo** - Creates an R List containing information about a
-    binary dosage data set (required for **getsnp** and **bdapply**)
-  - **getvcfinfo** - Creates an R List containing information about a
-    VCF file (required for **vcfapply**)
-  - **getgeninfo** - Creates an R List containing information about a
-    GEN file (required for **genapply**)
-  - **bdapply** - Applies a function to the data for each SNP in a
-    binary dosage file (requires list returned by **getbdinfo**)
-  - **vcfapply** - Applies a function to the data for each SNP in a VCF
-    file (requires list returned by **getvcfinfo**)
-  - **genapply** - Applies a function to the data for each SNP in a GEN
-    file (requires list returned by **getgeninfo**)
-  - **getsnp** - Obtain genotype Dosages/Genotype Probabilities from a
-    binary dosage file, outputs results to an R list
+- **vcftobd** - Converts a VCF file to a binary dosage data set
+- **gentobd** - Converts a GEN (impute2) file to a binary dosage data
+  set
+- **bdmerge** - Merges multiple binary dosage data sets into a single
+  data set
+- **getbdinfo** - Creates an R List containing information about a
+  binary dosage data set (required for **getsnp** and **bdapply**)
+- **getvcfinfo** - Creates an R List containing information about a VCF
+  file (required for **vcfapply**)
+- **getgeninfo** - Creates an R List containing information about a GEN
+  file (required for **genapply**)
+- **bdapply** - Applies a function to the data for each SNP in a binary
+  dosage file (requires list returned by **getbdinfo**)
+- **vcfapply** - Applies a function to the data for each SNP in a VCF
+  file (requires list returned by **getvcfinfo**)
+- **genapply** - Applies a function to the data for each SNP in a GEN
+  file (requires list returned by **getgeninfo**)
+- **getsnp** - Obtain genotype Dosages/Genotype Probabilities from a
+  binary dosage file, outputs results to an R list
 
 # Installation
 
@@ -105,8 +159,6 @@ functions.
 2.  Install the
     [BinaryDosage](https://github.com/USCbiostats/BinaryDosage) package
     directly from the USCbiostats repository on GitHub:
-
-<!-- end list -->
 
 ``` r
 remove.packages("BinaryDosage")
@@ -121,16 +173,16 @@ library(BinaryDosage)
 
 The general workflow for using binary dosage data sets is as follows:
 
-  - Convert VCF or GEN files to a binary dosage data set
-      - Note: When converting a VCF file to a binary dosage data set,
-        the information file associated with the vcf can be used to add
-        additional imputation information to the binary dosage data set
-      - Note: When converting a GEN file to a binary dosage data set,
-        the subject IDs can either be on the first line of the GEN file
-        or in a separate sample file
-  - Merge binary dosage datasets into a single data set
-  - Apply a function to each SNP in the data set using bdapply
-  - Extract SNPs for further analysis
+- Convert VCF or GEN files to a binary dosage data set
+  - Note: When converting a VCF file to a binary dosage data set, the
+    information file associated with the vcf can be used to add
+    additional imputation information to the binary dosage data set
+  - Note: When converting a GEN file to a binary dosage data set, the
+    subject IDs can either be on the first line of the GEN file or in a
+    separate sample file
+- Merge binary dosage datasets into a single data set
+- Apply a function to each SNP in the data set using bdapply
+- Extract SNPs for further analysis
 
 #### Examples
 
@@ -162,7 +214,7 @@ extdata directory of the BinaryDosage package. These sets contain the
 following:
 
 | Set   | Number of subjects | Number of SNPS |
-| ----- | ------------------ | -------------- |
+|-------|--------------------|----------------|
 | 1a,3a | 60                 | 10             |
 | 1b,3b | 40                 | 10             |
 
@@ -195,7 +247,6 @@ the default format value of 4. The following code creates these
 temporary output files.
 
 ``` r
-
 # The output files for set 1
 bdfile1a <- tempfile()
 bdfile1b <- tempfile()
@@ -223,9 +274,8 @@ The following commands convert VCF data sets 1a and 1b into the binary
 dosage format.
 
 ``` r
-
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a)
-vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
+vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
+vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
 ```
 
 ##### Converting GEN files to the Binary Dosage Format and Merging into one data set
@@ -256,7 +306,6 @@ The following commands convert the two GEN files into binary dosage
 files.
 
 ``` r
-
 gentobd(genfiles = c(gen3afile, gen3asample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3a)
 gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3b)
 ```
@@ -336,18 +385,18 @@ aaf <- cbind(mergebd1info$snps, aaf_set1 = unlist(aaf1), aaf_set3 = unlist(aaf3)
 
 Here is a table showing the results.
 
-| chromosome | location | snpid       | reference | alternate | aaf\_set1 | aaf\_set3 |
-| :--------- | -------: | :---------- | :-------- | :-------- | --------: | --------: |
-| 1          |    10000 | 1:10000:C:A | C         | A         |    0.3527 |    0.3527 |
-| 1          |    11000 | 1:11000:T:C | T         | C         |    0.0135 |    0.0135 |
-| 1          |    12000 | 1:12000:T:C | T         | C         |    0.2400 |    0.2400 |
-| 1          |    13000 | 1:13000:T:C | T         | C         |    0.3375 |    0.3375 |
-| 1          |    14000 | 1:14000:G:C | G         | C         |    0.1901 |    0.1901 |
-| 1          |    15000 | 1:15000:A:C | A         | C         |    0.5627 |    0.5627 |
-| 1          |    16000 | 1:16000:G:A | G         | A         |    0.4569 |    0.4569 |
-| 1          |    17000 | 1:17000:C:A | C         | A         |    0.4578 |    0.4578 |
-| 1          |    18000 | 1:18000:C:G | C         | G         |    0.2591 |    0.2591 |
-| 1          |    19000 | 1:19000:T:G | T         | G         |    0.2431 |    0.2431 |
+| chromosome | location | snpid       | reference | alternate | aaf_set1 | aaf_set3 |
+|:-----------|---------:|:------------|:----------|:----------|---------:|---------:|
+| 1          |    10000 | 1:10000:C:A | C         | A         |   0.3527 |   0.3527 |
+| 1          |    11000 | 1:11000:T:C | T         | C         |   0.0135 |   0.0135 |
+| 1          |    12000 | 1:12000:T:C | T         | C         |   0.2400 |   0.2400 |
+| 1          |    13000 | 1:13000:T:C | T         | C         |   0.3375 |   0.3375 |
+| 1          |    14000 | 1:14000:G:C | G         | C         |   0.1901 |   0.1901 |
+| 1          |    15000 | 1:15000:A:C | A         | C         |   0.5627 |   0.5627 |
+| 1          |    16000 | 1:16000:G:A | G         | A         |   0.4569 |   0.4569 |
+| 1          |    17000 | 1:17000:C:A | C         | A         |   0.4578 |   0.4578 |
+| 1          |    18000 | 1:18000:C:G | C         | G         |   0.2591 |   0.2591 |
+| 1          |    19000 | 1:19000:T:G | T         | G         |   0.2431 |   0.2431 |
 
 ##### Extracting a SNP from the data set
 
@@ -365,15 +414,20 @@ sets generated above.
 ``` r
 # Get the dosage values for the 6th SNP
 set1snp6 <- getsnp(mergebd1info, 6)
+#> [1] 1.000 1.849 1.000 2.000 1.046 1.915
+```
+
+``` r
 # Get the dosage values for the 6th SNP
 set3snp6 <- getsnp(mergebd3info, 6)
+#> [1] 1.000 1.849 1.000 2.000 1.046 1.915
 ```
 
 The results from the above lines were merged into a data frame with the
 subject IDs. Here are the first 10 lines of the data frame.
 
 | subjectid | set1snp6 | set3snp6 |
-| :-------- | -------: | -------: |
+|:----------|---------:|---------:|
 | I1        |    1.000 |    1.000 |
 | I2        |    1.849 |    1.849 |
 | I3        |    1.000 |    1.000 |
