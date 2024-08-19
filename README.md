@@ -15,26 +15,25 @@ coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/bad
 
 ### Important News
 
-A new version of BinaryDosage has been developed. This new version uses
-the hstlib libraries which greatly improves the read speed of VCF files.
-To compile this new version requires the installation of the Rhtslib
-library from Bioconductor. This has reduced the read times by
-significantly over 10 times.
+A new version of BinaryDosage has been developed that significantly
+reduces data read times by a factor of more than 10 times. This new
+version uses the hstlib libraries which greatly improves the read speed
+of VCF files. To compile this new version requires the installation of
+the
+[Rhtslib](https://bioconductor.org/packages/release/bioc/html/Rhtslib.html)
+library from Bioconductor.
 
 Data compression of the BinaryDosage formatted files has also been
 improved. We have had reports that the BinaryDosage formatted files were
 over 3 times larger than the gzipped VCF file. This was due to the
 compression routine not compressing SNPs with low minor allele
-frequencies, \<0.01, well. When BinaryDosage was first written
+frequencies (\<0.01) well. When BinaryDosage was first written,
 imputation servers did not include many rare SNPs. This has changed
-since BinaryDosage was first written. Updates to rtools for Windows has
-also allowed for better compression. When devoloping BinaryDosage we
-have striven to make it work on all operating systems. For Windows,
-updates to R tools 4.3 and 4.4 have allowed for better compression.
+since BinaryDosage was first written.
 
-To install the latest version of BinaryDosage, it is recommend the user
-have R 4.3.x or higher. If the user is using Windows, they will need to
-verify that the current version of [R
+To install the latest version of BinaryDosage, it is recommended the
+user have R 4.3.x or higher. If the user is using Windows, they will
+need to verify that the current version of [R
 tools](https://cran.r-project.org/bin/windows/Rtools/) is installed. If
 the user is using Linux or Mac OS X, the zlib development tools need to
 be installed, often named zlib1g-dev. For most systems, these tools are
@@ -64,8 +63,12 @@ library(BinaryDosage)
 #### Important
 
 All BinaryDosage formatted files created with older versions are fully
-compatible with this new version of BinaryDosage. GxEScanR works with
-files created by this new version of BinaryDosage.
+compatible with this new version of BinaryDosage.
+[GxEScanR](https://github.com/USCbiostats/GxEScanR) works with files
+created by all versions of BinaryDosage, including this new one.
+
+Documenation below is for the current release version of BinaryDosage.
+We are in the process of updating it.
 
 ### Introduction
 
@@ -414,13 +417,8 @@ sets generated above.
 ``` r
 # Get the dosage values for the 6th SNP
 set1snp6 <- getsnp(mergebd1info, 6)
-#> [1] 1.000 1.849 1.000 2.000 1.046 1.915
-```
-
-``` r
 # Get the dosage values for the 6th SNP
 set3snp6 <- getsnp(mergebd3info, 6)
-#> [1] 1.000 1.849 1.000 2.000 1.046 1.915
 ```
 
 The results from the above lines were merged into a data frame with the
