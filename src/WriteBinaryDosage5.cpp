@@ -362,7 +362,7 @@ Rcpp::List writeVectorsToFile(CharacterVector bd_file_name0,
   Rcpp::List result = Rcpp::List::create(Rcpp::Named("filename") = bd_file_name0,
                                          Rcpp::Named("usesfid") = false,
                                          Rcpp::Named("samples") = Rcpp::DataFrame::create(
-                                           Rcpp::Named("samples") = sid),
+                                           Rcpp::Named("sid") = sid),
                                            Rcpp::Named("onechr") = onechr,
                                            Rcpp::Named("snpidformat") = 0,
                                            Rcpp::Named("snps") = Rcpp::DataFrame::create(
