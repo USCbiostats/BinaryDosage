@@ -8,3 +8,5 @@
 ^doc$
 ^Meta$
 ^scratch$
+^\.claude$
+^example_format5\.R$
