@@ -27,6 +27,7 @@ Auto-detects format 1 or 2 if all IDs match.}
 already uses \code{chr:pos:ref:alt} format, as information would be
 lost.}
 \item{2}{Store IDs as \code{chr:pos:ref:alt}.}
+\item{3}{Store IDs as \code{chr:pos_ref_alt}.}
 }}
 }
 \value{

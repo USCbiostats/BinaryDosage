@@ -303,6 +303,7 @@ getbd5snp <- function(bd5info, snp) {
 #'       already uses \code{chr:pos:ref:alt} format, as information would be
 #'       lost.}
 #'     \item{2}{Store IDs as \code{chr:pos:ref:alt}.}
+#'     \item{3}{Store IDs as \code{chr:pos_ref_alt}.}
 #'   }
 #'
 #' @return NULL (invisibly)
@@ -324,8 +325,8 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
       floor(snpidformat) != snpidformat)
     stop("snpidformat must be an integer value")
   snpidformat <- as.integer(snpidformat)
-  if (snpidformat < -1L || snpidformat > 2L)
-    stop("snpidformat must be -1, 0, 1, or 2")
+  if (snpidformat < -1L || snpidformat > 3L)
+    stop("snpidformat must be -1, 0, 1, 2, or 3")
 
   # Pre-allocate metadata vectors; will trim to actual SNP count at the end.
   # 2 million SNPs is sufficient for any single chromosome.
@@ -400,8 +401,9 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
   id_vec  <- snp_id[1:snp_count]
 
   # Apply snpidformat: resolve IDs and the stored format value.
-  chrlocid       <- paste(chr_vec, pos_vec, sep = ":")
-  chrlocrefaltid <- paste(chr_vec, pos_vec, ref_vec, alt_vec, sep = ":")
+  chrlocid          <- paste(chr_vec, pos_vec, sep = ":")
+  chrlocrefaltid    <- paste(chr_vec, pos_vec, ref_vec, alt_vec, sep = ":")
+  chrlocrefaltid_us <- paste(chrlocid, ref_vec, alt_vec, sep = "_")
 
   if (snpidformat == 0L) {
     # Auto-detect: check whether all VCF IDs already match a known format.
@@ -409,14 +411,18 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
       snpidformat <- 1L
     else if (all(id_vec == chrlocrefaltid))
       snpidformat <- 2L
+    else if (all(id_vec == chrlocrefaltid_us))
+      snpidformat <- 3L
     # else stays 0 — IDs are used verbatim
   } else if (snpidformat == 1L) {
-    if (all(id_vec == chrlocrefaltid))
-      stop("snpidformat 1 specified but VCF file uses snpidformat 2 ",
-           "(chr:pos:ref:alt); information would be lost")
+    if (all(id_vec == chrlocrefaltid) || all(id_vec == chrlocrefaltid_us))
+      stop("snpidformat 1 specified but VCF file uses a format that encodes ",
+           "ref/alt; information would be lost")
     id_vec <- chrlocid
   } else if (snpidformat == 2L) {
     id_vec <- chrlocrefaltid
+  } else if (snpidformat == 3L) {
+    id_vec <- chrlocrefaltid_us
   } else {
     # snpidformat == -1: generate chr:pos:ref:alt, store as format 2.
     id_vec      <- chrlocrefaltid
