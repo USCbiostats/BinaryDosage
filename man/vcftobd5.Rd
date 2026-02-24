@@ -4,7 +4,7 @@
 \alias{vcftobd5}
 \title{Convert a VCF file to Format 5 binary dosage files}
 \usage{
-vcftobd5(vcffile, bdose_file, bdinfo_file, region = NULL)
+vcftobd5(vcffile, bdose_file, bdinfo_file, region = NULL, snpidformat = 0L)
 }
 \arguments{
 \item{vcffile}{Path to the bgzipped, tabix-indexed VCF file.}
@@ -16,6 +16,18 @@ vcftobd5(vcffile, bdose_file, bdinfo_file, region = NULL)
 \item{region}{Optional genomic region string in bcftools format
 (e.g. \code{"chr21"} or \code{"chr21:1-5000000"}).  Requires a
 tabix index.  Default \code{NULL} processes the entire file.}
+
+\item{snpidformat}{Integer controlling how SNP IDs are stored.
+\describe{
+\item{-1}{Generate IDs as \code{chr:pos:ref:alt}; equivalent to 2 for
+Format 5.}
+\item{0}{Use the IDs as they appear in the VCF file (default).
+Auto-detects format 1 or 2 if all IDs match.}
+\item{1}{Store IDs as \code{chr:pos}.  An error is raised if the VCF
+already uses \code{chr:pos:ref:alt} format, as information would be
+lost.}
+\item{2}{Store IDs as \code{chr:pos:ref:alt}.}
+}}
 }
 \value{
 NULL (invisibly)
@@ -40,7 +52,8 @@ with the following elements:
 \item{samples}{data.frame with columns \code{fid} (empty) and
 \code{sid} (sample IDs).}
 \item{onechr}{Logical; TRUE if all SNPs are on a single chromosome.}
-\item{snpidformat}{Numeric; 0 = use original IDs from the VCF.}
+\item{snpidformat}{Numeric; resolved SNP ID format (see \code{snpidformat}
+parameter).}
 \item{snps}{data.frame with columns chromosome, location, snpid,
 reference, alternate.}
 \item{snpinfo}{Named list of optional per-SNP annotations.}

@@ -57,10 +57,12 @@ compress_snp_block <- function(ds, gp) {
 #   snps_df       - data.frame with columns: chromosome, location, snpid,
 #                   reference, alternate
 #   indices       - numeric vector of byte offsets in the .bdose file
+#   snpidformat   - integer; resolved snpidformat value to store in bdinfo
 #   snpinfo_list  - optional named list of per-SNP annotation vectors
 #                   (e.g. list(aaf = ..., maf = ..., rsq = ...))
 write_bdinfo5 <- function(bdinfo_file, bdose_file, samples_sid,
-                          snps_df, indices, snpinfo_list = list()) {
+                          snps_df, indices, snpidformat = 0L,
+                          snpinfo_list = list()) {
   n_samp <- length(samples_sid)
   n_snps <- nrow(snps_df)
 
@@ -86,7 +88,7 @@ write_bdinfo5 <- function(bdinfo_file, bdose_file, samples_sid,
     usesfid        = FALSE,
     samples        = samples_df,
     onechr         = onechr,
-    snpidformat    = 0,
+    snpidformat    = snpidformat,
     snps           = snps_df,
     snpinfo        = snpinfo_list,
     additionalinfo = additional,
@@ -274,7 +276,8 @@ getbd5snp <- function(bd5info, snp) {
 #'   \item{samples}{data.frame with columns \code{fid} (empty) and
 #'     \code{sid} (sample IDs).}
 #'   \item{onechr}{Logical; TRUE if all SNPs are on a single chromosome.}
-#'   \item{snpidformat}{Numeric; 0 = use original IDs from the VCF.}
+#'   \item{snpidformat}{Numeric; resolved SNP ID format (see \code{snpidformat}
+#'     parameter).}
 #'   \item{snps}{data.frame with columns chromosome, location, snpid,
 #'     reference, alternate.}
 #'   \item{snpinfo}{Named list of optional per-SNP annotations.}
@@ -290,10 +293,22 @@ getbd5snp <- function(bd5info, snp) {
 #' @param region  Optional genomic region string in bcftools format
 #'   (e.g. \code{"chr21"} or \code{"chr21:1-5000000"}).  Requires a
 #'   tabix index.  Default \code{NULL} processes the entire file.
+#' @param snpidformat  Integer controlling how SNP IDs are stored.
+#'   \describe{
+#'     \item{-1}{Generate IDs as \code{chr:pos:ref:alt}; equivalent to 2 for
+#'       Format 5.}
+#'     \item{0}{Use the IDs as they appear in the VCF file (default).
+#'       Auto-detects format 1 or 2 if all IDs match.}
+#'     \item{1}{Store IDs as \code{chr:pos}.  An error is raised if the VCF
+#'       already uses \code{chr:pos:ref:alt} format, as information would be
+#'       lost.}
+#'     \item{2}{Store IDs as \code{chr:pos:ref:alt}.}
+#'   }
 #'
 #' @return NULL (invisibly)
 #' @export
-vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL) {
+vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
+                     snpidformat = 0L) {
 
   if (!requireNamespace("vcfppR", quietly = TRUE))
     stop("Package 'vcfppR' is required for Format 5 conversion. ",
@@ -304,6 +319,13 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL) {
 
   if (!is.null(region) && (!is.character(region) || length(region) != 1L))
     stop("region must be a single character string or NULL")
+
+  if (!is.numeric(snpidformat) || length(snpidformat) != 1L ||
+      floor(snpidformat) != snpidformat)
+    stop("snpidformat must be an integer value")
+  snpidformat <- as.integer(snpidformat)
+  if (snpidformat < -1L || snpidformat > 2L)
+    stop("snpidformat must be -1, 0, 1, or 2")
 
   # Pre-allocate metadata vectors; will trim to actual SNP count at the end.
   # 2 million SNPs is sufficient for any single chromosome.
@@ -370,13 +392,44 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL) {
   if (snp_count == 0L)
     stop("No variants found in VCF file: ", vcffile)
 
-  # Build the SNP data frame (trimmed to actual count).
+  # Trim metadata vectors to actual SNP count.
+  chr_vec <- snp_chr[1:snp_count]
+  pos_vec <- snp_pos[1:snp_count]
+  ref_vec <- snp_ref[1:snp_count]
+  alt_vec <- snp_alt[1:snp_count]
+  id_vec  <- snp_id[1:snp_count]
+
+  # Apply snpidformat: resolve IDs and the stored format value.
+  chrlocid       <- paste(chr_vec, pos_vec, sep = ":")
+  chrlocrefaltid <- paste(chr_vec, pos_vec, ref_vec, alt_vec, sep = ":")
+
+  if (snpidformat == 0L) {
+    # Auto-detect: check whether all VCF IDs already match a known format.
+    if (all(id_vec == chrlocid))
+      snpidformat <- 1L
+    else if (all(id_vec == chrlocrefaltid))
+      snpidformat <- 2L
+    # else stays 0 — IDs are used verbatim
+  } else if (snpidformat == 1L) {
+    if (all(id_vec == chrlocrefaltid))
+      stop("snpidformat 1 specified but VCF file uses snpidformat 2 ",
+           "(chr:pos:ref:alt); information would be lost")
+    id_vec <- chrlocid
+  } else if (snpidformat == 2L) {
+    id_vec <- chrlocrefaltid
+  } else {
+    # snpidformat == -1: generate chr:pos:ref:alt, store as format 2.
+    id_vec      <- chrlocrefaltid
+    snpidformat <- 2L
+  }
+
+  # Build the SNP data frame.
   snps_df <- data.frame(
-    chromosome = snp_chr[1:snp_count],
-    location   = snp_pos[1:snp_count],
-    snpid      = snp_id[1:snp_count],
-    reference  = snp_ref[1:snp_count],
-    alternate  = snp_alt[1:snp_count],
+    chromosome = chr_vec,
+    location   = pos_vec,
+    snpid      = id_vec,
+    reference  = ref_vec,
+    alternate  = alt_vec,
     stringsAsFactors = FALSE
   )
 
@@ -385,7 +438,8 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL) {
                 bdose_file   = bdose_file,
                 samples_sid  = samples_sid,
                 snps_df      = snps_df,
-                indices      = snp_indices[1:snp_count])
+                indices      = snp_indices[1:snp_count],
+                snpidformat  = snpidformat)
 
   invisible(NULL)
 }
