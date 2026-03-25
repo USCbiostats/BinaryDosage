@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo = FALSE}
 library(BinaryDosage)
+has_vcfppR <- requireNamespace("vcfppR", quietly = TRUE)
 ```
 
 # Introduction
@@ -88,7 +89,7 @@ The function takes the following parameters.
 
 The following code converts *set1a.vcf.gz* to a Format 5 file pair.
 
-```{r convert, eval = T, echo = T, message = F, warning = F}
+```{r convert, eval = has_vcfppR, echo = T, message = F, warning = F}
 vcftobd(vcffile     = vcf_file,
          bdose_file  = bdose_file,
          bdinfo_file = bdinfo_file)
@@ -115,7 +116,7 @@ The function takes the following parameters.
 - `bdose_file` — path to the `.bdose` file.
 - `bdinfo_file` — path to the `.bdinfo` file.
 
-```{r load_info, eval = T, echo = T, message = F, warning = F}
+```{r load_info, eval = has_vcfppR, echo = T, message = F, warning = F}
 bd5 <- getbd5info(bdose_file  = bdose_file,
                   bdinfo_file = bdinfo_file)
 ```
@@ -127,7 +128,7 @@ below.
 
 ## File and format metadata
 
-```{r meta, eval = T, echo = T}
+```{r meta, eval = has_vcfppR, echo = T}
 cat("Class:          ", class(bd5), "\n")
 cat("Uses family ID: ", bd5$usesfid, "\n")
 cat("One chromosome: ", bd5$onechr, "\n")
@@ -142,7 +143,7 @@ The `samples` element is a data frame with one row per subject. The `fid`
 column holds the family ID (empty for VCF files, which carry no family
 information) and the `sid` column holds the subject ID.
 
-```{r samples, eval = T, echo = T}
+```{r samples, eval = has_vcfppR, echo = T}
 cat("Number of samples:", nrow(bd5$samples), "\n")
 knitr::kable(head(bd5$samples, 5), caption = "First 5 samples")
 ```
@@ -151,7 +152,7 @@ knitr::kable(head(bd5$samples, 5), caption = "First 5 samples")
 
 The `snps` element is a data frame with one row per SNP.
 
-```{r snps, eval = T, echo = T}
+```{r snps, eval = has_vcfppR, echo = T}
 cat("Number of SNPs:", nrow(bd5$snps), "\n")
 knitr::kable(bd5$snps, caption = "SNP table")
 ```
@@ -162,7 +163,7 @@ The `indices` element is a numeric vector of byte offsets into the `.bdose`
 file, one per SNP, giving the start of that SNP's compressed block. These are
 used internally by `getbd5snp`.
 
-```{r indices, eval = T, echo = T}
+```{r indices, eval = has_vcfppR, echo = T}
 cat("Indices (bytes):", bd5$indices, "\n")
 ```
 
@@ -189,7 +190,7 @@ to the number of samples.
 
 The following code retrieves the first SNP by its 1-based index.
 
-```{r snp_by_index, eval = T, echo = T, message = F, warning = F}
+```{r snp_by_index, eval = has_vcfppR, echo = T, message = F, warning = F}
 snp1 <- getbd5snp(bd5info = bd5, snp = 1L)
 
 snp1_df <- data.frame(
@@ -208,7 +209,7 @@ knitr::kable(head(snp1_df, 10),
 
 A SNP can also be retrieved by passing its SNP ID as a character string.
 
-```{r snp_by_id, eval = T, echo = T, message = F, warning = F}
+```{r snp_by_id, eval = has_vcfppR, echo = T, message = F, warning = F}
 snp_id <- "1:12000:T:C"
 snp3   <- getbd5snp(bd5info = bd5, snp = snp_id)
 
@@ -230,7 +231,7 @@ There is no dedicated `bd5apply` function yet, but the same pattern used by
 `bdapply` can be reproduced with a simple loop. The following example
 calculates the alternate allele frequency for every SNP.
 
-```{r apply, eval = T, echo = T, message = F, warning = F}
+```{r apply, eval = has_vcfppR, echo = T, message = F, warning = F}
 n_snps <- nrow(bd5$snps)
 aaf    <- numeric(n_snps)
 
@@ -245,6 +246,6 @@ aaf_table <- data.frame(snpid = bd5$snps$snpid,
 knitr::kable(aaf_table, caption = "Alternate allele frequencies")
 ```
 
-```{r cleanup, include = FALSE}
+```{r cleanup, include = FALSE, eval = has_vcfppR}
 unlink(c(bdose_file, bdinfo_file))
 ```
