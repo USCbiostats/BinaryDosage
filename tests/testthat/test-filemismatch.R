@@ -13,7 +13,7 @@ test_that("filemismatch12", {
   bdfile1basnp <- tempfile()
   bdfam1basnp <- tempfile()
   bdmap1basnp <- tempfile()
-  vcftobd(vcffiles = vcf1basnpfile,
+  vcftobdlegacy(vcffiles = vcf1basnpfile,
           bdfiles = c(bdfile1basnp, bdfam1basnp, bdmap1basnp),
           format = 3)
   expect_error(getbdinfo(bdfiles = c(bdfile1basnp, bdfam3a, bdmap3a)),
@@ -23,7 +23,7 @@ test_that("filemismatch12", {
   bdfile2b <- tempfile()
   bdfam2b <- tempfile()
   bdmap2b <- tempfile()
-  vcftobd(vcffiles = vcf2bfile,
+  vcftobdlegacy(vcffiles = vcf2bfile,
           bdfiles = c(bdfile2b, bdfam2b, bdmap2b),
           format = 3)
   expect_error(getbdinfo(bdfiles = c(bdfile2b, bdfam3a, bdmap3a)),
@@ -45,7 +45,7 @@ test_that("filemismatch34", {
   bdfile1basnp <- tempfile()
   bdfam1basnp <- tempfile()
   bdmap1basnp <- tempfile()
-  vcftobd(vcffiles = vcf1basnpfile,
+  vcftobdlegacy(vcffiles = vcf1basnpfile,
           bdfiles = c(bdfile1basnp, bdfam1basnp, bdmap1basnp),
           format = 3,
           subformat = 4)
@@ -58,7 +58,7 @@ test_that("filemismatch34", {
   bdfile2b <- tempfile()
   bdfam2b <- tempfile()
   bdmap2b <- tempfile()
-  vcftobd(vcffiles = vcf2bfile,
+  vcftobdlegacy(vcffiles = vcf2bfile,
           bdfiles = c(bdfile2b, bdfam2b, bdmap2b),
           format = 3,
           subformat = 3)

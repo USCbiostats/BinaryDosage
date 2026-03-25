@@ -94,7 +94,7 @@ VCF
 vcfapply
 vcffiles
 vcfinfo
-vcftobd
+vcftobdlegacy
 vcftools
 xfffe
 xffff

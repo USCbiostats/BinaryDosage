@@ -62,9 +62,9 @@ Default value is TRUE.}
 
 \item{snpidformat}{Format to change the snpid to.
 0 indicates to use the snpid format in the file.
-1 indicates to change the snpid into chromosome:location,
-2 indicates to change the snpid into chromosome:location:referenceallele:alternateallele,
-3 indicates to change the snpid into chromosome:location_referenceallele_alternateallele,
+1 indicates to change the snpid into chr:pos,
+2 indicates to change the snpid into chr:pos:ref:alt,
+3 indicates to change the snpid into chr:pos_ref_alt,
 Default value is 0.}
 
 \item{sep}{Separators used in the gen file and sample files,

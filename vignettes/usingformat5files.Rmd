@@ -73,7 +73,7 @@ bdinfo_file <- file.path(tempdir(), "set1a.bdinfo")
 
 # Converting a VCF file to Format 5
 
-The `vcftobd5` function converts a bgzipped VCF file to a Format 5 file pair.
+The `vcftobd` function converts a bgzipped VCF file to a Format 5 file pair.
 The VCF file must contain the FORMAT fields `DS` (dosage) and `GP` (genotype
 probabilities), as produced by minimac and the Michigan Imputation Server.
 
@@ -89,7 +89,7 @@ The function takes the following parameters.
 The following code converts *set1a.vcf.gz* to a Format 5 file pair.
 
 ```{r convert, eval = T, echo = T, message = F, warning = F}
-vcftobd5(vcffile     = vcf_file,
+vcftobd(vcffile     = vcf_file,
          bdose_file  = bdose_file,
          bdinfo_file = bdinfo_file)
 ```
@@ -98,7 +98,7 @@ To convert only a specific region of the file, supply the `region` parameter.
 The VCF file must have a tabix index (a `.tbi` file alongside it).
 
 ```{r convert_region, eval = F, echo = T}
-vcftobd5(vcffile     = vcf_file,
+vcftobd(vcffile     = vcf_file,
          bdose_file  = bdose_file,
          bdinfo_file = bdinfo_file,
          region      = "1:10000-15000")

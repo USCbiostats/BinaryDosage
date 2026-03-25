@@ -280,7 +280,11 @@ getbd5snp <- function(bd5info, snp) {
 #'     parameter).}
 #'   \item{snps}{data.frame with columns chromosome, location, snpid,
 #'     reference, alternate.}
-#'   \item{snpinfo}{Named list of optional per-SNP annotations.}
+#'   \item{snpinfo}{Named list of per-SNP annotations requested via
+#'     \code{bdoptions}.  Each element is a numeric vector of length equal to
+#'     the number of SNPs.  Values are read from the VCF INFO column when
+#'     available for the first SNP (AF for aaf, MAF for maf, R2 for rsq);
+#'     otherwise they are calculated from the dosage values.}
 #'   \item{additionalinfo}{List of class \code{"bdose-info"} with format,
 #'     subformat, headersize, numgroups, and groups.}
 #'   \item{datasize}{Integer vector of length 0 (unused in Format 5).}
@@ -306,10 +310,19 @@ getbd5snp <- function(bd5info, snp) {
 #'     \item{3}{Store IDs as \code{chr:pos_ref_alt}.}
 #'   }
 #'
+#' @param bdoptions  Character vector specifying which per-SNP statistics to
+#'   store.  Any combination of \code{"aaf"} (alternate allele frequency),
+#'   \code{"maf"} (minor allele frequency), and \code{"rsq"} (imputation
+#'   r-squared).  For each statistic, the corresponding VCF INFO field is used
+#'   when present for the first SNP (AF, MAF, R2 respectively); otherwise the
+#'   value is calculated from the dosage data.  Default \code{character(0)}
+#'   stores no statistics.
+#'
 #' @return NULL (invisibly)
+#' @importFrom stats var
 #' @export
-vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
-                     snpidformat = 0L) {
+vcftobd <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
+                     snpidformat = 0L, bdoptions = character(0)) {
 
   if (!requireNamespace("vcfppR", quietly = TRUE))
     stop("Package 'vcfppR' is required for Format 5 conversion. ",
@@ -328,6 +341,18 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
   if (snpidformat < -1L || snpidformat > 3L)
     stop("snpidformat must be -1, 0, 1, 2, or 3")
 
+  if (!is.character(bdoptions))
+    stop("bdoptions must be a character vector")
+  invalid_opts <- setdiff(bdoptions, c("aaf", "maf", "rsq"))
+  if (length(invalid_opts) > 0L)
+    stop("Invalid bdoptions value(s): ",
+         paste(invalid_opts, collapse = ", "),
+         ". Valid values are: aaf, maf, rsq")
+
+  want_aaf <- "aaf" %in% bdoptions
+  want_maf <- "maf" %in% bdoptions
+  want_rsq <- "rsq" %in% bdoptions
+
   # Pre-allocate metadata vectors; will trim to actual SNP count at the end.
   # 2 million SNPs is sufficient for any single chromosome.
   MAX_SNPS    <- 2000000L
@@ -338,6 +363,12 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
   snp_alt     <- character(MAX_SNPS)
   snp_indices <- numeric(MAX_SNPS)
   snp_count   <- 0L
+
+  # Pre-allocate snpinfo accumulation vectors and source flags.
+  # Flags (use_*_from_vcf) are set on the first SNP based on INFO availability.
+  if (want_aaf) { aaf_vec <- numeric(MAX_SNPS); use_aaf_from_vcf <- FALSE }
+  if (want_maf) { maf_vec <- numeric(MAX_SNPS); use_maf_from_vcf <- FALSE }
+  if (want_rsq) { rsq_vec <- numeric(MAX_SNPS); use_rsq_from_vcf <- FALSE }
 
   # current_pos tracks the write position in the .bdose file (numeric to
   # handle files larger than 2 GB without integer overflow).
@@ -362,14 +393,27 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
 
     if (snp_count > MAX_SNPS)
       stop("SNP count exceeds MAX_SNPS (", MAX_SNPS, "). ",
-           "Increase MAX_SNPS in vcftobd5().")
+           "Increase MAX_SNPS in vcftobd().")
 
-    # Validate required FORMAT tags on the first SNP.
+    # Validate required FORMAT tags and detect INFO field availability on
+    # the first SNP.
     if (snp_count == 1L) {
       if (reader$getFormatType("DS") == 0L)
         stop("FORMAT field 'DS' not found in VCF file: ", vcffile)
       if (reader$getFormatType("GP") == 0L)
         stop("FORMAT field 'GP' not found in VCF file: ", vcffile)
+      if (want_aaf) {
+        val <- tryCatch(reader$infoFloat("AF"),  error = function(e) NA_real_)
+        use_aaf_from_vcf <- length(val) > 0L && !is.na(val[1L])
+      }
+      if (want_maf) {
+        val <- tryCatch(reader$infoFloat("MAF"), error = function(e) NA_real_)
+        use_maf_from_vcf <- length(val) > 0L && !is.na(val[1L])
+      }
+      if (want_rsq) {
+        val <- tryCatch(reader$infoFloat("R2"),  error = function(e) NA_real_)
+        use_rsq_from_vcf <- length(val) > 0L && !is.na(val[1L])
+      }
     }
 
     # Collect SNP metadata.
@@ -382,6 +426,31 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
     # Read dosage and genotype probability data.
     ds <- reader$formatFloat("DS")
     gp <- reader$formatFloat("GP")
+
+    # Accumulate snpinfo values.
+    if (want_aaf) {
+      aaf_vec[snp_count] <- if (use_aaf_from_vcf)
+        tryCatch(reader$infoFloat("AF")[1L],  error = function(e) NA_real_)
+      else
+        mean(ds, na.rm = TRUE) / 2
+    }
+    if (want_maf) {
+      maf_vec[snp_count] <- if (use_maf_from_vcf)
+        tryCatch(reader$infoFloat("MAF")[1L], error = function(e) NA_real_)
+      else {
+        aaf_i <- if (want_aaf) aaf_vec[snp_count] else mean(ds, na.rm = TRUE) / 2
+        min(aaf_i, 1 - aaf_i)
+      }
+    }
+    if (want_rsq) {
+      rsq_vec[snp_count] <- if (use_rsq_from_vcf)
+        tryCatch(reader$infoFloat("R2")[1L],  error = function(e) NA_real_)
+      else {
+        aaf_i <- if (want_aaf) aaf_vec[snp_count] else mean(ds, na.rm = TRUE) / 2
+        denom <- 2 * aaf_i * (1 - aaf_i)
+        if (denom > 0) var(ds, na.rm = TRUE) / denom else NA_real_
+      }
+    }
 
     # Record the byte offset for this SNP, compress, and write.
     snp_indices[snp_count] <- current_pos
@@ -439,13 +508,20 @@ vcftobd5 <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
     stringsAsFactors = FALSE
   )
 
+  # Build the snpinfo list (trim vectors to actual SNP count).
+  snpinfo_list <- list()
+  if (want_aaf) snpinfo_list$aaf <- aaf_vec[1:snp_count]
+  if (want_maf) snpinfo_list$maf <- maf_vec[1:snp_count]
+  if (want_rsq) snpinfo_list$rsq <- rsq_vec[1:snp_count]
+
   # Save the .bdinfo file.
   write_bdinfo5(bdinfo_file,
                 bdose_file   = bdose_file,
                 samples_sid  = samples_sid,
                 snps_df      = snps_df,
                 indices      = snp_indices[1:snp_count],
-                snpidformat  = snpidformat)
+                snpidformat  = snpidformat,
+                snpinfo_list = snpinfo_list)
 
   invisible(NULL)
 }

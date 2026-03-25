@@ -111,8 +111,8 @@ validatebdinput <- function(bdfiles,
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' -1 SNP ID not written
 #' 0 - same as in the VCF file
-#' 1 - chromosome:location
-#' 2 - chromosome:location:reference_allele:alternate_allele
+#' 1 - chr:pos
+#' 2 - chr:pos:ref:alt
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containing any of the following
@@ -131,16 +131,20 @@ validatebdinput <- function(bdfiles,
 #' vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 #' bdfiles <- tempfile()
 #' # Convert the file
-#' vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
+#' vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
 #' # Verify the file was written correctly
 #' bdinfo <- getbdinfo(bdfiles)
-vcftobd <- function(vcffiles,
+vcftobdlegacy <- function(vcffiles,
                     gz = FALSE,
                     bdfiles,
                     format = 4L,
                     subformat = 0L,
                     snpidformat = 0,
                     bdoptions = character(0)) {
+  warning("vcftobdlegacy() uses legacy formats 1-4. ",
+          "Consider using vcftobd() instead, which produces Format 5 files ",
+          "with faster conversion and smaller file sizes.",
+          call. = FALSE)
   if (missing(vcffiles) == TRUE)
     stop("No VCF file specified")
 
@@ -258,8 +262,8 @@ vcftobd <- function(vcffiles,
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' -1 - SNP ID not written.
 #' 0 - same as in the VCF file.
-#' 1 - chromosome:location.
-#' 2 - chromosome:location:reference_allele:alternate_allele.
+#' 1 - chr:pos.
+#' 2 - chr:pos:ref:alt.
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containing any of the following

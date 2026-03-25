@@ -15,7 +15,7 @@
 # replace the two lines below with:  library(BinaryDosage)
 
 library(BinaryDosage)   # loads extdata paths and existing helpers
-source("R/format5.R")   # loads vcftobd5, getbd5info, getbd5snp
+source("R/format5.R")   # loads vcftobd, getbd5info, getbd5snp
 
 # ---------------------------------------------------------------------------
 # 1. Locate the example VCF file included with the package
@@ -29,7 +29,7 @@ bdinfo_file <- file.path(tempdir(), "set1a.bdinfo")
 # ---------------------------------------------------------------------------
 # 2. Convert the VCF to Format 5
 # ---------------------------------------------------------------------------
-vcftobd5(vcffile  = vcf_file,
+vcftobd(vcffile  = vcf_file,
          bdose_file  = bdose_file,
          bdinfo_file = bdinfo_file)
 

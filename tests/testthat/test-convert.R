@@ -1,91 +1,91 @@
-test_that("vcftobd", {
-  expect_error(vcftobd(bdfiles = "file1"),
+test_that("vcftobdlegacy", {
+  expect_error(vcftobdlegacy(bdfiles = "file1"),
                "No VCF file specified")
-  expect_error(vcftobd(vcffiles = "file1"),
+  expect_error(vcftobdlegacy(vcffiles = "file1"),
                "No output files specified")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = 1),
                "bdfiles must be a vector of characters")
 
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        format = ""),
                "format must be an integer value")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        format = 1:2),
                "format must be an integer vector of length 1")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        format = 1.2),
                "format must be an integer")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        format = 5),
                "format must be an integer value from 1 to 4")
 
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        subformat = ""),
                "subformat must be an integer value")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        subformat = 1:2),
                "subformat must be an integer vector of length 1")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        subformat = 1.2),
                "subformat must be an integer")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        subformat = 5),
                "subformat must be an integer value from 0 to 4")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        format = 2,
                        subformat = 3),
                "subformat must be an integer value from 0 to 2 for formats 1 and 2")
 
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = c("file2", "file3"),
                        format = 4),
                "Only one output file name is needed when using format 4")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = c("file2", "file3"),
                        format = 3),
                "Three output file names are required when using formats 1, 2, and 3")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = c("file2", "file3", ""),
                        format = 3),
                "Output file names cannot be blank")
 
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        snpidformat = "A"),
                "snpidformat must be an integer value")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        snpidformat = 1:2),
                "snpidformat must be an integer vector of length 1")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        snpidformat = 1.2),
                "snpidformat must be an integer")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        snpidformat = 4),
                "snpidformat must be and integer from -1 to 3")
 
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        bdoptions = 4),
                "bdoptions must be a character array")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = c("file2", "file3", "file4"),
                        format = 3,
                        bdoptions = "aaf"),
                "bdoptions can only be used with format 4")
-  expect_error(vcftobd(vcffiles = "file1",
+  expect_error(vcftobdlegacy(vcffiles = "file1",
                        bdfiles = "file2",
                        bdoptions = "abc"),
                "Only valid bdoptions are aaf, maf, and rsq")
@@ -93,7 +93,7 @@ test_that("vcftobd", {
   vcf1afile = system.file("extdata", "set1a.vcf", package = "BinaryDosage")
   vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
   bdfiles <- tempfile()
-  expect_error(vcftobd(vcffiles = c(vcf1afile, vcf1ainfo),
+  expect_error(vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo),
                        bdfiles = bdfiles,
                        bdoptions = c("aaf", "maf", "rsq")),
                NA)
@@ -101,7 +101,7 @@ test_that("vcftobd", {
 
   vcf2afile = system.file("extdata", "set2a.vcf", package = "BinaryDosage")
   bdfiles2 <- tempfile()
-  expect_error(vcftobd(vcffiles = c(vcf2afile),
+  expect_error(vcftobdlegacy(vcffiles = c(vcf2afile),
                        bdfiles = bdfiles2,
                        snpidformat = -1),
                NA)

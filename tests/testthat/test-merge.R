@@ -136,9 +136,9 @@ test_that("merge", {
   vcf1binfo <- system.file("extdata", "set1b.info", package = "BinaryDosage")
   bdfile1a <- tempfile()
   bdfile1b <- tempfile()
-  vcftobd(vcffiles = c(vcf1afile, vcf1ainfo),
+  vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo),
           bdfiles = bdfile1a)
-  vcftobd(vcffiles = c(vcf1bfile, vcf1binfo),
+  vcftobdlegacy(vcffiles = c(vcf1bfile, vcf1binfo),
           bdfiles = bdfile1b)
 
   bdinfo1a <- getbdinfo(bdfile1a)
@@ -160,10 +160,10 @@ test_that("merge", {
   bdfile2b <- tempfile()
   bdfam2b <- tempfile()
   bdmap2b <- tempfile()
-  vcftobd(vcffiles = vcf2afile,
+  vcftobdlegacy(vcffiles = vcf2afile,
           bdfiles = c(bdfile2a, bdfam2a, bdmap2a),
           format = 3L)
-  vcftobd(vcffiles = vcf2bfile,
+  vcftobdlegacy(vcffiles = vcf2bfile,
           bdfiles = c(bdfile2b, bdfam2b, bdmap2b),
           format = 3L)
 
@@ -180,7 +180,7 @@ test_that("merge", {
 
   vcf1brfile <- system.file("extdata", "set1b_rsub.vcf", package = "BinaryDosage")
   bdfile1br <- tempfile()
-  vcftobd(vcffiles = vcf1brfile,
+  vcftobdlegacy(vcffiles = vcf1brfile,
           bdfiles = bdfile1br)
   bdinfo1br <- getbdinfo(bdfile1br)
 
@@ -205,7 +205,7 @@ test_that("merge", {
   vcf1brs <- system.file("extdata", "set1b_rssnp.vcf", package = "BinaryDosage")
   bdinfo1a <- getbdinfo(bdvcf1afile)
   bdfile1brs <- tempfile()
-  vcftobd(vcffiles = vcf1brs,
+  vcftobdlegacy(vcffiles = vcf1brs,
           bdfiles = bdfile1brs)
   bdinfo1brs <- getbdinfo(bdfiles = bdfile1brs)
   merge1brs <- tempfile()

@@ -89,7 +89,8 @@ There are 4 formats for a binary dosage data set. Data sets in formats 1, 2, and
   + Sample size of each data set merged
 
 ### Functions
-- **vcftobd** - Converts a VCF file to a binary dosage data set
+- **vcftobd** - Converts a VCF file to a Format 5 binary dosage data set
+- **vcftobdlegacy** - Converts a VCF file to a legacy format (1-4) binary dosage data set
 - **gentobd** - Converts a GEN (impute2) file to a binary dosage data set
 - **bdmerge** - Merges multiple binary dosage data sets into a single data set
 - **getbdinfo** - Creates an R List containing information about a binary dosage data set (required for **getsnp** and **bdapply**)
@@ -184,13 +185,13 @@ mergebd3 <- tempfile()
 
 ##### Converting VCF files to a binary dosage data set
 
-Converting a VCF file into a binary dosage file is simple. The user passes the names of the VCF and information files along with the name for the binary dosage file to the <span style="font-family:Courier">vcftobd</span> function. There are some options available for the <span style="font-family:Courier">vcftobd</span> functions such as using gz compressed files vcf files. More information about these options can be found using the help files or reading the vignette <span style="font-family:Courier">usingvcffiles</span>.
+Converting a VCF file into a binary dosage file is simple. The user passes the names of the VCF and information files along with the name for the binary dosage file to the <span style="font-family:Courier">vcftobdlegacy</span> function. There are some options available for the <span style="font-family:Courier">vcftobdlegacy</span> functions such as using gz compressed files vcf files. More information about these options can be found using the help files or reading the vignette <span style="font-family:Courier">usingvcffiles</span>.
 
 The following commands convert VCF data sets 1a and 1b into the binary dosage format.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
-vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
+vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
+vcftobdlegacy(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
 
 ```
 

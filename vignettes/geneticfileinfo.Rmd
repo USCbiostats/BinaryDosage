@@ -32,9 +32,9 @@ The common section has the following elements
 - onchr - Logical value indicating if all the SNPs are on the same chromosome
 - snpidformat - Integer indicating the format of the SNP IDs as follows
   + 0 - Unknown for VCF and GEN files or user specified for binary dosage files
-  + 1 - chromosome:location
-  + 2 - chromosome:location:referenceallele:alternateallele
-  + 3 - chromosome:location_referenceallele_alternateallele
+  + 1 - chr:pos
+  + 2 - chr:pos:ref:alt
+  + 3 - chr:pos_ref_alt
 - snps - Data frame containing the following values
   + chromosome - Character value indicating what chromosome the SNP is on
   + location - Integer value with the location of the SNP on the chromosome
