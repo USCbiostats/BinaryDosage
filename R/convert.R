@@ -200,6 +200,206 @@ vcftobdlegacy <- function(vcffiles,
 }
 
 ###########################################################
+#          Binary Dosage Format 1 to Format 5            #
+###########################################################
+
+#' Convert a format 1 binary dosage file to Format 5
+#'
+#' Reads a format 1 binary dosage file (subformat 1 or 2) and converts it to
+#' a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformat 1), those values are stored as missing in the
+#' output.
+#'
+#' @param bdfiles Vector of three file names for the format 1 binary dosage
+#'   file: the binary dosage file, the family file, and the map file.
+#' @param bdose_file Path for the output .bdose file.
+#' @param bdinfo_file Path for the output .bdinfo file.
+#'
+#' @return NULL (invisibly)
+#' @export
+#'
+#' @examples
+#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+#' bdfile  <- tempfile()
+#' famfile <- tempfile()
+#' mapfile <- tempfile()
+#' suppressWarnings(
+#'   vcftobdlegacy(vcffiles = vcf1afile,
+#'                 bdfiles = c(bdfile, famfile, mapfile),
+#'                 format = 1L)
+#' )
+#' bdose_file  <- tempfile(fileext = ".bdose")
+#' bdinfo_file <- tempfile(fileext = ".bdinfo")
+#' bd1tobd5(bdfiles     = c(bdfile, famfile, mapfile),
+#'          bdose_file  = bdose_file,
+#'          bdinfo_file = bdinfo_file)
+bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+  if (missing(bdinfo_file))
+    stop("No output .bdinfo file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 1L)
+    stop("bdfiles must be a format 1 binary dosage file")
+  if (!subfmt %in% c(1L, 2L))
+    stop("bdfiles must be format 1 subformat 1 or 2")
+
+  has_gp      <- subfmt == 2L
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0  # bytes written after 4-byte magic header
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, bdinfo_file)
+
+  invisible(NULL)
+}
+
+###########################################################
+#          Binary Dosage Format 2 to Format 5            #
+###########################################################
+
+#' Convert a format 2 binary dosage file to Format 5
+#'
+#' Reads a format 2 binary dosage file (subformat 1 or 2) and converts it to
+#' a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformat 1), those values are stored as missing in the
+#' output.
+#'
+#' @param bdfiles Vector of three file names for the format 2 binary dosage
+#'   file: the binary dosage file, the family file, and the map file.
+#' @param bdose_file Path for the output .bdose file.
+#' @param bdinfo_file Path for the output .bdinfo file.
+#'
+#' @return NULL (invisibly)
+#' @export
+#'
+#' @examples
+#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+#' bdfile  <- tempfile()
+#' famfile <- tempfile()
+#' mapfile <- tempfile()
+#' suppressWarnings(
+#'   vcftobdlegacy(vcffiles = vcf1afile,
+#'                 bdfiles = c(bdfile, famfile, mapfile),
+#'                 format = 2L)
+#' )
+#' bdose_file  <- tempfile(fileext = ".bdose")
+#' bdinfo_file <- tempfile(fileext = ".bdinfo")
+#' bd2tobd5(bdfiles     = c(bdfile, famfile, mapfile),
+#'          bdose_file  = bdose_file,
+#'          bdinfo_file = bdinfo_file)
+bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+  if (missing(bdinfo_file))
+    stop("No output .bdinfo file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 2L)
+    stop("bdfiles must be a format 2 binary dosage file")
+  if (!subfmt %in% c(1L, 2L))
+    stop("bdfiles must be format 2 subformat 1 or 2")
+
+  has_gp      <- subfmt == 2L
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, bdinfo_file)
+
+  invisible(NULL)
+}
+
+###########################################################
 #                  Gen to Binary Dosage                   #
 ###########################################################
 

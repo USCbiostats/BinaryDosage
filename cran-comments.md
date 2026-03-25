@@ -1,29 +1,29 @@
-CRAN comments
-================
+## Resubmission
+
+This package was archived on 2025-12-25 because the `src/Makevars` file
+specified `CXX_STD = CXX11`, which has been a check NOTE since January 2023.
+This specification has been removed; the package now builds using the default
+C++17.
+
+## Changes in this version
+
+* Removed `CXX_STD = CXX11` from `src/Makevars`
+* Added Format 5 binary dosage files: faster conversion and smaller file sizes
+  using gzip compression (new `vcftobd()` function via the vcfppR package)
+* Renamed the previous `vcftobd()` to `vcftobdlegacy()` with a deprecation
+  warning directing users to the new `vcftobd()`
+* Extended `getsnp()` and `bdapply()` to support Format 5 files
 
 ## Test environments
-* local OS X install, R 3.6.1
-* local Windows 10 install, R 3.6.1
-* ubuntu 16.04 (on travis-ci), R-release
-* win-builder (devel, release, and oldrelease)
+
+* Windows 11, R 4.5.2
 
 ## R CMD check results
-There were no ERRORs, no WARNINGs and no NOTES.
 
-## rhub results
-2 Notes
-   Possibly mis-spelled words in DESCRIPTION:
-     VCF (21:56)
-N  checking for non-standard things in the check directory
-   Found the following files/directories:
-     'BinaryDosage-Ex_i386.Rout' 'BinaryDosage-Ex_x64.Rout'
-     'examples_i386' 'examples_x64' 'tests_i386' 'tests_x64'
-VCF is correct
-Second note appears to be issue with rhub
+0 errors | 0 warnings | 1 note
 
-## check_win_xxx results
-1 Notes
-   Possibly mis-spelled words in DESCRIPTION:
-     VCF (21:56)
-VCF is correct.
-
+The NOTE is from CRAN incoming feasibility checks:
+* This is a resubmission of an archived package
+* The development version number will be updated to a release version before
+  final submission
+* Three URLs in README.md have been updated to their current locations

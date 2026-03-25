@@ -301,14 +301,48 @@ ReadIndices4 <- function(bdInfo) {
 #                                                                           #
 #***************************************************************************#
 
-# Reads a SNP form the various formats
-# of the binary dosage file.
+# Reads a SNP from the various formats of the binary dosage file.
+# For formats 1-4, data is written into d/p0/p1/p2 via C-level mutation
+# and NULL is returned invisibly.
+# For format 5, returns a list(dosage, p0, p1, p2); callers must use the
+# return value because pure-R functions cannot mutate caller vectors in place.
 ReadBinaryDosageData <- function(bdInfo, snp, d, p0, p1, p2, us) {
+  if (bdInfo$additionalinfo$format == 5L)
+    return(ReadBinaryDosageDataFormat5(bdInfo, snp))
   ReadHeaderFunc <- list(f1 <- c(ReadBinaryDosageData1, ReadBinaryDosageData2),
                          f2 <- c(ReadBinaryDosageData3, ReadBinaryDosageData4),
                          f3 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5),
                          f4 <- c(ReadBinaryDosageData3, ReadBinaryDosageData5, ReadBinaryDosageData3, ReadBinaryDosageData5))
-  return (ReadHeaderFunc[[bdInfo$additionalinfo$format]][[bdInfo$additionalinfo$subformat]](bdInfo, snp, d, p0, p1, p2, us))
+  ReadHeaderFunc[[bdInfo$additionalinfo$format]][[bdInfo$additionalinfo$subformat]](bdInfo, snp, d, p0, p1, p2, us)
+  invisible(NULL)
+}
+
+ReadBinaryDosageDataFormat5 <- function(bdInfo, snp) {
+  n_samp <- nrow(bdInfo$samples)
+  n_snps <- nrow(bdInfo$snps)
+  start  <- bdInfo$indices[snp]
+
+  if (snp < n_snps) {
+    nbytes <- as.integer(bdInfo$indices[snp + 1L] - start)
+  } else {
+    nbytes <- as.integer(file.info(bdInfo$filename)$size - start)
+  }
+
+  con <- file(bdInfo$filename, open = "rb")
+  on.exit(close(con))
+  seek(con, where = start, origin = "start")
+  compressed <- readBin(con, what = raw(), n = nbytes)
+  raw_block  <- memDecompress(compressed, type = "gzip")
+
+  dosage <- ushort_raw_to_vals(raw_block, n_samp)
+  gp_raw <- raw_block[seq(2L * n_samp + 1L, length(raw_block))]
+  gp     <- ushort_raw_to_vals(gp_raw, 3L * n_samp)
+
+  idx <- seq_len(n_samp)
+  list(dosage = dosage,
+       p0     = gp[3L * (idx - 1L) + 1L],
+       p1     = gp[3L * (idx - 1L) + 2L],
+       p2     = gp[3L * (idx - 1L) + 3L])
 }
 
 ReadBinaryDosageData1 <- function(bdInfo, snp, d, p0, p1, p2, us) {

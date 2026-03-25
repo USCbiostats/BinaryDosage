@@ -109,6 +109,172 @@ test_that("vcftobdlegacy", {
 
 })
 
+test_that("bd1tobd5", {
+  vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+
+  # Error checks
+  expect_error(bd1tobd5(bdose_file = "x.bdose", bdinfo_file = "x.bdinfo"),
+               "No binary dosage files specified")
+  expect_error(bd1tobd5(bdfiles = "x", bdinfo_file = "x.bdinfo"),
+               "No output .bdose file specified")
+  expect_error(bd1tobd5(bdfiles = "x", bdose_file = "x.bdose"),
+               "No output .bdinfo file specified")
+
+  # Subformat 1 (dosage only) ------------------------------------------------
+  bdfile1  <- tempfile()
+  famfile1 <- tempfile()
+  mapfile1 <- tempfile()
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
+                             bdfiles  = c(bdfile1, famfile1, mapfile1),
+                             format   = 1L,
+                             subformat = 1L),
+               NA)
+  old_bdinfo1 <- getbdinfo(c(bdfile1, famfile1, mapfile1))
+
+  bdose1  <- tempfile(fileext = ".bdose")
+  bdinfo1 <- tempfile(fileext = ".bdinfo")
+  expect_error(bd1tobd5(bdfiles      = c(bdfile1, famfile1, mapfile1),
+                        bdose_file   = bdose1,
+                        bdinfo_file  = bdinfo1),
+               NA)
+  bd5info1 <- getbd5info(bdose_file = bdose1, bdinfo_file = bdinfo1)
+
+  expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
+  expect_equal(bd5info1$samples,    old_bdinfo1$samples)
+
+  for (i in seq_len(nrow(bd5info1$snps))) {
+    old_snp <- getsnp(old_bdinfo1, i, dosageonly = TRUE)
+    new_snp <- getsnp(bd5info1,    i, dosageonly = FALSE)
+    expect_equal(new_snp$dosage, old_snp$dosage, tolerance = 5e-5,
+                 label = paste0("subformat1 dosage SNP ", i))
+    expect_true(all(is.na(new_snp$p0)),
+                label = paste0("subformat1 p0 NA SNP ", i))
+    expect_true(all(is.na(new_snp$p1)),
+                label = paste0("subformat1 p1 NA SNP ", i))
+    expect_true(all(is.na(new_snp$p2)),
+                label = paste0("subformat1 p2 NA SNP ", i))
+  }
+
+  # Subformat 2 (dosage + genotype probabilities) ----------------------------
+  bdfile2  <- tempfile()
+  famfile2 <- tempfile()
+  mapfile2 <- tempfile()
+  expect_error(vcftobdlegacy(vcffiles  = vcf1afile,
+                             bdfiles   = c(bdfile2, famfile2, mapfile2),
+                             format    = 1L,
+                             subformat = 2L),
+               NA)
+  old_bdinfo2 <- getbdinfo(c(bdfile2, famfile2, mapfile2))
+
+  bdose2  <- tempfile(fileext = ".bdose")
+  bdinfo2 <- tempfile(fileext = ".bdinfo")
+  expect_error(bd1tobd5(bdfiles     = c(bdfile2, famfile2, mapfile2),
+                        bdose_file  = bdose2,
+                        bdinfo_file = bdinfo2),
+               NA)
+  bd5info2 <- getbd5info(bdose_file = bdose2, bdinfo_file = bdinfo2)
+
+  expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
+  expect_equal(bd5info2$samples,    old_bdinfo2$samples)
+
+  for (i in seq_len(nrow(bd5info2$snps))) {
+    old_snp <- getsnp(old_bdinfo2, i, dosageonly = FALSE)
+    new_snp <- getsnp(bd5info2,    i, dosageonly = FALSE)
+    expect_equal(new_snp$dosage, old_snp$dosage, tolerance = 5e-5,
+                 label = paste0("subformat2 dosage SNP ", i))
+    expect_equal(new_snp$p0, old_snp$p0, tolerance = 5e-5,
+                 label = paste0("subformat2 p0 SNP ", i))
+    expect_equal(new_snp$p1, old_snp$p1, tolerance = 5e-5,
+                 label = paste0("subformat2 p1 SNP ", i))
+    expect_equal(new_snp$p2, old_snp$p2, tolerance = 5e-5,
+                 label = paste0("subformat2 p2 SNP ", i))
+  }
+})
+
+test_that("bd2tobd5", {
+  vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+
+  # Error checks
+  expect_error(bd2tobd5(bdose_file = "x.bdose", bdinfo_file = "x.bdinfo"),
+               "No binary dosage files specified")
+  expect_error(bd2tobd5(bdfiles = "x", bdinfo_file = "x.bdinfo"),
+               "No output .bdose file specified")
+  expect_error(bd2tobd5(bdfiles = "x", bdose_file = "x.bdose"),
+               "No output .bdinfo file specified")
+
+  # Subformat 1 (dosage only) ------------------------------------------------
+  bdfile1  <- tempfile()
+  famfile1 <- tempfile()
+  mapfile1 <- tempfile()
+  suppressWarnings(
+    vcftobdlegacy(vcffiles  = vcf1afile,
+                  bdfiles   = c(bdfile1, famfile1, mapfile1),
+                  format    = 2L,
+                  subformat = 1L)
+  )
+  old_bdinfo1 <- getbdinfo(c(bdfile1, famfile1, mapfile1))
+
+  bdose1  <- tempfile(fileext = ".bdose")
+  bdinfo1 <- tempfile(fileext = ".bdinfo")
+  expect_error(bd2tobd5(bdfiles     = c(bdfile1, famfile1, mapfile1),
+                        bdose_file  = bdose1,
+                        bdinfo_file = bdinfo1),
+               NA)
+  bd5info1 <- getbd5info(bdose_file = bdose1, bdinfo_file = bdinfo1)
+
+  expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
+  expect_equal(bd5info1$samples,    old_bdinfo1$samples)
+
+  for (i in seq_len(nrow(bd5info1$snps))) {
+    old_snp <- getsnp(old_bdinfo1, i, dosageonly = TRUE)
+    new_snp <- getsnp(bd5info1,    i, dosageonly = FALSE)
+    expect_equal(new_snp$dosage, old_snp$dosage, tolerance = 5e-5,
+                 label = paste0("subformat1 dosage SNP ", i))
+    expect_true(all(is.na(new_snp$p0)),
+                label = paste0("subformat1 p0 NA SNP ", i))
+    expect_true(all(is.na(new_snp$p1)),
+                label = paste0("subformat1 p1 NA SNP ", i))
+    expect_true(all(is.na(new_snp$p2)),
+                label = paste0("subformat1 p2 NA SNP ", i))
+  }
+
+  # Subformat 2 (dosage + genotype probabilities) ----------------------------
+  bdfile2  <- tempfile()
+  famfile2 <- tempfile()
+  mapfile2 <- tempfile()
+  suppressWarnings(
+    vcftobdlegacy(vcffiles  = vcf1afile,
+                  bdfiles   = c(bdfile2, famfile2, mapfile2),
+                  format    = 2L,
+                  subformat = 2L)
+  )
+  old_bdinfo2 <- getbdinfo(c(bdfile2, famfile2, mapfile2))
+
+  bdose2  <- tempfile(fileext = ".bdose")
+  bdinfo2 <- tempfile(fileext = ".bdinfo")
+  expect_error(bd2tobd5(bdfiles     = c(bdfile2, famfile2, mapfile2),
+                        bdose_file  = bdose2,
+                        bdinfo_file = bdinfo2),
+               NA)
+  bd5info2 <- getbd5info(bdose_file = bdose2, bdinfo_file = bdinfo2)
+
+  expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
+  expect_equal(bd5info2$samples,    old_bdinfo2$samples)
+
+  for (i in seq_len(nrow(bd5info2$snps))) {
+    old_snp <- getsnp(old_bdinfo2, i, dosageonly = FALSE)
+    new_snp <- getsnp(bd5info2,    i, dosageonly = FALSE)
+    expect_equal(new_snp$dosage, old_snp$dosage, tolerance = 5e-5,
+                 label = paste0("subformat2 dosage SNP ", i))
+    expect_equal(new_snp$p0, old_snp$p0, tolerance = 5e-5,
+                 label = paste0("subformat2 p0 SNP ", i))
+    expect_equal(new_snp$p1, old_snp$p1, tolerance = 5e-5,
+                 label = paste0("subformat2 p1 SNP ", i))
+    expect_equal(new_snp$p2, old_snp$p2, tolerance = 5e-5,
+                 label = paste0("subformat2 p2 SNP ", i))
+  }
+})
+
 test_that("gentobd", {
   expect_error(gentobd(bdfiles = "file1"),
                "No gen file specified")

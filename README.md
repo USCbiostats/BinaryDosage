@@ -6,9 +6,9 @@ BinaryDosage: Creates, Merges, and Reads Binary Dosage Files
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDosage?branch=master&svg=true)](https://ci.appveyor.com/project/USCbiostats/BinaryDosage)
 [![Travis build
-status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=master)](https://travis-ci.org/USCbiostats/BinaryDosage)
+status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=master)](https://app.travis-ci.com/USCbiostats/BinaryDosage)
 [![Codecov test
-coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=master)
+coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://app.codecov.io/gh/USCbiostats/BinaryDosage?branch=master)
 <!-- badges: end -->
 
 # Binary Dosage Files
@@ -161,7 +161,7 @@ functions.
 
 # Installation
 
-1.  Install the [devtools](https://github.com/hadley/devtools) package
+1.  Install the [devtools](https://github.com/r-lib/devtools) package
 2.  Install the
     [BinaryDosage](https://github.com/USCbiostats/BinaryDosage) package
     directly from the USCbiostats repository on GitHub:
