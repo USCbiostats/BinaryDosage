@@ -217,22 +217,6 @@ vcftobdlegacy <- function(vcffiles,
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-#'
-#' @examples
-#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-#' bdfile  <- tempfile()
-#' famfile <- tempfile()
-#' mapfile <- tempfile()
-#' suppressWarnings(
-#'   vcftobdlegacy(vcffiles = vcf1afile,
-#'                 bdfiles = c(bdfile, famfile, mapfile),
-#'                 format = 1L)
-#' )
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' bd1tobd5(bdfiles     = c(bdfile, famfile, mapfile),
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file)
 bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
@@ -318,22 +302,6 @@ bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-#'
-#' @examples
-#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-#' bdfile  <- tempfile()
-#' famfile <- tempfile()
-#' mapfile <- tempfile()
-#' suppressWarnings(
-#'   vcftobdlegacy(vcffiles = vcf1afile,
-#'                 bdfiles = c(bdfile, famfile, mapfile),
-#'                 format = 2L)
-#' )
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' bd2tobd5(bdfiles     = c(bdfile, famfile, mapfile),
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file)
 bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
@@ -420,22 +388,6 @@ bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-#'
-#' @examples
-#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-#' bdfile  <- tempfile()
-#' famfile <- tempfile()
-#' mapfile <- tempfile()
-#' suppressWarnings(
-#'   vcftobdlegacy(vcffiles = vcf1afile,
-#'                 bdfiles = c(bdfile, famfile, mapfile),
-#'                 format = 3L)
-#' )
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' bd3tobd5(bdfiles     = c(bdfile, famfile, mapfile),
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file)
 bd3tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
@@ -522,20 +474,6 @@ bd3tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-#'
-#' @examples
-#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-#' bdfile <- tempfile()
-#' suppressWarnings(
-#'   vcftobdlegacy(vcffiles = vcf1afile,
-#'                 bdfiles = bdfile,
-#'                 format = 4L)
-#' )
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' bd4tobd5(bdfile      = bdfile,
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file)
 bd4tobd5 <- function(bdfile, bdose_file, bdinfo_file) {
   if (missing(bdfile))
     stop("No binary dosage file specified")

@@ -63,12 +63,9 @@ apply to format 4.}
 None
 }
 \description{
-Deprecated. Use \code{\link{vcftobd}} instead, which produces Format 5
-files with faster conversion and smaller file sizes.
-
 Routine to read information from a VCF file and create
-a binary dosage file (formats 1-4). The function is designed to use
-files returned from the Michigan Imputation Server but will
+a binary dosage file. The function is designed to use
+files return from the Michigan Imputation Server but will
 run on other VCF files if they contain dosage and genetic
 probabilities. Note: This routine can take a long time to
 run if the VCF file is large.

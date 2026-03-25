@@ -21,3 +21,4 @@ vignettes/*.pdf
 /scratch/
 doc
 Meta
+tests/testthat/x.*
