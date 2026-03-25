@@ -1,6 +1,6 @@
 Package: BinaryDosage
 Title: Creates, Merges, and Reads Binary Dosage Files
-Version: 1.0.0.9005
+Version: 1.0.0.9006
 Authors@R:
     c(person(given = "John",
              family = "Morrison",
@@ -22,7 +22,7 @@ Description: Tools to create binary dosage files from either VCF
     or GEN files, merge binary dosage files, and read
     binary dosage files. Binary dosage files tend to have quicker
     read times than VCF and GEN formats. There is a small increase
-    increase in size compared to compressed VCF and GEN files. 
+    in size compared to compressed VCF and GEN files.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
