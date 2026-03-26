@@ -320,13 +320,10 @@ getbd5snp <- function(bd5info, snp) {
 #'
 #' @return NULL (invisibly)
 #' @importFrom stats var
+#' @importFrom vcfppR vcfreader
 #' @export
 vcftobd <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
                      snpidformat = 0L, bdoptions = character(0)) {
-
-  if (!requireNamespace("vcfppR", quietly = TRUE))
-    stop("Package 'vcfppR' is required for Format 5 conversion. ",
-         "Install with: install.packages('vcfppR')")
 
   if (!file.exists(vcffile))
     stop("VCF file not found: ", vcffile)

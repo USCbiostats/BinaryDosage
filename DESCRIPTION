@@ -1,6 +1,6 @@
 Package: BinaryDosage
 Title: Creates, Merges, and Reads Binary Dosage Files
-Version: 1.0.0.9007
+Version: 1.0.0.9008
 Authors@R:
     c(person(given = "John",
              family = "Morrison",
@@ -30,14 +30,14 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 2.1.0),
-    covr,
-    vcfppR
+    covr
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 LinkingTo: 
     Rcpp
-Imports: 
+Imports:
     Rcpp,
     digest,
-    prodlim
+    prodlim,
+    vcfppR
