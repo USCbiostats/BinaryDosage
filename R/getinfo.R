@@ -75,6 +75,42 @@ readminimacinfofile <- function(filename) {
   return(addinfo)
 }
 
+readVCFheader <- function(con, index) {
+  headerlines <- 1L
+  headersize <- -1L
+  while (TRUE) {
+    currentpos <- seek(con, origin = "current")
+    line <- readLines(con, n = 1)
+    if (substr(line, 1, 1) != '#') {
+      close(con)
+      stop("Error processing header")
+    }
+    if (substr(line, 2, 2) != '#') {
+      x <- unlist(strsplit(line, "\t"))
+      if (x[1] != "#CHROM") {
+        close(con)
+        stop("Error processing header")
+      }
+      x[1] = "CHROM"
+      begindata <- seek(con, origin = "current")
+      break
+    }
+    headerlines <- headerlines + 1L
+  }
+  if (index == TRUE)
+    headersize <- begindata
+
+  if (all(x[1:9] == c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")) == FALSE)
+    stop("Column names incorrect")
+  samples = data.frame(fid = rep("", length(x) - 9L),
+                       sid = x[10:length(x)],
+                       stringsAsFactors = FALSE)
+
+  return(list(headersize = headersize,
+              headerlines = headerlines,
+              samples = samples))
+}
+
 #' Get information about a vcf file
 #'
 #' Routine to return information about a vcf file.
@@ -161,38 +197,12 @@ getvcfinfo <- function(vcffiles,
   }
 
   fqfilename <- normalizePath(filename, winslash = '/')
-
-  headerlines <- 1L
-  headersize <- -1L
-  while (TRUE) {
-    currentpos <- seek(con, origin = "current")
-    line <- readLines(con, n = 1)
-    if (substr(line, 1, 1) != '#') {
-      close(con)
-      stop("Error processing header")
-    }
-    if (substr(line, 2, 2) != '#') {
-      x <- unlist(strsplit(line, "\t"))
-      if (x[1] != "#CHROM") {
-        close(con)
-        stop("Error processing header")
-      }
-      x[1] = "CHROM"
-      begindata <- seek(con, origin = "current")
-      break
-    }
-    headerlines <- headerlines + 1L
-  }
-  if (index == TRUE)
-    headersize <- begindata
+  headerinfo <- readVCFheader(con, index)
   close(con)
+  headersize <- headerinfo$headersize
+  headerlines <- headerinfo$headerlines
+  samples <- headerinfo$samples
 
-  if (all(x[1:9] == c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")) == FALSE)
-    stop("Column names incorrect")
-
-  samples = data.frame(fid = rep("", length(x) - 9L),
-                       sid = x[10:length(x)],
-                       stringsAsFactors = FALSE)
   usesfid = FALSE
 
   coltypes = c("character", "integer", rep("character", 7),

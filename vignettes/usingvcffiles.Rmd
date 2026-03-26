@@ -61,8 +61,8 @@ The following commands convert the VCF file *set1a.vcf* into the binary dosage f
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
-bdfile1a_woinfo <- tempfile()
-vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_woinfo)
+bdfile1a_woinfo <- c(tempfile(), tempfile())
+bdinfo <- vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_woinfo)
 
 ```
 
@@ -76,7 +76,7 @@ The following commands convert the VCF file *set1a.vcf* into the binary dosage f
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 bdfile1a_winfo <- tempfile()
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a_winfo)
+vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a_winfo, format = 4)
 
 ```
 
@@ -85,7 +85,7 @@ The differences between the two binary dosage datasets can be checked by running
 The following commands show the first file does not contain any imputation information and the the second one does. The imputation information for the second file is converted to a table for easier displaying.
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
-bdinfo1a_woinfo <- getbdinfo(bdfiles = bdfile1a_woinfo)
+bdinfo1a_woinfo <- readRDS(bdfile1a_woinfo[2])
 bdinfo1a_woinfo$snpinfo
 
 bdinfo1a_winfo <- getbdinfo(bdfiles = bdfile1a_winfo)
@@ -102,11 +102,11 @@ The following code reads in the data from the compressed VCF file *set1a.vcf.gz*
 vcf1afile_gz <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 
-bdfile1a_woinfo_gz <- tempfile()
-vcftobd(vcffiles = vcf1afile_gz, bdfiles = bdfile1a_woinfo_gz)
+bdfile1a_woinfo_gz <- c(tempfile(),tempfile())
+bdinfo <- vcftobd(vcffiles = vcf1afile_gz, bdfiles = bdfile1a_woinfo_gz)
 
 bdfile1a_winfo_gz <- tempfile()
-vcftobd(vcffiles = c(vcf1afile_gz, vcf1ainfo), bdfiles = bdfile1a_winfo_gz)
+vcftobd(vcffiles = c(vcf1afile_gz, vcf1ainfo), bdfiles = bdfile1a_winfo_gz, format = 4)
 
 ```
 
@@ -116,7 +116,7 @@ The four binary dosage files created above should all have the same dosage and g
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 
-bdinfo1a_woinfo_gz <- getbdinfo(bdfiles = bdfile1a_woinfo_gz)
+bdinfo1a_woinfo_gz <- readRDS(bdfile1a_woinfo_gz[2])
 bdinfo1a_winfo_gz <- getbdinfo(bdfiles = bdfile1a_winfo_gz)
 
 aaf1a_woinfo <- unlist(bdapply(bdinfo = bdinfo1a_woinfo, getaaf))
@@ -142,11 +142,10 @@ The file *set2a.vcf* contains only the dosage values. The following code convert
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf2afile <- system.file("extdata", "set2a.vcf", package = "BinaryDosage")
-bdfile2a <- tempfile()
+bdfile2a <- c(tempfile(),tempfile())
 
-vcftobd(vcffiles = vcf2afile, bdfiles = bdfile2a)
+bdinfo2a <- vcftobd(vcffiles = vcf2afile, bdfiles = bdfile2a)
 
-bdinfo2a <- getbdinfo(bdfiles = bdfile2a)
 snp1_2a <- data.frame(getsnp(bdinfo = bdinfo2a, snp = 1L, dosageonly = FALSE))
 
 snp1 <- cbind(SubjectID = bdinfo2a$samples$sid, snp1_2a)
@@ -182,20 +181,15 @@ When the snpidformat is set to -1, the SNP ID is not written to the binary dosag
 
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf1brsfile <- system.file("extdata", "set1b_rssnp.vcf", package = "BinaryDosage")
-bdfile1b.snpid0 <- tempfile()
-bdfile1b.snpid1 <- tempfile()
-bdfile1b.snpid2 <- tempfile()
-bdfile1b.snpidm1 <- tempfile()
+bdfile1b.snpid0 <- c(tempfile(), tempfile())
+bdfile1b.snpid1 <- c(tempfile(), tempfile())
+bdfile1b.snpid2 <- c(tempfile(), tempfile())
+bdfile1b.snpidm1 <- c(tempfile(), tempfile())
 
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid0)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid1, snpidformat = 1)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid2, snpidformat = 2)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpidm1, snpidformat = -1)
-
-bdinfo1b.snpid0 <- getbdinfo(bdfiles = bdfile1b.snpid0)
-bdinfo1b.snpid1 <- getbdinfo(bdfiles = bdfile1b.snpid1)
-bdinfo1b.snpid2 <- getbdinfo(bdfiles = bdfile1b.snpid2)
-bdinfo1b.snpidm1 <- getbdinfo(bdfiles = bdfile1b.snpidm1)
+bdinfo1b.snpid0 <- vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid0)
+bdinfo1b.snpid1 <- vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid1, snpidformat = 1)
+bdinfo1b.snpid2 <- vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid2, snpidformat = 2)
+bdinfo1b.snpidm1 <- vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpidm1, snpidformat = -1)
 
 snpnames <- data.frame(format0 = bdinfo1b.snpid0$snps$snpid,
                        format1 = bdinfo1b.snpid1$snps$snpid,
@@ -224,7 +218,8 @@ The following code converts the *set1a.vcf* file into a binary dosage file and c
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 bdfile1a_calcinfo <- tempfile()
-vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_calcinfo, bdoptions = c("aaf", "maf", "rsq"))
+vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_calcinfo, bdoptions = c("aaf", "maf", "rsq"),
+        format = 4)
 
 bdcalcinfo <- getbdinfo(bdfile1a_calcinfo)
 
