@@ -49,7 +49,7 @@ test_that("getsnp format5", {
 
   expect_error(vcftobd(vcffile = vcfgzfile, bdose_file = bdose_file), NA)
 
-  bd5info <- getbd5info(bdose_file = bdose_file)
+  bd5info <- getbdinfo(bdose_file)
   n_snps <- nrow(bd5info$snps)
   expect_equal(n_snps, 10L)
 

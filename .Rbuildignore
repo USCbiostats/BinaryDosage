@@ -10,3 +10,4 @@
 ^scratch$
 ^\.claude$
 ^example_format5\.R$
+^\.github$

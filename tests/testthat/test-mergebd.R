@@ -2,7 +2,7 @@
 make_bd5 <- function(bdfile4) {
   bdose <- tempfile(fileext = ".bdose")
   updatebd(bdfiles = bdfile4, bdose_file = bdose)
-  list(bdose = bdose, info = getbd5info(bdose))
+  list(bdose = bdose, info = getbdinfo(bdose))
 }
 
 test_that("mergebd errors", {
@@ -39,7 +39,7 @@ test_that("mergebd subject merge (two files)", {
   expect_error(mergebd(bdose_files = c(bdose_a, bdose_b),
                        bdose_file  = bdose_out), NA)
 
-  merged <- getbd5info(bdose_out)
+  merged <- getbdinfo(bdose_out)
 
   # All 60 subjects, all 10 SNPs
   expect_equal(nrow(merged$samples), 60L)
@@ -72,7 +72,7 @@ test_that("mergebd subject merge (three files)", {
   expect_error(mergebd(bdose_files = c(bdose_a, bdose_b, bdose_c),
                        bdose_file  = bdose_out), NA)
 
-  merged <- getbd5info(bdose_out)
+  merged <- getbdinfo(bdose_out)
   expect_equal(nrow(merged$samples), 60L)
   expect_equal(merged$samples$sid, all_sids)
   expect_equal(nrow(merged$snps),  nrow(f5$info$snps))
@@ -94,7 +94,7 @@ test_that("mergebd SNP merge (two files)", {
   expect_error(mergebd(bdose_files = c(bdose_a, bdose_b),
                        bdose_file  = bdose_out), NA)
 
-  merged <- getbd5info(bdose_out)
+  merged <- getbdinfo(bdose_out)
 
   # All 60 subjects, all 10 SNPs
   expect_equal(nrow(merged$samples), 60L)
@@ -132,7 +132,7 @@ test_that("mergebd SNP merge: subject intersection", {
   expect_error(mergebd(bdose_files = c(bdose_a, bdose_b),
                        bdose_file  = bdose_out), NA)
 
-  merged <- getbd5info(bdose_out)
+  merged <- getbdinfo(bdose_out)
   expect_equal(nrow(merged$samples), 30L)
   expect_equal(merged$samples$sid,   all_sids[11:40])
   expect_equal(nrow(merged$snps),    10L)

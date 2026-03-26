@@ -97,9 +97,10 @@ vcftobd(vcffile    = vcf_file,
 
 # Loading Format 5 file information
 
-The `getbd5info` function reads and validates a Format 5 file pair, returning
+The `getbdinfo` function reads and validates a Format 5 file pair, returning
 a list of class `"genetic-info"` that is used by `getbd5snp` to retrieve
-individual SNPs.
+individual SNPs. It automatically detects the Format 5 magic header and
+delegates to the internal Format 5 reader.
 
 The function takes the following parameters.
 
@@ -107,7 +108,7 @@ The function takes the following parameters.
   read automatically from `paste0(bdose_file, ".bdi")`.
 
 ```{r load_info, eval = TRUE, echo = T, message = F, warning = F}
-bd5 <- getbd5info(bdose_file = bdose_file)
+bd5 <- getbdinfo(bdose_file)
 ```
 
 The object returned has the same structure as the list returned by `getbdinfo`
@@ -163,7 +164,7 @@ probability data for a single SNP.
 
 The function takes the following parameters.
 
-- `bd5info` — object returned by `getbd5info`.
+- `bd5info` — object returned by `getbdinfo`.
 - `snp` — the SNP to retrieve, either as a 1-based integer index or as a
   character SNP ID matching a value in `bd5info$snps$snpid`.
 

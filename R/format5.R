@@ -106,31 +106,10 @@ write_bdinfo5 <- function(bdose_file, samples_sid,
 #                        Read functions                                     #
 #***************************************************************************#
 
-#' Get information about a Format 5 binary dosage file pair
-#'
-#' Validates the .bdose magic header and loads the .bdinfo RDS file,
-#' returning an object used by \code{getbd5snp} to retrieve individual SNPs.
-#'
-#' @param bdose_file  Path to the .bdose file. The companion .bdi file is
-#'   expected at \code{paste0(bdose_file, ".bdi")}.
-#'
-#' @return A list of class \code{"genetic-info"} containing:
-#' \describe{
-#'   \item{filename}{Absolute path to the .bdose file.}
-#'   \item{usesfid}{Logical; FALSE for VCF-sourced files.}
-#'   \item{samples}{data.frame with columns \code{fid} and \code{sid}.}
-#'   \item{onechr}{Logical; TRUE if all SNPs are on a single chromosome.}
-#'   \item{snpidformat}{Numeric; 0 = use original SNP IDs from source file.}
-#'   \item{snps}{data.frame with columns chromosome, location, snpid,
-#'     reference, alternate.}
-#'   \item{snpinfo}{Named list of optional per-SNP annotations
-#'     (e.g. aaf, maf, rsq).}
-#'   \item{additionalinfo}{List of class \code{"bdose-info"} with format
-#'     metadata.}
-#'   \item{datasize}{Integer vector of length 0 (unused in Format 5).}
-#'   \item{indices}{Numeric vector of byte offsets into .bdose, one per SNP.}
-#' }
-#' @export
+# Validate a Format 5 .bdose file and load its .bdi metadata.
+# Called internally by getbdinfo when a Format 5 magic header is detected.
+#
+#' @keywords internal
 getbd5info <- function(bdose_file) {
   if (missing(bdose_file))
     stop("No .bdose file specified")

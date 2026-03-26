@@ -133,7 +133,7 @@ test_that("bd1tobd5", {
   expect_error(bd1tobd5(bdfiles    = c(bdfile1, famfile1, mapfile1),
                         bdose_file = bdose1),
                NA)
-  bd5info1 <- getbd5info(bdose_file = bdose1)
+  bd5info1 <- getbdinfo(bdose1)
 
   expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
   expect_equal(bd5info1$samples,    old_bdinfo1$samples)
@@ -166,7 +166,7 @@ test_that("bd1tobd5", {
   expect_error(bd1tobd5(bdfiles    = c(bdfile2, famfile2, mapfile2),
                         bdose_file = bdose2),
                NA)
-  bd5info2 <- getbd5info(bdose_file = bdose2)
+  bd5info2 <- getbdinfo(bdose2)
 
   expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
   expect_equal(bd5info2$samples,    old_bdinfo2$samples)
@@ -210,7 +210,7 @@ test_that("bd2tobd5", {
   expect_error(bd2tobd5(bdfiles    = c(bdfile1, famfile1, mapfile1),
                         bdose_file = bdose1),
                NA)
-  bd5info1 <- getbd5info(bdose_file = bdose1)
+  bd5info1 <- getbdinfo(bdose1)
 
   expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
   expect_equal(bd5info1$samples,    old_bdinfo1$samples)
@@ -244,7 +244,7 @@ test_that("bd2tobd5", {
   expect_error(bd2tobd5(bdfiles    = c(bdfile2, famfile2, mapfile2),
                         bdose_file = bdose2),
                NA)
-  bd5info2 <- getbd5info(bdose_file = bdose2)
+  bd5info2 <- getbdinfo(bdose2)
 
   expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
   expect_equal(bd5info2$samples,    old_bdinfo2$samples)
@@ -288,7 +288,7 @@ test_that("bd3tobd5", {
   expect_error(bd3tobd5(bdfiles    = c(bdfile1, famfile1, mapfile1),
                         bdose_file = bdose1),
                NA)
-  bd5info1 <- getbd5info(bdose_file = bdose1)
+  bd5info1 <- getbdinfo(bdose1)
 
   expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
   expect_equal(bd5info1$samples,    old_bdinfo1$samples)
@@ -322,7 +322,7 @@ test_that("bd3tobd5", {
   expect_error(bd3tobd5(bdfiles    = c(bdfile2, famfile2, mapfile2),
                         bdose_file = bdose2),
                NA)
-  bd5info2 <- getbd5info(bdose_file = bdose2)
+  bd5info2 <- getbdinfo(bdose2)
 
   expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
   expect_equal(bd5info2$samples,    old_bdinfo2$samples)
@@ -364,7 +364,7 @@ test_that("bd4tobd5", {
   expect_error(bd4tobd5(bdfile     = bdfile1,
                         bdose_file = bdose1),
                NA)
-  bd5info1 <- getbd5info(bdose_file = bdose1)
+  bd5info1 <- getbdinfo(bdose1)
 
   expect_equal(nrow(bd5info1$snps), nrow(old_bdinfo1$snps))
   expect_equal(bd5info1$samples,    old_bdinfo1$samples)
@@ -396,7 +396,7 @@ test_that("bd4tobd5", {
   expect_error(bd4tobd5(bdfile     = bdfile2,
                         bdose_file = bdose2),
                NA)
-  bd5info2 <- getbd5info(bdose_file = bdose2)
+  bd5info2 <- getbdinfo(bdose2)
 
   expect_equal(nrow(bd5info2$snps), nrow(old_bdinfo2$snps))
   expect_equal(bd5info2$samples,    old_bdinfo2$samples)
@@ -428,7 +428,7 @@ test_that("updatebd", {
   convert_and_check <- function(bdfiles, old_bdinfo, has_gp) {
     bdose <- tempfile(fileext = ".bdose")
     expect_error(updatebd(bdfiles = bdfiles, bdose_file = bdose), NA)
-    bd5info <- getbd5info(bdose_file = bdose)
+    bd5info <- getbdinfo(bdose)
     expect_equal(nrow(bd5info$snps), nrow(old_bdinfo$snps))
     expect_equal(bd5info$samples,    old_bdinfo$samples)
     for (i in seq_len(nrow(bd5info$snps))) {

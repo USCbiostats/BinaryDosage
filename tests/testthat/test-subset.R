@@ -51,7 +51,7 @@ test_that("subsetbd subject filter", {
   expect_error(subsetbd(bdfiles = bdfile, bdose_file = bdose,
                         subjectids = keep_ids), NA)
 
-  new_info <- getbd5info(bdose)
+  new_info <- getbdinfo(bdose)
   expect_equal(nrow(new_info$samples), 30L)
   expect_equal(new_info$samples$sid, keep_ids)
   expect_equal(nrow(new_info$snps),   nrow(old_info$snps))
@@ -74,7 +74,7 @@ test_that("subsetbd location vector filter", {
   expect_error(subsetbd(bdfiles = bdfile, bdose_file = bdose,
                         locations = keep_locs), NA)
 
-  new_info <- getbd5info(bdose)
+  new_info <- getbdinfo(bdose)
   expect_equal(nrow(new_info$snps), length(keep_locs))
   expect_equal(new_info$snps$location, keep_locs)
   expect_equal(nrow(new_info$samples), nrow(old_info$samples))
@@ -99,7 +99,7 @@ test_that("subsetbd location range filter", {
   expect_error(subsetbd(bdfiles = bdfile, bdose_file = bdose,
                         startloc = 13000, endloc = 16000), NA)
 
-  new_info <- getbd5info(bdose)
+  new_info <- getbdinfo(bdose)
   expect_equal(new_info$snps$location, exp_locs)
 
   orig_idx <- match(exp_locs, old_info$snps$location)
@@ -125,7 +125,7 @@ test_that("subsetbd MAF filter", {
   expect_error(subsetbd(bdfiles = bdfile, bdose_file = bdose,
                         minmaf = min_maf), NA)
 
-  new_info <- getbd5info(bdose)
+  new_info <- getbdinfo(bdose)
   expect_equal(nrow(new_info$snps), length(keep_snps))
   expect_equal(new_info$snps$location,
                old_info$snps$location[keep_snps])
@@ -161,7 +161,7 @@ test_that("subsetbd combined filters", {
                         endloc     = 18000,
                         subjectids = keep_ids), NA)
 
-  new_info <- getbd5info(bdose)
+  new_info <- getbdinfo(bdose)
   expect_equal(nrow(new_info$samples), 30L)
   expect_equal(new_info$samples$sid, keep_ids)
   expect_equal(new_info$snps$location, old_info$snps$location[keep_snps])
@@ -186,6 +186,6 @@ test_that("subsetbd format 5 input", {
                         startloc   = 12000,
                         endloc     = 14000), NA)
 
-  new_info <- getbd5info(bdose_out)
+  new_info <- getbdinfo(bdose_out)
   expect_equal(new_info$snps$location, c(12000, 13000, 14000))
 })
