@@ -61,8 +61,9 @@ There are 5 formats for a binary dosage data set. Data sets in formats
 1, 2, and 3 have 3 files, a sample information file, a SNP information
 file, and a genetic information file. Data sets in format 4 have just 1
 file. Format 5 uses per-SNP gzip compression and stores metadata in a
-companion RDS file (`.bdinfo`). This file contains all the information
-listed above and may contain the following information.
+companion RDS file (`.bdose.bdi`), named by appending `.bdi` to the
+`.bdose` filename. This file contains all the information listed above
+and may contain the following information.
 
 **Note:** Format 5 is the recommended format for new data sets.
 

@@ -44,16 +44,12 @@ test_that("getsnp", {
 test_that("getsnp format5", {
   skip_if_not_installed("vcfppR")
 
-  vcfgzfile <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
-  bdose_file  <- tempfile(fileext = ".bdose")
-  bdinfo_file <- tempfile(fileext = ".bdinfo")
+  vcfgzfile  <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+  bdose_file <- tempfile(fileext = ".bdose")
 
-  expect_error(vcftobd(vcffile = vcfgzfile,
-                       bdose_file  = bdose_file,
-                       bdinfo_file = bdinfo_file),
-               NA)
+  expect_error(vcftobd(vcffile = vcfgzfile, bdose_file = bdose_file), NA)
 
-  bd5info <- getbd5info(bdose_file = bdose_file, bdinfo_file = bdinfo_file)
+  bd5info <- getbd5info(bdose_file = bdose_file)
   n_snps <- nrow(bd5info$snps)
   expect_equal(n_snps, 10L)
 

@@ -4,15 +4,14 @@
 \alias{bd2tobd5}
 \title{Convert a format 2 binary dosage file to Format 5}
 \usage{
-bd2tobd5(bdfiles, bdose_file, bdinfo_file)
+bd2tobd5(bdfiles, bdose_file)
 }
 \arguments{
 \item{bdfiles}{Vector of three file names for the format 2 binary dosage
 file: the binary dosage file, the family file, and the map file.}
 
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 }
 \value{
 NULL (invisibly)

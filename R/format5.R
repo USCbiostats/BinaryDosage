@@ -4,7 +4,7 @@
 #                                                                           #
 # File pair:                                                                #
 #   .bdose  - compressed dosage/genotype probability data                   #
-#   .bdinfo - SNP metadata, sample IDs, and SNP byte offsets (RDS)          #
+#   .bdi    - SNP metadata, sample IDs, and SNP byte offsets (RDS)          #
 #                                                                           #
 # Encoding:                                                                 #
 #   Values in [0, 2] stored as unsigned short = round(value * 10000)        #
@@ -48,10 +48,10 @@ compress_snp_block <- function(ds, gp) {
   memCompress(raw_block, type = "gzip")
 }
 
-# Save a Format 5 .bdinfo file as an RDS object with class "genetic-info".
+# Save a Format 5 .bdi file as an RDS object with class "genetic-info".
+# The output path is derived as paste0(bdose_file, ".bdi").
 #
 # Parameters:
-#   bdinfo_file   - path for the output .bdinfo RDS file
 #   bdose_file    - path to the associated .bdose file (stored in $filename)
 #   samples_sid   - character vector of sample subject IDs
 #   snps_df       - data.frame with columns: chromosome, location, snpid,
@@ -60,9 +60,10 @@ compress_snp_block <- function(ds, gp) {
 #   snpidformat   - integer; resolved snpidformat value to store in bdinfo
 #   snpinfo_list  - optional named list of per-SNP annotation vectors
 #                   (e.g. list(aaf = ..., maf = ..., rsq = ...))
-write_bdinfo5 <- function(bdinfo_file, bdose_file, samples_sid,
+write_bdinfo5 <- function(bdose_file, samples_sid,
                           snps_df, indices, snpidformat = 0L,
                           snpinfo_list = list()) {
+  bdinfo_file <- paste0(bdose_file, ".bdi")
   n_samp <- length(samples_sid)
   n_snps <- nrow(snps_df)
 
@@ -110,8 +111,8 @@ write_bdinfo5 <- function(bdinfo_file, bdose_file, samples_sid,
 #' Validates the .bdose magic header and loads the .bdinfo RDS file,
 #' returning an object used by \code{getbd5snp} to retrieve individual SNPs.
 #'
-#' @param bdose_file  Path to the .bdose file.
-#' @param bdinfo_file  Path to the .bdinfo file.
+#' @param bdose_file  Path to the .bdose file. The companion .bdi file is
+#'   expected at \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return A list of class \code{"genetic-info"} containing:
 #' \describe{
@@ -130,13 +131,12 @@ write_bdinfo5 <- function(bdinfo_file, bdose_file, samples_sid,
 #'   \item{indices}{Numeric vector of byte offsets into .bdose, one per SNP.}
 #' }
 #' @export
-getbd5info <- function(bdose_file, bdinfo_file) {
+getbd5info <- function(bdose_file) {
   if (missing(bdose_file))
     stop("No .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No .bdinfo file specified")
   if (!file.exists(bdose_file))
     stop("File not found: ", bdose_file)
+  bdinfo_file <- paste0(bdose_file, ".bdi")
   if (!file.exists(bdinfo_file))
     stop("File not found: ", bdinfo_file)
 
@@ -268,7 +268,7 @@ getbd5snp <- function(bd5info, snp) {
 #' samples followed by the GP values, encoded as unsigned 16-bit integers
 #' (round(value * 10000); 0xffff = missing).
 #'
-#' The .bdinfo file is an RDS-serialised R list of class \code{"genetic-info"}
+#' The .bdi file is an RDS-serialised R list of class \code{"genetic-info"}
 #' with the following elements:
 #' \describe{
 #'   \item{filename}{Path to the associated .bdose file.}
@@ -292,8 +292,8 @@ getbd5snp <- function(bd5info, snp) {
 #' }
 #'
 #' @param vcffile  Path to the bgzipped, tabix-indexed VCF file.
-#' @param bdose_file  Path for the output .bdose file.
-#' @param bdinfo_file  Path for the output .bdinfo file.
+#' @param bdose_file  Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #' @param region  Optional genomic region string in bcftools format
 #'   (e.g. \code{"chr21"} or \code{"chr21:1-5000000"}).  Requires a
 #'   tabix index.  Default \code{NULL} processes the entire file.
@@ -322,7 +322,7 @@ getbd5snp <- function(bd5info, snp) {
 #' @importFrom stats var
 #' @importFrom vcfppR vcfreader
 #' @export
-vcftobd <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
+vcftobd <- function(vcffile, bdose_file, region = NULL,
                      snpidformat = 0L, bdoptions = character(0)) {
 
   if (!file.exists(vcffile))
@@ -511,9 +511,8 @@ vcftobd <- function(vcffile, bdose_file, bdinfo_file, region = NULL,
   if (want_maf) snpinfo_list$maf <- maf_vec[1:snp_count]
   if (want_rsq) snpinfo_list$rsq <- rsq_vec[1:snp_count]
 
-  # Save the .bdinfo file.
-  write_bdinfo5(bdinfo_file,
-                bdose_file   = bdose_file,
+  # Save the .bdi file.
+  write_bdinfo5(bdose_file   = bdose_file,
                 samples_sid  = samples_sid,
                 snps_df      = snps_df,
                 indices      = snp_indices[1:snp_count],

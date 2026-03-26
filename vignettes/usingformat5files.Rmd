@@ -43,10 +43,11 @@ A Format 5 dataset consists of two files.
 
 - **`.bdose`** — the data file. Begins with a 4-byte magic number followed by
   one gzip-compressed block per SNP.
-- **`.bdinfo`** — an RDS file containing a list of class `"genetic-info"` with
-  the sample table, SNP table, byte offsets, and format metadata. This
-  structure is identical to the one returned by `getbdinfo`, `getvcfinfo`, and
-  `getgeninfo` for other file types.
+- **`.bdose.bdi`** — an RDS file containing a list of class `"genetic-info"`
+  with the sample table, SNP table, byte offsets, and format metadata. The
+  name is always the `.bdose` filename with `.bdi` appended (e.g.
+  `set1a.bdose.bdi`). This structure is identical to the one returned by
+  `getbdinfo`, `getvcfinfo`, and `getgeninfo` for other file types.
 
 # Example files
 
@@ -60,8 +61,7 @@ nothing is left behind after the vignette runs.
 ```{r files}
 vcf_file <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
 
-bdose_file  <- file.path(tempdir(), "set1a.bdose")
-bdinfo_file <- file.path(tempdir(), "set1a.bdinfo")
+bdose_file <- file.path(tempdir(), "set1a.bdose")
 ```
 
 # Converting a VCF file to Format 5
@@ -73,8 +73,8 @@ probabilities), as produced by minimac and the Michigan Imputation Server.
 The function takes the following parameters.
 
 - `vcffile` — path to the bgzipped VCF file.
-- `bdose_file` — path for the output `.bdose` file.
-- `bdinfo_file` — path for the output `.bdinfo` file.
+- `bdose_file` — path for the output `.bdose` file. The companion `.bdi`
+  metadata file is written automatically to `paste0(bdose_file, ".bdi")`.
 - `region` — optional genomic region string in bcftools format (e.g.
   `"chr21"` or `"chr21:1-5000000"`). Requires a tabix index. Default `NULL`
   processes the entire file.
@@ -82,19 +82,17 @@ The function takes the following parameters.
 The following code converts *set1a.vcf.gz* to a Format 5 file pair.
 
 ```{r convert, eval = TRUE, echo = T, message = F, warning = F}
-vcftobd(vcffile     = vcf_file,
-         bdose_file  = bdose_file,
-         bdinfo_file = bdinfo_file)
+vcftobd(vcffile    = vcf_file,
+         bdose_file = bdose_file)
 ```
 
 To convert only a specific region of the file, supply the `region` parameter.
 The VCF file must have a tabix index (a `.tbi` file alongside it).
 
 ```{r convert_region, eval = F, echo = T}
-vcftobd(vcffile     = vcf_file,
-         bdose_file  = bdose_file,
-         bdinfo_file = bdinfo_file,
-         region      = "1:10000-15000")
+vcftobd(vcffile    = vcf_file,
+         bdose_file = bdose_file,
+         region     = "1:10000-15000")
 ```
 
 # Loading Format 5 file information
@@ -105,12 +103,11 @@ individual SNPs.
 
 The function takes the following parameters.
 
-- `bdose_file` — path to the `.bdose` file.
-- `bdinfo_file` — path to the `.bdinfo` file.
+- `bdose_file` — path to the `.bdose` file. The companion `.bdi` file is
+  read automatically from `paste0(bdose_file, ".bdi")`.
 
 ```{r load_info, eval = TRUE, echo = T, message = F, warning = F}
-bd5 <- getbd5info(bdose_file  = bdose_file,
-                  bdinfo_file = bdinfo_file)
+bd5 <- getbd5info(bdose_file = bdose_file)
 ```
 
 The object returned has the same structure as the list returned by `getbdinfo`
@@ -239,5 +236,5 @@ knitr::kable(aaf_table, caption = "Alternate allele frequencies")
 ```
 
 ```{r cleanup, include = FALSE, eval = TRUE}
-unlink(c(bdose_file, bdinfo_file))
+unlink(c(bdose_file, paste0(bdose_file, ".bdi")))
 ```

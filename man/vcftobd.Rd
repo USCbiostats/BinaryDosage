@@ -7,7 +7,6 @@
 vcftobd(
   vcffile,
   bdose_file,
-  bdinfo_file,
   region = NULL,
   snpidformat = 0L,
   bdoptions = character(0)
@@ -16,9 +15,8 @@ vcftobd(
 \arguments{
 \item{vcffile}{Path to the bgzipped, tabix-indexed VCF file.}
 
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 
 \item{region}{Optional genomic region string in bcftools format
 (e.g. \code{"chr21"} or \code{"chr21:1-5000000"}).  Requires a
@@ -60,7 +58,7 @@ gzip-compressed block per SNP.  Each block contains the DS values for all
 samples followed by the GP values, encoded as unsigned 16-bit integers
 (round(value * 10000); 0xffff = missing).
 
-The .bdinfo file is an RDS-serialised R list of class \code{"genetic-info"}
+The .bdi file is an RDS-serialised R list of class \code{"genetic-info"}
 with the following elements:
 \describe{
 \item{filename}{Path to the associated .bdose file.}

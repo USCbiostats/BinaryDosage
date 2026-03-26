@@ -25,11 +25,10 @@
 #' allele.
 #'
 #' @param bdose_files Character vector of paths to the input .bdose files.
-#'   Must contain at least two entries.
-#' @param bdinfo_files Character vector of paths to the input .bdinfo files.
-#'   Must be the same length as \code{bdose_files}.
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#'   Must contain at least two entries. The companion .bdi file for each is
+#'   expected at \code{paste0(bdose_files[i], ".bdi")}.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #' @export
@@ -39,41 +38,29 @@
 #' bdinfo_src <- getbdinfo(bdfile)
 #'
 #' # Create two format 5 files with non-overlapping subjects
-#' bdose_a <- tempfile(fileext = ".bdose"); bdinfo_a <- tempfile(fileext = ".bdinfo")
-#' bdose_b <- tempfile(fileext = ".bdose"); bdinfo_b <- tempfile(fileext = ".bdinfo")
-#' bdose_tmp <- tempfile(fileext = ".bdose"); bdinfo_tmp <- tempfile(fileext = ".bdinfo")
-#' updatebd(bdfiles = bdfile, bdose_file = bdose_tmp, bdinfo_file = bdinfo_tmp)
-#' subsetbd(bdfiles     = c(bdose_tmp, bdinfo_tmp),
-#'          bdose_file  = bdose_a,
-#'          bdinfo_file = bdinfo_a,
-#'          subjectids  = bdinfo_src$samples$sid[1:30])
-#' subsetbd(bdfiles     = c(bdose_tmp, bdinfo_tmp),
-#'          bdose_file  = bdose_b,
-#'          bdinfo_file = bdinfo_b,
-#'          subjectids  = bdinfo_src$samples$sid[31:60])
+#' bdose_a   <- tempfile(fileext = ".bdose")
+#' bdose_b   <- tempfile(fileext = ".bdose")
+#' bdose_tmp <- tempfile(fileext = ".bdose")
+#' updatebd(bdfiles = bdfile, bdose_file = bdose_tmp)
+#' subsetbd(bdfiles    = bdose_tmp,
+#'          bdose_file = bdose_a,
+#'          subjectids = bdinfo_src$samples$sid[1:30])
+#' subsetbd(bdfiles    = bdose_tmp,
+#'          bdose_file = bdose_b,
+#'          subjectids = bdinfo_src$samples$sid[31:60])
 #'
-#' bdose_out <- tempfile(fileext = ".bdose"); bdinfo_out <- tempfile(fileext = ".bdinfo")
-#' mergebd(bdose_files  = c(bdose_a, bdose_b),
-#'         bdinfo_files = c(bdinfo_a, bdinfo_b),
-#'         bdose_file   = bdose_out,
-#'         bdinfo_file  = bdinfo_out)
-mergebd <- function(bdose_files, bdinfo_files, bdose_file, bdinfo_file) {
+#' bdose_out <- tempfile(fileext = ".bdose")
+#' mergebd(bdose_files = c(bdose_a, bdose_b),
+#'         bdose_file  = bdose_out)
+mergebd <- function(bdose_files, bdose_file) {
 
   # --- Argument validation ---
   if (missing(bdose_files))
     stop("No input .bdose files specified")
-  if (missing(bdinfo_files))
-    stop("No input .bdinfo files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
   if (!is.character(bdose_files))
     stop("bdose_files must be a character vector")
-  if (!is.character(bdinfo_files))
-    stop("bdinfo_files must be a character vector")
-  if (length(bdose_files) != length(bdinfo_files))
-    stop("bdose_files and bdinfo_files must have the same length")
   if (length(bdose_files) < 2L)
     stop("At least two input files are required for merging")
 
@@ -82,8 +69,7 @@ mergebd <- function(bdose_files, bdinfo_files, bdose_file, bdinfo_file) {
   # --- Load all bdinfo objects (getbd5info verifies Format 5) ---
   bdinfos <- vector("list", n_files)
   for (k in seq_len(n_files)) {
-    bdinfos[[k]] <- getbd5info(bdose_file  = bdose_files[k],
-                               bdinfo_file = bdinfo_files[k])
+    bdinfos[[k]] <- getbd5info(bdose_file = bdose_files[k])
   }
 
   n_snps <- vapply(bdinfos, function(b) nrow(b$snps),    integer(1L))
@@ -228,7 +214,7 @@ mergebd <- function(bdose_files, bdinfo_files, bdose_file, bdinfo_file) {
     indices        = indices
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }

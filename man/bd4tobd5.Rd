@@ -4,15 +4,14 @@
 \alias{bd4tobd5}
 \title{Convert a format 4 binary dosage file to Format 5}
 \usage{
-bd4tobd5(bdfile, bdose_file, bdinfo_file)
+bd4tobd5(bdfile, bdose_file)
 }
 \arguments{
 \item{bdfile}{File name of the format 4 binary dosage file. Format 4 stores
 all data in a single file.}
 
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 }
 \value{
 NULL (invisibly)

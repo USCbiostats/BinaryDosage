@@ -4,12 +4,11 @@
 \alias{getbd5info}
 \title{Get information about a Format 5 binary dosage file pair}
 \usage{
-getbd5info(bdose_file, bdinfo_file)
+getbd5info(bdose_file)
 }
 \arguments{
-\item{bdose_file}{Path to the .bdose file.}
-
-\item{bdinfo_file}{Path to the .bdinfo file.}
+\item{bdose_file}{Path to the .bdose file. The companion .bdi file is
+expected at \code{paste0(bdose_file, ".bdi")}.}
 }
 \value{
 A list of class \code{"genetic-info"} containing:

@@ -4,16 +4,15 @@
 \alias{updatebd}
 \title{Update a binary dosage file to Format 5}
 \usage{
-updatebd(bdfiles, bdose_file, bdinfo_file)
+updatebd(bdfiles, bdose_file)
 }
 \arguments{
 \item{bdfiles}{Vector of file names for the binary dosage file. Format 4
 files require one file name. Formats 1, 2, and 3 require three file names:
 the binary dosage file, the family file, and the map file.}
 
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 }
 \value{
 NULL (invisibly)
@@ -32,9 +31,7 @@ suppressWarnings(
                 bdfiles = bdfile,
                 format = 4L)
 )
-bdose_file  <- tempfile(fileext = ".bdose")
-bdinfo_file <- tempfile(fileext = ".bdinfo")
-updatebd(bdfiles     = bdfile,
-         bdose_file  = bdose_file,
-         bdinfo_file = bdinfo_file)
+bdose_file <- tempfile(fileext = ".bdose")
+updatebd(bdfiles    = bdfile,
+         bdose_file = bdose_file)
 }

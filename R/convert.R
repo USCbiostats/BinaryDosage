@@ -211,19 +211,17 @@ vcftobdlegacy <- function(vcffiles,
 #'
 #' @param bdfiles Vector of three file names for the format 1 binary dosage
 #'   file: the binary dosage file, the family file, and the map file.
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
+bd1tobd5 <- function(bdfiles, bdose_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   old_bdinfo <- getbdinfo(bdfiles)
 
@@ -278,7 +276,7 @@ bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
     indices        = indices
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }
@@ -296,19 +294,17 @@ bd1tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #'
 #' @param bdfiles Vector of three file names for the format 2 binary dosage
 #'   file: the binary dosage file, the family file, and the map file.
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
+bd2tobd5 <- function(bdfiles, bdose_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   old_bdinfo <- getbdinfo(bdfiles)
 
@@ -363,7 +359,7 @@ bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
     indices        = indices
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }
@@ -382,19 +378,17 @@ bd2tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #' @param bdfiles Vector of three file names for the format 3 binary dosage
 #'   file: the binary dosage file, the family file, and the map file.
 #'
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-bd3tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
+bd3tobd5 <- function(bdfiles, bdose_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   old_bdinfo <- getbdinfo(bdfiles)
 
@@ -449,7 +443,7 @@ bd3tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
     indices        = indices
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }
@@ -468,19 +462,17 @@ bd3tobd5 <- function(bdfiles, bdose_file, bdinfo_file) {
 #' @param bdfile File name of the format 4 binary dosage file. Format 4 stores
 #'   all data in a single file.
 #'
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #'
 #' @keywords internal
-bd4tobd5 <- function(bdfile, bdose_file, bdinfo_file) {
+bd4tobd5 <- function(bdfile, bdose_file) {
   if (missing(bdfile))
     stop("No binary dosage file specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   old_bdinfo <- getbdinfo(bdfile)
 
@@ -535,7 +527,7 @@ bd4tobd5 <- function(bdfile, bdose_file, bdinfo_file) {
     indices        = indices
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }
@@ -555,8 +547,8 @@ bd4tobd5 <- function(bdfile, bdose_file, bdinfo_file) {
 #'   files require one file name. Formats 1, 2, and 3 require three file names:
 #'   the binary dosage file, the family file, and the map file.
 #'
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #'
 #' @return NULL (invisibly)
 #' @export
@@ -569,30 +561,26 @@ bd4tobd5 <- function(bdfile, bdose_file, bdinfo_file) {
 #'                 bdfiles = bdfile,
 #'                 format = 4L)
 #' )
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' updatebd(bdfiles     = bdfile,
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file)
-updatebd <- function(bdfiles, bdose_file, bdinfo_file) {
+#' bdose_file <- tempfile(fileext = ".bdose")
+#' updatebd(bdfiles    = bdfile,
+#'          bdose_file = bdose_file)
+updatebd <- function(bdfiles, bdose_file) {
   if (missing(bdfiles))
     stop("No binary dosage files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   old_bdinfo <- getbdinfo(bdfiles)
   fmt        <- old_bdinfo$additionalinfo$format
 
   if (fmt == 1L)
-    bd1tobd5(bdfiles = bdfiles, bdose_file = bdose_file, bdinfo_file = bdinfo_file)
+    bd1tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
   else if (fmt == 2L)
-    bd2tobd5(bdfiles = bdfiles, bdose_file = bdose_file, bdinfo_file = bdinfo_file)
+    bd2tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
   else if (fmt == 3L)
-    bd3tobd5(bdfiles = bdfiles, bdose_file = bdose_file, bdinfo_file = bdinfo_file)
+    bd3tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
   else if (fmt == 4L)
-    bd4tobd5(bdfile = bdfiles[1L], bdose_file = bdose_file, bdinfo_file = bdinfo_file)
+    bd4tobd5(bdfile = bdfiles[1L], bdose_file = bdose_file)
   else
     stop("bdfiles must be a format 1, 2, 3, or 4 binary dosage file")
 

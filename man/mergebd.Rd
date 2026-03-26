@@ -4,18 +4,15 @@
 \alias{mergebd}
 \title{Merge Format 5 binary dosage files}
 \usage{
-mergebd(bdose_files, bdinfo_files, bdose_file, bdinfo_file)
+mergebd(bdose_files, bdose_file)
 }
 \arguments{
 \item{bdose_files}{Character vector of paths to the input .bdose files.
-Must contain at least two entries.}
+Must contain at least two entries. The companion .bdi file for each is
+expected at \code{paste0(bdose_files[i], ".bdi")}.}
 
-\item{bdinfo_files}{Character vector of paths to the input .bdinfo files.
-Must be the same length as \code{bdose_files}.}
-
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 }
 \value{
 NULL (invisibly)
@@ -45,22 +42,18 @@ bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
 bdinfo_src <- getbdinfo(bdfile)
 
 # Create two format 5 files with non-overlapping subjects
-bdose_a <- tempfile(fileext = ".bdose"); bdinfo_a <- tempfile(fileext = ".bdinfo")
-bdose_b <- tempfile(fileext = ".bdose"); bdinfo_b <- tempfile(fileext = ".bdinfo")
-bdose_tmp <- tempfile(fileext = ".bdose"); bdinfo_tmp <- tempfile(fileext = ".bdinfo")
-updatebd(bdfiles = bdfile, bdose_file = bdose_tmp, bdinfo_file = bdinfo_tmp)
-subsetbd(bdfiles     = c(bdose_tmp, bdinfo_tmp),
-         bdose_file  = bdose_a,
-         bdinfo_file = bdinfo_a,
-         subjectids  = bdinfo_src$samples$sid[1:30])
-subsetbd(bdfiles     = c(bdose_tmp, bdinfo_tmp),
-         bdose_file  = bdose_b,
-         bdinfo_file = bdinfo_b,
-         subjectids  = bdinfo_src$samples$sid[31:60])
+bdose_a   <- tempfile(fileext = ".bdose")
+bdose_b   <- tempfile(fileext = ".bdose")
+bdose_tmp <- tempfile(fileext = ".bdose")
+updatebd(bdfiles = bdfile, bdose_file = bdose_tmp)
+subsetbd(bdfiles    = bdose_tmp,
+         bdose_file = bdose_a,
+         subjectids = bdinfo_src$samples$sid[1:30])
+subsetbd(bdfiles    = bdose_tmp,
+         bdose_file = bdose_b,
+         subjectids = bdinfo_src$samples$sid[31:60])
 
-bdose_out <- tempfile(fileext = ".bdose"); bdinfo_out <- tempfile(fileext = ".bdinfo")
-mergebd(bdose_files  = c(bdose_a, bdose_b),
-        bdinfo_files = c(bdinfo_a, bdinfo_b),
-        bdose_file   = bdose_out,
-        bdinfo_file  = bdinfo_out)
+bdose_out <- tempfile(fileext = ".bdose")
+mergebd(bdose_files = c(bdose_a, bdose_b),
+        bdose_file  = bdose_out)
 }

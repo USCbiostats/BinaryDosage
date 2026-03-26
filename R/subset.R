@@ -16,8 +16,8 @@
 #'   file names: the binary dosage file, the family file, and the map file.
 #'   Format 5 files require two file names: the .bdose file and the .bdinfo
 #'   file.
-#' @param bdose_file Path for the output .bdose file.
-#' @param bdinfo_file Path for the output .bdinfo file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
 #' @param minmaf Minimum minor allele frequency. SNPs whose MAF (computed over
 #'   the retained subjects) is below this value are excluded. Must be a single
 #'   numeric value between 0 and 0.5.
@@ -36,14 +36,12 @@
 #'
 #' @examples
 #' bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
-#' bdinfo  <- getbdinfo(bdfile)
-#' bdose_file  <- tempfile(fileext = ".bdose")
-#' bdinfo_file <- tempfile(fileext = ".bdinfo")
-#' subsetbd(bdfiles     = bdfile,
-#'          bdose_file  = bdose_file,
-#'          bdinfo_file = bdinfo_file,
-#'          subjectids  = bdinfo$samples$sid[1:30])
-subsetbd <- function(bdfiles, bdose_file, bdinfo_file,
+#' bdinfo     <- getbdinfo(bdfile)
+#' bdose_file <- tempfile(fileext = ".bdose")
+#' subsetbd(bdfiles    = bdfile,
+#'          bdose_file = bdose_file,
+#'          subjectids = bdinfo$samples$sid[1:30])
+subsetbd <- function(bdfiles, bdose_file,
                      minmaf = NULL, locations = NULL,
                      startloc = NULL, endloc = NULL,
                      subjectids = NULL) {
@@ -53,8 +51,6 @@ subsetbd <- function(bdfiles, bdose_file, bdinfo_file,
     stop("No input binary dosage files specified")
   if (missing(bdose_file))
     stop("No output .bdose file specified")
-  if (missing(bdinfo_file))
-    stop("No output .bdinfo file specified")
 
   # --- At least one filter required ---
   if (is.null(minmaf) && is.null(locations) &&
@@ -85,14 +81,10 @@ subsetbd <- function(bdfiles, bdose_file, bdinfo_file,
   bdinfo <- tryCatch(
     getbdinfo(bdfiles),
     error = function(e) {
-      if (length(bdfiles) == 2L) {
-        tryCatch(
-          getbd5info(bdose_file = bdfiles[1L], bdinfo_file = bdfiles[2L]),
-          error = function(e2) stop(conditionMessage(e))
-        )
-      } else {
-        stop(conditionMessage(e))
-      }
+      tryCatch(
+        getbd5info(bdose_file = bdfiles[1L]),
+        error = function(e2) stop(conditionMessage(e))
+      )
     }
   )
 
@@ -188,7 +180,7 @@ subsetbd <- function(bdfiles, bdose_file, bdinfo_file,
     indices        = indices[seq_len(n_kept)]
   )
   class(new_bdinfo) <- "genetic-info"
-  saveRDS(new_bdinfo, bdinfo_file)
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
 
   invisible(NULL)
 }

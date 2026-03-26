@@ -7,7 +7,6 @@
 subsetbd(
   bdfiles,
   bdose_file,
-  bdinfo_file,
   minmaf = NULL,
   locations = NULL,
   startloc = NULL,
@@ -22,9 +21,8 @@ file names: the binary dosage file, the family file, and the map file.
 Format 5 files require two file names: the .bdose file and the .bdinfo
 file.}
 
-\item{bdose_file}{Path for the output .bdose file.}
-
-\item{bdinfo_file}{Path for the output .bdinfo file.}
+\item{bdose_file}{Path for the output .bdose file. The companion .bdi
+metadata file is written to \code{paste0(bdose_file, ".bdi")}.}
 
 \item{minmaf}{Minimum minor allele frequency. SNPs whose MAF (computed over
 the retained subjects) is below this value are excluded. Must be a single
@@ -54,11 +52,9 @@ all supplied criteria must be met for a SNP or subject to be retained.
 }
 \examples{
 bdfile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
-bdinfo  <- getbdinfo(bdfile)
-bdose_file  <- tempfile(fileext = ".bdose")
-bdinfo_file <- tempfile(fileext = ".bdinfo")
-subsetbd(bdfiles     = bdfile,
-         bdose_file  = bdose_file,
-         bdinfo_file = bdinfo_file,
-         subjectids  = bdinfo$samples$sid[1:30])
+bdinfo     <- getbdinfo(bdfile)
+bdose_file <- tempfile(fileext = ".bdose")
+subsetbd(bdfiles    = bdfile,
+         bdose_file = bdose_file,
+         subjectids = bdinfo$samples$sid[1:30])
 }
