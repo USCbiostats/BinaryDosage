@@ -7,14 +7,11 @@
 getbdinfo(bdfiles)
 }
 \arguments{
-\item{bdfiles}{Vector of file names. The first is the
-binary dosage data containing the dosages and genetic
-probabilities. The second file name is the family information
-file. The third file name is the SNP information file.
-The family and SNP information files are not used if the
-binary dosage file is in format 4. For this format the
-family and SNP information are in the file with the dosages
-and genetic probabilities.}
+\item{bdfiles}{Vector of file names. For Format 5 files, a single .bdose
+file name; the companion .bdi metadata file is read automatically from
+\code{paste0(bdfiles[1], ".bdi")}. For format 4, a single file name. For
+formats 1, 2, and 3, a vector of three file names: the binary dosage file,
+the family information file, and the SNP information file.}
 }
 \value{
 List with information about the binary dosage file.
