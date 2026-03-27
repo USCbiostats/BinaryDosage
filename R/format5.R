@@ -309,10 +309,10 @@ openbd5con <- function(bd5info) {
   if (!inherits(bd5info, "genetic-info"))
     stop("bd5info must be an object returned by getbdinfo")
   e <- new.env(parent = emptyenv())
-  e$con <- file(bd5info$filename, open = "rb")
+  e$xptr <- OpenFormat5FileC(bd5info$filename)
   reg.finalizer(e, function(e) {
-    if (!is.null(e$con) && tryCatch(isOpen(e$con), error = function(x) FALSE))
-      close(e$con)
+    if (!is.null(e$xptr))
+      CloseFormat5FileC(e$xptr)
   }, onexit = TRUE)
   class(e) <- "bd5con"
   e
@@ -332,9 +332,9 @@ openbd5con <- function(bd5info) {
 closebd5con <- function(bd5con) {
   if (!inherits(bd5con, "bd5con"))
     stop("bd5con must be an object returned by openbd5con")
-  if (!is.null(bd5con$con) && tryCatch(isOpen(bd5con$con), error = function(x) FALSE))
-    close(bd5con$con)
-  bd5con$con <- NULL
+  if (!is.null(bd5con$xptr))
+    CloseFormat5FileC(bd5con$xptr)
+  bd5con$xptr <- NULL
   invisible(NULL)
 }
 
@@ -388,11 +388,7 @@ getbd5snp_con <- function(bd5info, snp, dosage, p0, p1, p2, bd5con) {
     nbytes <- as.integer(file.info(bd5info$filename)$size - start)
   }
 
-  seek(bd5con$con, where = start, origin = "start")
-  compressed <- readBin(bd5con$con, what = raw(), n = nbytes)
-  raw_block  <- memDecompress(compressed, type = "gzip")
-
-  DecodeFormat5BlockC(raw_block, n_samp, dosage, p0, p1, p2)
+  ReadFormat5SNPC(bd5con$xptr, start, nbytes, n_samp, dosage, p0, p1, p2)
   invisible(NULL)
 }
 

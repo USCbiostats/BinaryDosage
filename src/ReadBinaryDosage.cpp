@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <zlib.h>
 
 extern const std::ios_base::openmode READWRITEBINARY;
 extern const std::ios_base::openmode READBINARY;
@@ -424,6 +425,74 @@ int DecodeFormat5BlockC(Rcpp::RawVector &raw_block,
                         Rcpp::NumericVector &p2) {
   const unsigned short *us  = (const unsigned short *)&raw_block[0];
   const unsigned short *gp  = us + n_samp;
+
+  for (int i = 0; i < n_samp; ++i) {
+    dosage[i] = (us[i] == 0xffff) ? NA_REAL : us[i] / 10000.0;
+    p0[i] = (gp[3*i]   == 0xffff) ? NA_REAL : gp[3*i]   / 10000.0;
+    p1[i] = (gp[3*i+1] == 0xffff) ? NA_REAL : gp[3*i+1] / 10000.0;
+    p2[i] = (gp[3*i+2] == 0xffff) ? NA_REAL : gp[3*i+2] / 10000.0;
+  }
+  return 0;
+}
+
+// Open a Format 5 .bdose file and return an XPtr to the ifstream.
+// The stream is deleted (and thus closed) when the XPtr is GC'd.
+// [[Rcpp::export]]
+Rcpp::XPtr<std::ifstream> OpenFormat5FileC(std::string &filename) {
+  std::ifstream *stream = new std::ifstream(filename.c_str(), std::ios::binary);
+  if (!stream->is_open()) {
+    delete stream;
+    Rcpp::stop("Cannot open file: %s", filename.c_str());
+  }
+  return Rcpp::XPtr<std::ifstream>(stream, true);
+}
+
+// Close the ifstream held by an XPtr.  Safe to call multiple times.
+// [[Rcpp::export]]
+void CloseFormat5FileC(Rcpp::XPtr<std::ifstream> xptr) {
+  if (xptr->is_open())
+    xptr->close();
+}
+
+// Seek to a compressed SNP block, decompress with zlib, and decode directly
+// into pre-allocated output vectors — no R allocations inside this function.
+// start:  byte offset of the compressed block (double to handle >2 GB files)
+// nbytes: compressed block size in bytes
+// [[Rcpp::export]]
+int ReadFormat5SNPC(Rcpp::XPtr<std::ifstream> xptr,
+                    double start,
+                    int nbytes,
+                    int n_samp,
+                    Rcpp::NumericVector &dosage,
+                    Rcpp::NumericVector &p0,
+                    Rcpp::NumericVector &p1,
+                    Rcpp::NumericVector &p2) {
+  // Read compressed block
+  std::vector<unsigned char> compressed(nbytes);
+  xptr->clear();  // clear eofbit/failbit from any previous read
+  xptr->seekg((std::streampos)start);
+  xptr->read((char *)compressed.data(), nbytes);
+
+  // Decompress (gzip: windowBits = 15 + 16)
+  uLongf out_size = (uLongf)(8 * n_samp);  // 4 uint16s per sample
+  std::vector<unsigned char> decompressed(out_size);
+
+  z_stream strm = {};
+  strm.avail_in  = (uInt)nbytes;
+  strm.next_in   = compressed.data();
+  strm.avail_out = (uInt)out_size;
+  strm.next_out  = decompressed.data();
+
+  if (inflateInit2(&strm, 15 + 32) != Z_OK)  // 15+32 = auto-detect zlib or gzip
+    Rcpp::stop("zlib inflateInit2 failed");
+  int zret = inflate(&strm, Z_FINISH);
+  inflateEnd(&strm);
+  if (zret != Z_STREAM_END)
+    Rcpp::stop("zlib inflate failed (code %d)", zret);
+
+  // Decode DS and GP into output vectors
+  const unsigned short *us = (const unsigned short *)decompressed.data();
+  const unsigned short *gp = us + n_samp;
 
   for (int i = 0; i < n_samp; ++i) {
     dosage[i] = (us[i] == 0xffff) ? NA_REAL : us[i] / 10000.0;

@@ -37,6 +37,18 @@ DecodeFormat5BlockC <- function(raw_block, n_samp, dosage, p0, p1, p2) {
     .Call(`_BinaryDosage_DecodeFormat5BlockC`, raw_block, n_samp, dosage, p0, p1, p2)
 }
 
+OpenFormat5FileC <- function(filename) {
+    .Call(`_BinaryDosage_OpenFormat5FileC`, filename)
+}
+
+CloseFormat5FileC <- function(xptr) {
+    invisible(.Call(`_BinaryDosage_CloseFormat5FileC`, xptr))
+}
+
+ReadFormat5SNPC <- function(xptr, start, nbytes, n_samp, dosage, p0, p1, p2) {
+    .Call(`_BinaryDosage_ReadFormat5SNPC`, xptr, start, nbytes, n_samp, dosage, p0, p1, p2)
+}
+
 ReadBinaryDosageDataC <- function(filename, headersize, numsub, snp, dosage, us, base) {
     .Call(`_BinaryDosage_ReadBinaryDosageDataC`, filename, headersize, numsub, snp, dosage, us, base)
 }

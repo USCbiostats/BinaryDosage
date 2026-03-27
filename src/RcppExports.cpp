@@ -118,6 +118,45 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// OpenFormat5FileC
+Rcpp::XPtr<std::ifstream> OpenFormat5FileC(std::string& filename);
+RcppExport SEXP _BinaryDosage_OpenFormat5FileC(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(OpenFormat5FileC(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// CloseFormat5FileC
+void CloseFormat5FileC(Rcpp::XPtr<std::ifstream> xptr);
+RcppExport SEXP _BinaryDosage_CloseFormat5FileC(SEXP xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::XPtr<std::ifstream> >::type xptr(xptrSEXP);
+    CloseFormat5FileC(xptr);
+    return R_NilValue;
+END_RCPP
+}
+// ReadFormat5SNPC
+int ReadFormat5SNPC(Rcpp::XPtr<std::ifstream> xptr, double start, int nbytes, int n_samp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_ReadFormat5SNPC(SEXP xptrSEXP, SEXP startSEXP, SEXP nbytesSEXP, SEXP n_sampSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::XPtr<std::ifstream> >::type xptr(xptrSEXP);
+    Rcpp::traits::input_parameter< double >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type nbytes(nbytesSEXP);
+    Rcpp::traits::input_parameter< int >::type n_samp(n_sampSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadFormat5SNPC(xptr, start, nbytes, n_samp, dosage, p0, p1, p2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ReadBinaryDosageDataC
 int ReadBinaryDosageDataC(std::string& filename, int headersize, int numsub, int snp, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& us, int base);
 RcppExport SEXP _BinaryDosage_ReadBinaryDosageDataC(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP numsubSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP usSEXP, SEXP baseSEXP) {
@@ -325,6 +364,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBDIndices3C", (DL_FUNC) &_BinaryDosage_ReadBDIndices3C, 3},
     {"_BinaryDosage_ReadBDIndices4C", (DL_FUNC) &_BinaryDosage_ReadBDIndices4C, 3},
     {"_BinaryDosage_DecodeFormat5BlockC", (DL_FUNC) &_BinaryDosage_DecodeFormat5BlockC, 6},
+    {"_BinaryDosage_OpenFormat5FileC", (DL_FUNC) &_BinaryDosage_OpenFormat5FileC, 1},
+    {"_BinaryDosage_CloseFormat5FileC", (DL_FUNC) &_BinaryDosage_CloseFormat5FileC, 1},
+    {"_BinaryDosage_ReadFormat5SNPC", (DL_FUNC) &_BinaryDosage_ReadFormat5SNPC, 8},
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 7},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 10},
     {"_BinaryDosage_ReadBinaryDosageDataCompressed", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataCompressed, 9},
