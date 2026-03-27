@@ -102,6 +102,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// DecodeFormat5BlockC
+int DecodeFormat5BlockC(Rcpp::RawVector& raw_block, int n_samp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_DecodeFormat5BlockC(SEXP raw_blockSEXP, SEXP n_sampSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::RawVector& >::type raw_block(raw_blockSEXP);
+    Rcpp::traits::input_parameter< int >::type n_samp(n_sampSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    rcpp_result_gen = Rcpp::wrap(DecodeFormat5BlockC(raw_block, n_samp, dosage, p0, p1, p2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ReadBinaryDosageDataC
 int ReadBinaryDosageDataC(std::string& filename, int headersize, int numsub, int snp, Rcpp::NumericVector& dosage, Rcpp::IntegerVector& us, int base);
 RcppExport SEXP _BinaryDosage_ReadBinaryDosageDataC(SEXP filenameSEXP, SEXP headersizeSEXP, SEXP numsubSEXP, SEXP snpSEXP, SEXP dosageSEXP, SEXP usSEXP, SEXP baseSEXP) {
@@ -308,6 +324,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
     {"_BinaryDosage_ReadBDIndices3C", (DL_FUNC) &_BinaryDosage_ReadBDIndices3C, 3},
     {"_BinaryDosage_ReadBDIndices4C", (DL_FUNC) &_BinaryDosage_ReadBDIndices4C, 3},
+    {"_BinaryDosage_DecodeFormat5BlockC", (DL_FUNC) &_BinaryDosage_DecodeFormat5BlockC, 6},
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 7},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 10},
     {"_BinaryDosage_ReadBinaryDosageDataCompressed", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataCompressed, 9},

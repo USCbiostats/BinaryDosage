@@ -409,6 +409,31 @@ void UShortToDouble(Rcpp::IntegerVector &us,
   }
 }
 
+// Decode a decompressed Format 5 SNP block into pre-allocated output vectors.
+// raw_block: output of memDecompress() for one SNP block
+// n_samp:    number of samples
+// dosage, p0, p1, p2: pre-allocated numeric vectors of length n_samp
+// Returns 0.  Vectors are modified in place; caller must not hold extra
+// references to them (R copy-on-modify would prevent in-place update).
+// [[Rcpp::export]]
+int DecodeFormat5BlockC(Rcpp::RawVector &raw_block,
+                        int n_samp,
+                        Rcpp::NumericVector &dosage,
+                        Rcpp::NumericVector &p0,
+                        Rcpp::NumericVector &p1,
+                        Rcpp::NumericVector &p2) {
+  const unsigned short *us  = (const unsigned short *)&raw_block[0];
+  const unsigned short *gp  = us + n_samp;
+
+  for (int i = 0; i < n_samp; ++i) {
+    dosage[i] = (us[i] == 0xffff) ? NA_REAL : us[i] / 10000.0;
+    p0[i] = (gp[3*i]   == 0xffff) ? NA_REAL : gp[3*i]   / 10000.0;
+    p1[i] = (gp[3*i+1] == 0xffff) ? NA_REAL : gp[3*i+1] / 10000.0;
+    p2[i] = (gp[3*i+2] == 0xffff) ? NA_REAL : gp[3*i+2] / 10000.0;
+  }
+  return 0;
+}
+
 // [[Rcpp::export]]
 int ReadBinaryDosageDataC(std::string &filename,
                           int headersize,

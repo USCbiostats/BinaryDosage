@@ -230,6 +230,66 @@ getbd5snp <- function(bd5info, snp) {
   list(dosage = dosage, p0 = p0, p1 = p1, p2 = p2)
 }
 
+#' Read a Format 5 SNP into pre-allocated vectors (buffered variant)
+#'
+#' Like \code{getbd5snp} but writes results into caller-supplied vectors
+#' instead of allocating new ones.  Intended for tight loops where thousands
+#' of SNPs are read sequentially; pre-allocating the output vectors once
+#' avoids repeated memory allocation.
+#'
+#' The four output vectors \strong{must not} have more than one R binding at
+#' the call site (no extra variables pointing to the same object); R's
+#' copy-on-modify semantics would otherwise prevent in-place update.
+#'
+#' @param bd5info  Object returned by \code{getbd5info}.
+#' @param snp  1-based integer index or character SNP ID.
+#' @param dosage  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p0  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p1  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p2  Pre-allocated \code{numeric(n_samples)} vector.
+#'
+#' @return \code{NULL} invisibly.  \code{dosage}, \code{p0}, \code{p1}, and
+#'   \code{p2} are updated in place.
+#' @export
+getbd5snp_buf <- function(bd5info, snp, dosage, p0, p1, p2) {
+  if (missing(bd5info))
+    stop("bd5info missing")
+  if (!inherits(bd5info, "genetic-info"))
+    stop("bd5info must be an object returned by getbd5info")
+  if (missing(snp))
+    stop("No SNP specified")
+  if (length(snp) != 1L)
+    stop("snp must be of length 1")
+
+  if (is.character(snp)) {
+    snp_idx <- match(snp, bd5info$snps$snpid)
+    if (is.na(snp_idx))
+      stop("SNP '", snp, "' not found in bd5info")
+  } else {
+    snp_idx <- as.integer(floor(snp))
+    if (snp_idx < 1L || snp_idx > nrow(bd5info$snps))
+      stop("snp index out of range: ", snp_idx)
+  }
+
+  n_snps <- nrow(bd5info$snps)
+  n_samp <- nrow(bd5info$samples)
+  start  <- bd5info$indices[snp_idx]
+
+  if (snp_idx < n_snps) {
+    nbytes <- as.integer(bd5info$indices[snp_idx + 1L] - start)
+  } else {
+    nbytes <- as.integer(file.info(bd5info$filename)$size - start)
+  }
+
+  con <- file(bd5info$filename, open = "rb")
+  on.exit(close(con))
+  seek(con, where = start, origin = "start")
+  compressed <- readBin(con, what = raw(), n = nbytes)
+  raw_block  <- memDecompress(compressed, type = "gzip")
+
+  DecodeFormat5BlockC(raw_block, n_samp, dosage, p0, p1, p2)
+  invisible(NULL)
+}
 
 #***************************************************************************#
 #                        Main conversion function                           #
