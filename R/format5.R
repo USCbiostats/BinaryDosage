@@ -291,6 +291,111 @@ getbd5snp_buf <- function(bd5info, snp, dosage, p0, p1, p2) {
   invisible(NULL)
 }
 
+#' Open a persistent connection to a Format 5 binary dosage file
+#'
+#' Opens the .bdose file for reading and returns an object that holds the
+#' connection open across multiple calls to \code{getbd5snp_con}.  The
+#' connection is closed automatically when the object is garbage-collected
+#' or when R exits; call \code{closebd5con} to close it explicitly.
+#'
+#' @param bd5info  Object returned by \code{getbdinfo}.
+#'
+#' @return An object of class \code{"bd5con"} to be passed to
+#'   \code{getbd5snp_con} and \code{closebd5con}.
+#' @export
+openbd5con <- function(bd5info) {
+  if (missing(bd5info))
+    stop("bd5info missing")
+  if (!inherits(bd5info, "genetic-info"))
+    stop("bd5info must be an object returned by getbdinfo")
+  e <- new.env(parent = emptyenv())
+  e$con <- file(bd5info$filename, open = "rb")
+  reg.finalizer(e, function(e) {
+    if (!is.null(e$con) && tryCatch(isOpen(e$con), error = function(x) FALSE))
+      close(e$con)
+  }, onexit = TRUE)
+  class(e) <- "bd5con"
+  e
+}
+
+#' Close a persistent Format 5 connection
+#'
+#' Explicitly closes the connection opened by \code{openbd5con}.  Calling
+#' this is optional — the finalizer will close it on garbage collection or
+#' R exit — but explicit close is preferred to release the file handle
+#' promptly.
+#'
+#' @param bd5con  Object returned by \code{openbd5con}.
+#'
+#' @return \code{NULL} invisibly.
+#' @export
+closebd5con <- function(bd5con) {
+  if (!inherits(bd5con, "bd5con"))
+    stop("bd5con must be an object returned by openbd5con")
+  if (!is.null(bd5con$con) && tryCatch(isOpen(bd5con$con), error = function(x) FALSE))
+    close(bd5con$con)
+  bd5con$con <- NULL
+  invisible(NULL)
+}
+
+#' Read a Format 5 SNP using a persistent open connection
+#'
+#' Like \code{getbd5snp_buf} but reuses an already-open file connection
+#' instead of opening and closing it on every call.  Use \code{openbd5con}
+#' before the loop and \code{closebd5con} (or let the finalizer handle it)
+#' after.
+#'
+#' @param bd5info  Object returned by \code{getbdinfo}.
+#' @param snp  1-based integer index or character SNP ID.
+#' @param dosage  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p0  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p1  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param p2  Pre-allocated \code{numeric(n_samples)} vector.
+#' @param bd5con  Object returned by \code{openbd5con}.
+#'
+#' @return \code{NULL} invisibly.  \code{dosage}, \code{p0}, \code{p1}, and
+#'   \code{p2} are updated in place.
+#' @export
+getbd5snp_con <- function(bd5info, snp, dosage, p0, p1, p2, bd5con) {
+  if (missing(bd5info))
+    stop("bd5info missing")
+  if (!inherits(bd5info, "genetic-info"))
+    stop("bd5info must be an object returned by getbdinfo")
+  if (missing(snp))
+    stop("No SNP specified")
+  if (length(snp) != 1L)
+    stop("snp must be of length 1")
+  if (!inherits(bd5con, "bd5con"))
+    stop("bd5con must be an object returned by openbd5con")
+
+  if (is.character(snp)) {
+    snp_idx <- match(snp, bd5info$snps$snpid)
+    if (is.na(snp_idx))
+      stop("SNP '", snp, "' not found in bd5info")
+  } else {
+    snp_idx <- as.integer(floor(snp))
+    if (snp_idx < 1L || snp_idx > nrow(bd5info$snps))
+      stop("snp index out of range: ", snp_idx)
+  }
+
+  n_snps <- nrow(bd5info$snps)
+  n_samp <- nrow(bd5info$samples)
+  start  <- bd5info$indices[snp_idx]
+
+  if (snp_idx < n_snps) {
+    nbytes <- as.integer(bd5info$indices[snp_idx + 1L] - start)
+  } else {
+    nbytes <- as.integer(file.info(bd5info$filename)$size - start)
+  }
+
+  seek(bd5con$con, where = start, origin = "start")
+  compressed <- readBin(bd5con$con, what = raw(), n = nbytes)
+  raw_block  <- memDecompress(compressed, type = "gzip")
+
+  DecodeFormat5BlockC(raw_block, n_samp, dosage, p0, p1, p2)
+  invisible(NULL)
+}
+
 #***************************************************************************#
 #                        Main conversion function                           #
 #***************************************************************************#
