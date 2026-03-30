@@ -1,6 +1,6 @@
 Package: BinaryDosage
 Title: Creates, Merges, and Reads Binary Dosage Files
-Version: 1.0.0.9019
+Version: 1.0.0.9020
 Authors@R:
     c(person(given = "John",
              family = "Morrison",
