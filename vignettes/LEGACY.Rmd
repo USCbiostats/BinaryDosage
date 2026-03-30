@@ -1,0 +1,530 @@
+---
+title: "Legacy Binary Dosage Formats (Formats 1-4)"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Legacy Binary Dosage Formats (Formats 1-4)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = FALSE}
+library(BinaryDosage)
+```
+
+# Introduction
+
+The BinaryDosage package was originally developed to convert VCF and GEN files produced by imputation servers into a compact binary format suitable for genome-wide association and gene-environment interaction analyses. This document covers the original binary dosage formats (formats 1–4), the functions used to create and read them, and the workflow for applying analyses across all SNPs in a file.
+
+**Current recommendation:** New work should use Format 5 via `vcftobd`. Format 5 uses per-SNP gzip compression and stores all metadata in a companion `.bdinfo` file, making it better suited for large modern datasets. See the vignette *Using Format 5 Binary Dosage Files* for details.
+
+The legacy formats remain fully supported and all files created with earlier versions of BinaryDosage are compatible with the current package.
+
+---
+
+# Legacy File Formats
+
+Each binary dosage data set stores the following information:
+
+- **Sample information**: family ID and subject ID
+- **SNP information**: chromosome, SNP ID, genomic location, reference allele, alternate allele
+- **Genetic data**: dosage values and genotype probabilities Pr(*g*=0), Pr(*g*=1), Pr(*g*=2)
+
+## Formats 1, 2, and 3 (three-file layout)
+
+Formats 1, 2, and 3 split data across three files:
+
+- **Binary dosage file** — the genetic data
+- **Family file** — subject IDs (saved with `saveRDS`)
+- **Map file** — SNP information (saved with `saveRDS`)
+
+### Format 1
+
+Format 1 has an 8-byte header consisting of a magic word followed by a subformat indicator.
+
+- **Subformat 1.1** stores only dosage. Values are multiplied by 0x7ffe (32,766) and stored as unsigned 16-bit integers. Missing = 0xffff.
+- **Subformat 1.2** stores Pr(*g*=1) and Pr(*g*=2). Values are multiplied by 0xfffe (65,534). Missing = 0xffff.
+
+### Format 2
+
+Format 2 uses the same 8-byte header as Format 1 but multiplies values by 20,000 (0x4e20) rather than 0x7ffe. This was adopted when it was found that imputation programs report values to only 3–4 decimal places and it was desirable to reproduce those values exactly. Missing = 0xffff.
+
+- **Subformat 2.1** stores only dosage.
+- **Subformat 2.2** stores Pr(*g*=1) and Pr(*g*=2).
+
+### Format 3
+
+Format 3 extends the Format 2 header to include validation information.
+
+- **Subformats 3.1 and 3.2** add the number of subjects and SNPs to the header to prevent mismatched family/map files.
+- **Subformats 3.3 and 3.4** add MD5 hashes of the family and map data frames for the same purpose.
+- **Subformats 3.2 and 3.4** use the compressed storage scheme described below.
+
+## Format 4 (single-file layout)
+
+Format 4 embeds the family and map data directly in the binary dosage file header, eliminating the need for separate files. The header is followed by the family data, then the map data, and then the genotype data. Format 4 is the recommended legacy format and is the default for all conversion functions.
+
+- **Subformats 4.1 and 4.3** store one dosage value per subject per SNP (same encoding as 2.1).
+- **Subformats 4.2 and 4.4** store dosage and genotype probabilities.
+
+Format 4 can also store optional per-SNP statistics in the header:
+
+- Alternate allele frequency
+- Minor allele frequency
+- Average call rate
+- Imputation r-squared
+
+## Compressed storage (subformats x.2 and x.4)
+
+Knowing that Pr(*g*=0) + Pr(*g*=1) + Pr(*g*=2) = 1 and *d* = Pr(*g*=1) + 2·Pr(*g*=2), only two values are needed to recover all four. For most subjects, either Pr(*g*=0) or Pr(*g*=2) is zero, so the dosage alone is sufficient:
+
+$$
+\Pr(g=1) = \begin{cases} d & \Pr(g=2)=0,\ d \le 1 \\ 2-d & \Pr(g=0)=0,\ d > 1 \end{cases}
+$$
+
+The 16th bit of each stored dosage value is used as a flag: 0 means the above formula applies; 1 means an explicit Pr(*g*=1) value follows. If both Pr(*g*=0) and Pr(*g*=2) are non-zero, three values (dosage, Pr(*g*=0), Pr(*g*=2)) are written. This approach typically requires 2.2–2.4 bytes per subject per SNP.
+
+---
+
+# Functions Overview
+
+| Function | Purpose |
+|---|---|
+| `vcftobdlegacy` | Convert a VCF file to a legacy binary dosage file |
+| `gentobd` | Convert a GEN (Impute2) file to a legacy binary dosage file |
+| `bdmerge` | Merge multiple legacy binary dosage files by subject |
+| `getbdinfo` | Load metadata for a legacy binary dosage file |
+| `getvcfinfo` | Load metadata for a VCF file |
+| `getgeninfo` | Load metadata for a GEN file |
+| `bdapply` | Apply a function to every SNP in a legacy binary dosage file |
+| `vcfapply` | Apply a function to every SNP in a VCF file |
+| `genapply` | Apply a function to every SNP in a GEN file |
+| `getsnp` | Extract dosage and genotype probabilities for one SNP |
+
+---
+
+# Converting VCF Files
+
+The `vcftobdlegacy` function converts VCF files to the legacy binary dosage format. The default output format is 4 (single file, all metadata embedded).
+
+## Example files
+
+The package includes representative VCF files modelled on output from the Michigan Imputation Server (minimac). The following code locates them.
+
+```{r vcf_files}
+vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
+vcf1bfile <- system.file("extdata", "set1b.vcf", package = "BinaryDosage")
+vcf1binfo <- system.file("extdata", "set1b.info", package = "BinaryDosage")
+```
+
+These sets contain:
+
+| Set | Subjects | SNPs |
+|-----|----------|------|
+| 1a  | 60       | 10   |
+| 1b  | 40       | 10   |
+
+## Basic conversion
+
+Pass the VCF file name to `vcftobdlegacy`. An optional imputation information file (e.g., from minimac) can be appended to the `vcffiles` vector to embed per-SNP statistics.
+
+```{r vcf_convert, message = FALSE, warning = FALSE}
+bdfile1a <- tempfile()
+bdfile1b <- tempfile()
+
+# Without information file
+vcftobdlegacy(vcffiles = vcf1afile, bdfiles = bdfile1a)
+
+# With information file — embeds aaf, maf, avgcall, rsq in the header
+vcftobdlegacy(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
+```
+
+## Compressed VCF files
+
+Add `gz = TRUE` for gzip-compressed VCF files. The information file, if provided, must remain uncompressed.
+
+```{r vcf_gz, message = FALSE, warning = FALSE}
+vcf1agzfile <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+bdfile1a_gz <- tempfile()
+vcftobdlegacy(vcffiles = vcf1agzfile, bdfiles = bdfile1a_gz, gz = TRUE)
+```
+
+## Other VCF formats
+
+`vcftobdlegacy` reads the FORMAT field of each SNP and looks for the DS (dosage) and GP (genotype probabilities) entries. Files that contain only one of these are handled automatically.
+
+```{r vcf_dosageonly, message = FALSE, warning = FALSE}
+vcf2afile <- system.file("extdata", "set2a.vcf", package = "BinaryDosage")
+bdfile2a <- tempfile()
+vcftobdlegacy(vcffiles = vcf2afile, bdfiles = bdfile2a)
+```
+
+## snpidformat option
+
+The `snpidformat` parameter controls how SNP IDs are stored.
+
+| Value | Stored ID |
+|-------|-----------|
+| 0 (default) | ID from the VCF file |
+| 1 | `chr:pos` |
+| 2 | `chr:pos:ref:alt` |
+| -1 | Not stored; reconstructed as `chr:pos:ref:alt` on read |
+
+Setting `snpidformat = -1` reduces file size when SNP IDs are not needed.
+
+```{r snpidformat, message = FALSE, warning = FALSE}
+vcf1brsfile <- system.file("extdata", "set1b_rssnp.vcf", package = "BinaryDosage")
+bdfile_id0  <- tempfile()
+bdfile_id1  <- tempfile()
+bdfile_id2  <- tempfile()
+bdfile_idm1 <- tempfile()
+
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile_id0)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile_id1, snpidformat = 1L)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile_id2, snpidformat = 2L)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile_idm1, snpidformat = -1L)
+
+snpnames <- data.frame(
+  format0  = getbdinfo(bdfile_id0)$snps$snpid,
+  format1  = getbdinfo(bdfile_id1)$snps$snpid,
+  format2  = getbdinfo(bdfile_id2)$snps$snpid,
+  formatm1 = getbdinfo(bdfile_idm1)$snps$snpid
+)
+knitr::kable(snpnames, caption = "SNP IDs by snpidformat")
+```
+
+## bdoptions — calculating per-SNP statistics
+
+When converting without an information file, `bdoptions` can trigger on-the-fly calculation of alternate allele frequency (`"aaf"`), minor allele frequency (`"maf"`), and an estimated imputation r-squared (`"rsq"`).
+
+```{r bdoptions, message = FALSE, warning = FALSE}
+bdfile1a_calc <- tempfile()
+vcftobdlegacy(vcffiles = vcf1afile, bdfiles = bdfile1a_calc,
+              bdoptions = c("aaf", "maf", "rsq"))
+bdcalcinfo <- getbdinfo(bdfile1a_calc)
+knitr::kable(data.frame(bdcalcinfo$snpinfo),
+             caption = "Calculated per-SNP statistics", digits = 3)
+```
+
+---
+
+# Converting GEN Files
+
+GEN files are produced by the Impute2 imputation software. They are text files with more variable formatting than VCF, so `gentobd` exposes several parameters to handle different layouts.
+
+## Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `genfiles` | GEN file name and optional sample file name |
+| `snpcolumns` | Column positions for chromosome, SNP ID, location, reference, alternate |
+| `startcolumn` | Column where genotype probabilities begin (default 6) |
+| `impformat` | Number of values per subject: 1=dosage only, 2=Pr(g=0)+Pr(g=1), 3=all three |
+| `chromosome` | Chromosome value when not present in the file |
+| `header` | Logical vector indicating whether GEN and sample files have headers |
+| `gz` | TRUE if the GEN file is gzip-compressed |
+| `sep` | Column separator |
+| `bdfiles` | Output binary dosage file name(s) |
+| `format` | Output binary dosage format (default 4) |
+| `subformat` | Output subformat |
+| `snpidformat` | How to store the SNP ID |
+| `bdoptions` | Additional per-SNP statistics to calculate |
+
+## Example files
+
+```{r gen_files}
+gen3afile   <- system.file("extdata", "set3a.imp",    package = "BinaryDosage")
+gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
+gen3bfile   <- system.file("extdata", "set3b.imp",    package = "BinaryDosage")
+gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
+```
+
+The example GEN files have no chromosome column; the first column is `--` and the SNP ID encodes the chromosome as `chr:pos:ref:alt`. Setting `snpcolumns = c(0L, 2L:5L)` tells `gentobd` to extract the chromosome from the SNP ID.
+
+```{r gen_convert, message = FALSE, warning = FALSE}
+bdfile3a <- tempfile()
+bdfile3b <- tempfile()
+
+gentobd(genfiles = c(gen3afile, gen3asample),
+        snpcolumns = c(0L, 2L:5L),
+        bdfiles = bdfile3a)
+gentobd(genfiles = c(gen3bfile, gen3bsample),
+        snpcolumns = c(0L, 2L:5L),
+        bdfiles = bdfile3b)
+```
+
+## snpcolumns
+
+The five values in `snpcolumns` give the column indices for chromosome, SNP ID, location, reference, and alternate allele respectively.
+
+- Use `0L` for chromosome to extract it from the SNP ID.
+- Use `-1L` for chromosome and supply `chromosome = "1"` to assign a fixed value.
+
+```{r gen_snpcolumns, message = FALSE, warning = FALSE}
+gen3bchrfile <- system.file("extdata", "set3b.chr.imp", package = "BinaryDosage")
+bdfile3b_chr <- tempfile()
+# chromosome is in column 1, SNP ID in column 2, location in column 3, etc.
+gentobd(genfiles = c(gen3bchrfile, gen3bsample), bdfiles = bdfile3b_chr)
+```
+
+## impformat
+
+Use `impformat` when the file stores fewer than three probability values per subject.
+
+```{r gen_impformat, message = FALSE, warning = FALSE}
+gen2bfile   <- system.file("extdata", "set2b.imp",    package = "BinaryDosage")
+sample2bfile <- system.file("extdata", "set2b.sample", package = "BinaryDosage")
+bdfile2b <- tempfile()
+gentobd(genfiles = c(gen2bfile, sample2bfile),
+        snpcolumns = c(1L, 3L, 2L, 4L, 5L),
+        impformat = 1L,
+        bdfiles = bdfile2b)
+```
+
+## gz
+
+Add `gz = TRUE` for compressed GEN files. The sample file must not be compressed.
+
+```{r gen_gz, message = FALSE, warning = FALSE}
+gen4bgzfile  <- system.file("extdata", "set4b.imp.gz", package = "BinaryDosage")
+sample4bfile <- system.file("extdata", "set4b.sample", package = "BinaryDosage")
+bdfile4b_gz  <- tempfile()
+gentobd(genfiles = c(gen4bgzfile, sample4bfile),
+        snpcolumns = c(1L, 2L, 4L, 5L, 6L),
+        startcolumn = 7L,
+        impformat = 2L,
+        gz = TRUE,
+        bdfiles = bdfile4b_gz)
+```
+
+---
+
+# Merging Legacy Binary Dosage Files
+
+`bdmerge` combines multiple legacy binary dosage files that share the same SNP set but have different subjects. Matching is done by SNP ID.
+
+## Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `mergefiles` | Output file name(s) |
+| `bdfiles` | Character vector of input binary dosage file names |
+| `format` | Output binary dosage format |
+| `subformat` | Output subformat |
+| `onegroup` | If FALSE, per-source-file SNP statistics are retained in the header |
+| `bdoptions` | Per-SNP statistics to calculate for the merged file |
+| `snpjoin` | `"inner"` or `"outer"` join on SNPs (default inner) |
+
+## Example
+
+```{r merge, message = FALSE, warning = FALSE}
+bd1afile <- system.file("extdata", "vcf1a.bdose", package = "BinaryDosage")
+bd1bfile <- system.file("extdata", "vcf1b.bdose", package = "BinaryDosage")
+bd1merged <- tempfile()
+
+bdmerge(mergefiles = bd1merged, bdfiles = c(bd1afile, bd1bfile))
+
+bd1ainfo   <- getbdinfo(bd1afile)
+bd1binfo   <- getbdinfo(bd1bfile)
+bd1merinfo <- getbdinfo(bd1merged)
+
+cat("Set 1a subjects:", nrow(bd1ainfo$samples), "\n")
+cat("Set 1b subjects:", nrow(bd1binfo$samples), "\n")
+cat("Merged subjects:", nrow(bd1merinfo$samples), "\n")
+```
+
+---
+
+# Reading Legacy Binary Dosage Files
+
+## getbdinfo
+
+`getbdinfo` reads the header of a legacy binary dosage file and returns a list of class `"genetic-info"` that is required by `bdapply` and `getsnp`.
+
+For Format 4 files, pass the single file name. For Formats 1–3, pass a character vector of length 3: binary dosage file, family file, and map file.
+
+```{r getbdinfo, message = FALSE, warning = FALSE}
+bd1ainfo <- getbdinfo(bdfiles = bd1afile)
+```
+
+The returned list contains:
+
+| Element | Description |
+|---------|-------------|
+| `filename` | Full path to the binary dosage file |
+| `usesfid` | Whether family IDs are present |
+| `samples` | Data frame with columns `fid` and `sid` |
+| `onechr` | TRUE if all SNPs are on one chromosome |
+| `snpidformat` | Integer encoding the SNP ID format (0–3) |
+| `snps` | Data frame: `chromosome`, `location`, `snpid`, `reference`, `alternate` |
+| `snpinfo` | Named list: `aaf`, `maf`, `avgcall`, `rsq` (may be empty) |
+| `datasize` | Byte sizes of per-SNP data blocks |
+| `indices` | Byte offsets of per-SNP data blocks |
+| `additionalinfo` | Format-specific metadata (class `"bdose-info"`) |
+
+The `additionalinfo` element contains:
+
+| Element | Description |
+|---------|-------------|
+| `format` | Binary dosage format (1–4) |
+| `subformat` | Binary dosage subformat |
+| `headersize` | Header size in bytes |
+| `numgroups` | Number of merged source files |
+| `groups` | Subject count per source file |
+
+## bdapply
+
+`bdapply` applies a user-supplied function to every SNP in a legacy binary dosage file. It returns a list of length equal to the number of SNPs.
+
+The user function must accept `dosage`, `p0`, `p1`, and `p2` as its first four parameters. Additional parameters can be passed through `...`.
+
+```{r bdapply, message = FALSE, warning = FALSE}
+calculateaaf <- function(dosage, p0, p1, p2) {
+  mean(dosage, na.rm = TRUE) / 2
+}
+
+bd1ainfo <- getbdinfo(bd1afile)
+aaf_vals <- unlist(bdapply(bdinfo = bd1ainfo, func = calculateaaf))
+
+aaf_table <- data.frame(snpid = bd1ainfo$snps$snpid, aaf = aaf_vals)
+knitr::kable(aaf_table, caption = "Alternate allele frequencies", digits = 4)
+```
+
+The built-in function `getaaf` provides this calculation in the form expected by `bdapply`.
+
+```{r bdapply_getaaf, message = FALSE, warning = FALSE}
+aaf_vals2 <- unlist(bdapply(bdinfo = bd1ainfo, func = getaaf))
+```
+
+## getsnp
+
+`getsnp` returns the dosage and genotype probabilities for a single SNP, identified by 1-based index or SNP ID string.
+
+```{r getsnp, message = FALSE, warning = FALSE}
+snp_data <- data.frame(getsnp(bdinfo = bd1ainfo, snp = "1:12000:T:C", dosageonly = FALSE))
+snp_table <- cbind(sid = bd1ainfo$samples$sid, snp_data)
+knitr::kable(head(snp_table, 10), caption = "SNP 1:12000:T:C (first 10 subjects)", digits = 4)
+```
+
+Set `dosageonly = TRUE` (the default) to return only the dosage vector.
+
+---
+
+# Working Directly with VCF and GEN Files
+
+For cases where conversion to binary dosage is not needed, `getvcfinfo` / `vcfapply` and `getgeninfo` / `genapply` allow functions to be applied directly to source files.
+
+## VCF files
+
+`getvcfinfo` returns a `"genetic-info"` list for a VCF file. The `index` parameter pre-indexes the file for faster sequential reading (not available for compressed files).
+
+```{r vcfinfo, message = FALSE, warning = FALSE}
+vcfinfo <- getvcfinfo(vcffiles = vcf1afile, index = TRUE)
+aaf_vcf  <- unlist(vcfapply(vcfinfo = vcfinfo, func = getaaf))
+
+aaf_compare <- data.frame(snpid = vcfinfo$snps$snpid, aaf = aaf_vcf)
+knitr::kable(aaf_compare, caption = "AAF from VCF via vcfapply", digits = 4)
+```
+
+The additional information in a `"vcf-info"` list includes:
+
+| Element | Description |
+|---------|-------------|
+| `gzipped` | Whether the file is gzip-compressed |
+| `headerlines` | Number of header lines |
+| `headersize` | Header size in bytes |
+| `quality`, `filter`, `info`, `format` | Per-SNP VCF metadata columns |
+| `datacolumns` | Data frame describing FORMAT field structure |
+
+## GEN files
+
+`getgeninfo` and `genapply` work analogously for GEN files. The parameters mirror those of `gentobd`.
+
+```{r geninfo, message = FALSE, warning = FALSE}
+geninfo <- getgeninfo(genfiles = c(gen3bchrfile, gen3bsample), index = TRUE)
+aaf_gen  <- unlist(genapply(geninfo = geninfo, func = getaaf))
+
+aaf_gen_table <- data.frame(snpid = geninfo$snps$snpid, aaf = aaf_gen)
+knitr::kable(aaf_gen_table, caption = "AAF from GEN via genapply", digits = 4)
+```
+
+The additional information in a `"gen-info"` list includes:
+
+| Element | Description |
+|---------|-------------|
+| `gzipped` | Whether the file is gzip-compressed |
+| `headersize` | Header size in bytes |
+| `format` | Number of genotype probabilities per subject (1, 2, or 3) |
+| `startcolumn` | Column where genotype data begins |
+| `sep` | Column separator |
+
+---
+
+# Full Workflow Example
+
+The following example reproduces the complete legacy workflow: convert two VCF files and two GEN files to binary dosage, merge each pair, apply a function to both merged files, extract one SNP, and verify that the VCF and GEN results agree.
+
+```{r full_workflow, message = FALSE, warning = FALSE}
+library(BinaryDosage)
+
+# --- Input files ---
+vcf1afile   <- system.file("extdata", "set1a.vcf",    package = "BinaryDosage")
+vcf1ainfo   <- system.file("extdata", "set1a.info",   package = "BinaryDosage")
+vcf1bfile   <- system.file("extdata", "set1b.vcf",    package = "BinaryDosage")
+vcf1binfo   <- system.file("extdata", "set1b.info",   package = "BinaryDosage")
+gen3afile   <- system.file("extdata", "set3a.imp",    package = "BinaryDosage")
+gen3asample <- system.file("extdata", "set3a.sample", package = "BinaryDosage")
+gen3bfile   <- system.file("extdata", "set3b.imp",    package = "BinaryDosage")
+gen3bsample <- system.file("extdata", "set3b.sample", package = "BinaryDosage")
+
+# --- Convert to binary dosage ---
+bdfile1a <- tempfile(); bdfile1b <- tempfile()
+bdfile3a <- tempfile(); bdfile3b <- tempfile()
+
+vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a)
+vcftobdlegacy(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b)
+gentobd(genfiles = c(gen3afile, gen3asample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3a)
+gentobd(genfiles = c(gen3bfile, gen3bsample), snpcolumns = c(0L, 2L:5L), bdfiles = bdfile3b)
+
+# --- Merge ---
+mergebd1 <- tempfile(); mergebd3 <- tempfile()
+bdmerge(mergefiles = mergebd1, bdfiles = c(bdfile1a, bdfile1b))
+bdmerge(mergefiles = mergebd3, bdfiles = c(bdfile3a, bdfile3b))
+
+# --- Apply function ---
+mergebd1info <- getbdinfo(mergebd1)
+mergebd3info <- getbdinfo(mergebd3)
+
+aaf1 <- unlist(bdapply(mergebd1info, getaaf))
+aaf3 <- unlist(bdapply(mergebd3info, getaaf))
+
+aaf <- cbind(mergebd1info$snps[, c("chromosome", "location", "snpid")],
+             aaf_vcf = aaf1, aaf_gen = aaf3)
+knitr::kable(aaf, caption = "AAF: VCF vs GEN sources", digits = 4, row.names = FALSE)
+```
+
+```{r full_workflow_snp, message = FALSE, warning = FALSE}
+# --- Extract SNP 6 ---
+set1snp6 <- getsnp(mergebd1info, 6L)
+set3snp6 <- getsnp(mergebd3info, 6L)
+
+snpdf <- data.frame(
+  subjectid = mergebd1info$samples$sid,
+  dosage_vcf = unlist(set1snp6),
+  dosage_gen = unlist(set3snp6)
+)
+knitr::kable(head(snpdf, 10),
+             caption = "SNP 6 dosage: VCF vs GEN (first 10 subjects)",
+             digits = 4, row.names = FALSE)
+```
+
+The alternate allele frequencies and dosage values are identical between the VCF-derived and GEN-derived files, confirming the two sources contain the same underlying data.
