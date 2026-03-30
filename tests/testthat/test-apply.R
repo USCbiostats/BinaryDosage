@@ -28,6 +28,21 @@ test_that("bdapply", {
                tolerance = 4e-5)
 })
 
+test_that("bdapply format 5", {
+  vcfgzfile  <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+  bdose_file <- tempfile(fileext = ".bdose")
+  expect_error(vcftobd(vcffile = vcfgzfile, bdose_file = bdose_file), NA)
+  bd5info <- getbdinfo(bdose_file)
+
+  aaf1afile <- system.file("extdata", "aaf1a.rds", package = "BinaryDosage")
+  aaf1a <- readRDS(aaf1afile)
+
+  expect_equal(unlist(bdapply(bdinfo = bd5info,
+                              func = getaaf)),
+               aaf1a,
+               tolerance = 4e-5)
+})
+
 test_that("vcfapply", {
   vcf1abdfile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
   vcfinfo <- getvcfinfo(vcffiles = vcf1abdfile)
