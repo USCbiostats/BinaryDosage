@@ -1,0 +1,293 @@
+---
+title: "Reading SNPs from Format 5 Files"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Reading SNPs from Format 5 Files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = FALSE}
+library(BinaryDosage)
+```
+
+# Introduction
+
+The BinaryDosage package provides three functions for reading individual SNPs
+from Format 5 binary dosage files. They return the same data but differ in how
+they manage memory and file connections, which matters when reading many SNPs
+in a loop.
+
+| Function | Allocates output? | Opens file per call? |
+|---|---|---|
+| `getbd5snp` | Yes — returns a new list | Yes |
+| `getbd5snp_buf` | No — writes into caller vectors | Yes |
+| `getbd5snp_con` | No — writes into caller vectors | No — reuses open connection |
+
+All three functions require the `"genetic-info"` list returned by `getbdinfo`.
+
+# Setup
+
+The examples below use the small bgzipped VCF file included with the package.
+First, convert it to a Format 5 file pair and load the metadata.
+
+```{r setup_files, message = FALSE, warning = FALSE}
+vcf_file   <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+bdose_file <- file.path(tempdir(), "set1a.bdose")
+
+vcftobd(vcffile = vcf_file, bdose_file = bdose_file)
+bd5 <- getbdinfo(bdose_file)
+
+n_snps <- nrow(bd5$snps)
+n_samp <- nrow(bd5$samples)
+cat("SNPs:", n_snps, " Samples:", n_samp, "\n")
+```
+
+---
+
+# getbd5snp
+
+`getbd5snp` is the simplest interface. It opens the `.bdose` file, seeks to
+the requested SNP's compressed block, decompresses it, decodes the values, and
+returns them as a new list. The file is opened and closed on every call.
+
+## Parameters
+
+- `bd5info` — object returned by `getbdinfo`
+- `snp` — 1-based integer index or character SNP ID
+
+## Return value
+
+A list with four numeric vectors of length *n_samples*:
+
+- `dosage` — DS values in \[0, 2\]; `NA` = missing
+- `p0` — Pr(*g*=0) in \[0, 1\]; `NA` = missing
+- `p1` — Pr(*g*=1) in \[0, 1\]; `NA` = missing
+- `p2` — Pr(*g*=2) in \[0, 1\]; `NA` = missing
+
+## Reading a SNP by index
+
+```{r getbd5snp_index}
+snp1 <- getbd5snp(bd5info = bd5, snp = 1L)
+
+knitr::kable(
+  data.frame(
+    SampleID = head(bd5$samples$sid, 10),
+    Dosage   = round(head(snp1$dosage, 10), 4),
+    P_00     = round(head(snp1$p0,     10), 4),
+    P_01     = round(head(snp1$p1,     10), 4),
+    P_11     = round(head(snp1$p2,     10), 4)
+  ),
+  caption = paste("SNP", bd5$snps$snpid[1], "— first 10 subjects")
+)
+```
+
+## Reading a SNP by ID
+
+```{r getbd5snp_id}
+snp3 <- getbd5snp(bd5info = bd5, snp = "1:12000:T:C")
+
+knitr::kable(
+  data.frame(
+    SampleID = head(bd5$samples$sid, 10),
+    Dosage   = round(head(snp3$dosage, 10), 4),
+    P_00     = round(head(snp3$p0,     10), 4),
+    P_01     = round(head(snp3$p1,     10), 4),
+    P_11     = round(head(snp3$p2,     10), 4)
+  ),
+  caption = "SNP 1:12000:T:C — first 10 subjects"
+)
+```
+
+## Using getbd5snp in a loop
+
+`getbd5snp` is convenient but allocates a new list and opens the file on every
+call. For a small number of SNPs this is fine. The following calculates the
+alternate allele frequency for every SNP.
+
+```{r getbd5snp_loop}
+aaf <- numeric(n_snps)
+for (i in seq_len(n_snps)) {
+  aaf[i] <- mean(getbd5snp(bd5, i)$dosage, na.rm = TRUE) / 2
+}
+
+knitr::kable(
+  data.frame(snpid = bd5$snps$snpid, aaf = round(aaf, 4)),
+  caption = "Alternate allele frequencies via getbd5snp"
+)
+```
+
+---
+
+# getbd5snp_buf
+
+`getbd5snp_buf` eliminates the per-call list allocation by writing results
+directly into four numeric vectors that the caller pre-allocates once before
+the loop. This avoids repeated garbage collection pressure when reading many
+SNPs. The file is still opened and closed on every call.
+
+## Parameters
+
+- `bd5info` — object returned by `getbdinfo`
+- `snp` — 1-based integer index or character SNP ID
+- `dosage`, `p0`, `p1`, `p2` — pre-allocated `numeric(n_samples)` vectors
+
+## Return value
+
+`NULL` invisibly. The four output vectors are updated in place.
+
+## Important: R copy-on-modify semantics
+
+The output vectors **must not have more than one R binding** at the call site.
+If another variable also points to the same vector, R's copy-on-modify rule
+will copy the vector before writing, so the caller's variable will not be
+updated. Always use plain, freshly allocated vectors:
+
+```r
+# Correct
+dosage <- numeric(n_samp)
+getbd5snp_buf(bd5, 1L, dosage, p0, p1, p2)
+
+# Wrong — dosage2 creates a second binding; the update may not be visible
+dosage2 <- dosage
+getbd5snp_buf(bd5, 1L, dosage, p0, p1, p2)
+```
+
+## Example
+
+```{r getbd5snp_buf_loop}
+dosage <- numeric(n_samp)
+p0     <- numeric(n_samp)
+p1     <- numeric(n_samp)
+p2     <- numeric(n_samp)
+
+aaf_buf <- numeric(n_snps)
+for (i in seq_len(n_snps)) {
+  getbd5snp_buf(bd5info = bd5, snp = i, dosage = dosage,
+                p0 = p0, p1 = p1, p2 = p2)
+  aaf_buf[i] <- mean(dosage, na.rm = TRUE) / 2
+}
+
+knitr::kable(
+  data.frame(snpid = bd5$snps$snpid, aaf = round(aaf_buf, 4)),
+  caption = "Alternate allele frequencies via getbd5snp_buf"
+)
+```
+
+---
+
+# getbd5snp_con
+
+`getbd5snp_con` is the highest-performance option. It combines the
+pre-allocated vector approach of `getbd5snp_buf` with a persistent open file
+connection, so the `.bdose` file is opened once before the loop and kept open
+for all reads. The C-level read uses zlib directly rather than R's `memDecompress`.
+
+Use this when reading a large number of SNPs sequentially and minimizing
+elapsed time matters.
+
+## Workflow
+
+1. Call `openbd5con(bd5info)` to open the file and get a `"bd5con"` object.
+2. Call `getbd5snp_con` inside the loop, passing the `"bd5con"` object.
+3. Call `closebd5con` when finished to release the file handle promptly.
+   (The connection is also closed automatically when the `"bd5con"` object
+   is garbage-collected or when R exits, so the explicit close is optional
+   but recommended.)
+
+## openbd5con
+
+Opens a persistent connection to the `.bdose` file.
+
+**Parameters**
+
+- `bd5info` — object returned by `getbdinfo`
+
+**Return value**
+
+An object of class `"bd5con"` to be passed to `getbd5snp_con` and
+`closebd5con`.
+
+## closebd5con
+
+Explicitly closes the connection.
+
+**Parameters**
+
+- `bd5con` — object returned by `openbd5con`
+
+**Return value**
+
+`NULL` invisibly.
+
+## getbd5snp_con
+
+**Parameters**
+
+- `bd5info` — object returned by `getbdinfo`
+- `snp` — 1-based integer index or character SNP ID
+- `dosage`, `p0`, `p1`, `p2` — pre-allocated `numeric(n_samples)` vectors
+- `bd5con` — object returned by `openbd5con`
+
+**Return value**
+
+`NULL` invisibly. The four output vectors are updated in place.
+
+The same copy-on-modify constraint as `getbd5snp_buf` applies.
+
+## Example
+
+```{r getbd5snp_con_loop}
+dosage <- numeric(n_samp)
+p0     <- numeric(n_samp)
+p1     <- numeric(n_samp)
+p2     <- numeric(n_samp)
+
+con <- openbd5con(bd5)
+
+aaf_con <- numeric(n_snps)
+for (i in seq_len(n_snps)) {
+  getbd5snp_con(bd5info = bd5, snp = i, dosage = dosage,
+                p0 = p0, p1 = p1, p2 = p2, bd5con = con)
+  aaf_con[i] <- mean(dosage, na.rm = TRUE) / 2
+}
+
+closebd5con(con)
+
+knitr::kable(
+  data.frame(snpid = bd5$snps$snpid, aaf = round(aaf_con, 4)),
+  caption = "Alternate allele frequencies via getbd5snp_con"
+)
+```
+
+---
+
+# Choosing a reader
+
+- **`getbd5snp`** — use when reading a small number of SNPs, or when
+  simplicity matters more than speed.
+- **`getbd5snp_buf`** — use in loops where allocation overhead is measurable
+  but the file seek cost is acceptable.
+- **`getbd5snp_con`** — use when reading all or most SNPs sequentially and
+  elapsed time is important. The persistent connection avoids both the
+  allocation and the file open/close on every iteration.
+
+All three functions produce identical results, as confirmed below.
+
+```{r verify}
+all(aaf == aaf_buf)
+all(aaf == aaf_con)
+```
+
+```{r cleanup, include = FALSE}
+unlink(c(bdose_file, paste0(bdose_file, ".bdi")))
+```

@@ -81,7 +81,16 @@ listed above and may contain the following information.
 
 - **vcftobd** - Converts a bgzipped VCF file to a Format 5 binary dosage
   data set (requires vcfppR)
-- **getbd5snp** - Reads a single SNP from a Format 5 file by index or ID
+- **getbd5snp** - Reads a single SNP from a Format 5 file by index or
+  ID; returns a list with dosage and genotype probabilities
+- **getbd5snp_buf** - Like **getbd5snp** but writes results into
+  pre-allocated vectors, avoiding repeated memory allocation in loops
+- **openbd5con** - Opens a persistent connection to a Format 5 file for
+  use with **getbd5snp_con**
+- **closebd5con** - Explicitly closes a connection opened by
+  **openbd5con**
+- **getbd5snp_con** - Like **getbd5snp_buf** but reuses an open
+  connection, eliminating file open/close overhead per SNP
 - **updatebd** - Converts a legacy format (1–4) binary dosage file to
   Format 5
 - **subsetbd** - Creates a new Format 5 file containing a subset of SNPs
