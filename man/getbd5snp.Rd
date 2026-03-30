@@ -7,7 +7,7 @@
 getbd5snp(bd5info, snp)
 }
 \arguments{
-\item{bd5info}{Object returned by \code{getbd5info}.}
+\item{bd5info}{Object returned by \code{getbdinfo}.}
 
 \item{snp}{The SNP to retrieve: either a 1-based integer index or a
 character SNP ID matching a value in \code{bd5info$snps$snpid}.}

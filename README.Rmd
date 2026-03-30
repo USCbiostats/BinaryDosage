@@ -62,7 +62,6 @@ There are 5 formats for a binary dosage data set. Data sets in formats 1, 2, and
 #### Format 5 (recommended)
 
 - **vcftobd** - Converts a bgzipped VCF file to a Format 5 binary dosage data set (requires vcfppR)
-- **getbd5info** - Loads a Format 5 file pair and returns an R list (required for **getsnp**, **bdapply**, and **mergebd**)
 - **getbd5snp** - Reads a single SNP from a Format 5 file by index or ID
 - **updatebd** - Converts a legacy format (1–4) binary dosage file to Format 5
 - **subsetbd** - Creates a new Format 5 file containing a subset of SNPs and/or subjects from any binary dosage file (formats 1–5)
@@ -76,7 +75,7 @@ There are 5 formats for a binary dosage data set. Data sets in formats 1, 2, and
 - **getbdinfo** - Creates an R list containing information about a binary dosage data set (required for **getsnp** and **bdapply**)
 - **getvcfinfo** - Creates an R list containing information about a VCF file (required for **vcfapply**)
 - **getgeninfo** - Creates an R list containing information about a GEN file (required for **genapply**)
-- **bdapply** - Applies a function to the data for each SNP in a binary dosage file (requires list returned by **getbdinfo** or **getbd5info**)
+- **bdapply** - Applies a function to the data for each SNP in a binary dosage file (requires list returned by **getbdinfo**)
 - **vcfapply** - Applies a function to the data for each SNP in a VCF file (requires list returned by **getvcfinfo**)
 - **genapply** - Applies a function to the data for each SNP in a GEN file (requires list returned by **getgeninfo**)
 - **getsnp** - Returns dosage and genotype probabilities for a single SNP from a binary dosage file

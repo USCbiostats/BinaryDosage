@@ -81,8 +81,6 @@ listed above and may contain the following information.
 
 - **vcftobd** - Converts a bgzipped VCF file to a Format 5 binary dosage
   data set (requires vcfppR)
-- **getbd5info** - Loads a Format 5 file pair and returns an R list
-  (required for **getsnp**, **bdapply**, and **mergebd**)
 - **getbd5snp** - Reads a single SNP from a Format 5 file by index or ID
 - **updatebd** - Converts a legacy format (1–4) binary dosage file to
   Format 5
@@ -106,8 +104,7 @@ listed above and may contain the following information.
 - **getgeninfo** - Creates an R list containing information about a GEN
   file (required for **genapply**)
 - **bdapply** - Applies a function to the data for each SNP in a binary
-  dosage file (requires list returned by **getbdinfo** or
-  **getbd5info**)
+  dosage file (requires list returned by **getbdinfo**)
 - **vcfapply** - Applies a function to the data for each SNP in a VCF
   file (requires list returned by **getvcfinfo**)
 - **genapply** - Applies a function to the data for each SNP in a GEN

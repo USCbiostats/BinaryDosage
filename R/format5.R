@@ -163,7 +163,7 @@ ushort_raw_to_vals <- function(raw_block, n) {
 #' Seeks to the SNP's compressed block in the .bdose file, decompresses it,
 #' and returns the dosage and genotype probabilities for all samples.
 #'
-#' @param bd5info  Object returned by \code{getbd5info}.
+#' @param bd5info  Object returned by \code{getbdinfo}.
 #' @param snp  The SNP to retrieve: either a 1-based integer index or a
 #'   character SNP ID matching a value in \code{bd5info$snps$snpid}.
 #'
@@ -179,7 +179,7 @@ getbd5snp <- function(bd5info, snp) {
   if (missing(bd5info))
     stop("bd5info missing")
   if (!inherits(bd5info, "genetic-info"))
-    stop("bd5info must be an object returned by getbd5info")
+    stop("bd5info must be an object returned by getbdinfo")
   if (missing(snp))
     stop("No SNP specified")
   if (length(snp) != 1L)
@@ -241,7 +241,7 @@ getbd5snp <- function(bd5info, snp) {
 #' the call site (no extra variables pointing to the same object); R's
 #' copy-on-modify semantics would otherwise prevent in-place update.
 #'
-#' @param bd5info  Object returned by \code{getbd5info}.
+#' @param bd5info  Object returned by \code{getbdinfo}.
 #' @param snp  1-based integer index or character SNP ID.
 #' @param dosage  Pre-allocated \code{numeric(n_samples)} vector.
 #' @param p0  Pre-allocated \code{numeric(n_samples)} vector.
@@ -255,7 +255,7 @@ getbd5snp_buf <- function(bd5info, snp, dosage, p0, p1, p2) {
   if (missing(bd5info))
     stop("bd5info missing")
   if (!inherits(bd5info, "genetic-info"))
-    stop("bd5info must be an object returned by getbd5info")
+    stop("bd5info must be an object returned by getbdinfo")
   if (missing(snp))
     stop("No SNP specified")
   if (length(snp) != 1L)

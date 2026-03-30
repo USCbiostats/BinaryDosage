@@ -7,7 +7,7 @@
 getbd5snp_buf(bd5info, snp, dosage, p0, p1, p2)
 }
 \arguments{
-\item{bd5info}{Object returned by \code{getbd5info}.}
+\item{bd5info}{Object returned by \code{getbdinfo}.}
 
 \item{snp}{1-based integer index or character SNP ID.}
 
