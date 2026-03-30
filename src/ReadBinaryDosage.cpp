@@ -437,19 +437,22 @@ int DecodeFormat5BlockC(Rcpp::RawVector &raw_block,
 
 // Open a Format 5 .bdose file and return an XPtr to the ifstream.
 // The stream is deleted (and thus closed) when the XPtr is GC'd.
+// Returns SEXP so RcppExports.cpp never needs to include <fstream>.
 // [[Rcpp::export]]
-Rcpp::XPtr<std::ifstream> OpenFormat5FileC(std::string &filename) {
+SEXP OpenFormat5FileC(std::string &filename) {
   std::ifstream *stream = new std::ifstream(filename.c_str(), std::ios::binary);
   if (!stream->is_open()) {
     delete stream;
     Rcpp::stop("Cannot open file: %s", filename.c_str());
   }
-  return Rcpp::XPtr<std::ifstream>(stream, true);
+  Rcpp::XPtr<std::ifstream> xptr(stream, true);
+  return xptr;
 }
 
 // Close the ifstream held by an XPtr.  Safe to call multiple times.
 // [[Rcpp::export]]
-void CloseFormat5FileC(Rcpp::XPtr<std::ifstream> xptr) {
+void CloseFormat5FileC(SEXP xptr_sexp) {
+  Rcpp::XPtr<std::ifstream> xptr(xptr_sexp);
   if (xptr->is_open())
     xptr->close();
 }
@@ -459,7 +462,7 @@ void CloseFormat5FileC(Rcpp::XPtr<std::ifstream> xptr) {
 // start:  byte offset of the compressed block (double to handle >2 GB files)
 // nbytes: compressed block size in bytes
 // [[Rcpp::export]]
-int ReadFormat5SNPC(Rcpp::XPtr<std::ifstream> xptr,
+int ReadFormat5SNPC(SEXP xptr_sexp,
                     double start,
                     int nbytes,
                     int n_samp,
@@ -467,6 +470,7 @@ int ReadFormat5SNPC(Rcpp::XPtr<std::ifstream> xptr,
                     Rcpp::NumericVector &p0,
                     Rcpp::NumericVector &p1,
                     Rcpp::NumericVector &p2) {
+  Rcpp::XPtr<std::ifstream> xptr(xptr_sexp);
   // Read compressed block
   std::vector<unsigned char> compressed(nbytes);
   xptr->clear();  // clear eofbit/failbit from any previous read
