@@ -160,7 +160,13 @@ cat("Indices (bytes):", bd5$indices, "\n")
 # Reading SNP data
 
 The `getbd5snp` function decompresses and returns the dosage and genotype
-probability data for a single SNP.
+probability data for a single SNP. The general-purpose `getsnp` function also
+works with Format 5 files and can be used as an alternative.
+
+For details on all three Format 5 SNP reader functions — including
+`getbd5snp_buf` (pre-allocated output vectors) and `getbd5snp_con` (persistent
+file connection for high-throughput loops) — see the
+[Reading SNPs from Format 5 Files](bd5snpreaders.html) vignette.
 
 The function takes the following parameters.
 
