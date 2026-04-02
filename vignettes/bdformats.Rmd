@@ -14,7 +14,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-There are currently 4 formats for the binary dosage file.
+**Note:** This vignette describes formats 1 through 4, which are legacy formats.
+Format 5 is the recommended format for new work. It uses per-SNP gzip
+compression and stores metadata in a companion RDS file, making it simpler and
+more efficient to use. See the
+[Using Format 5 Binary Dosage Files](usingformat5files.html) vignette for
+details.
+
+---
+
+There are currently 4 legacy formats for the binary dosage file.
 
 The first three formats consist of three files, binary dosage, family, and map. The family and maps are data frames with information about the subjects and SNPs in the binary dosage file, respectively. These are data frames saved with the <span style="font-family:Courier">saveRDS</span> command.
 

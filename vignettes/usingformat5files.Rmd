@@ -223,23 +223,46 @@ knitr::kable(head(snp3_df, 10),
 
 # Applying a function to all SNPs
 
-There is no dedicated `bd5apply` function yet, but the same pattern used by
-`bdapply` can be reproduced with a simple loop. The following example
-calculates the alternate allele frequency for every SNP.
+The simplest option is `bdapply`, which handles the loop internally and uses
+`getbd5snp_con` automatically for Format 5 files.
 
-```{r apply, eval = TRUE, echo = T, message = F, warning = F}
+```{r apply_bdapply, eval = TRUE, echo = T, message = F, warning = F}
+getaaf <- function(dosage, p0, p1, p2) mean(dosage, na.rm = TRUE) / 2
+
+aaf_list  <- bdapply(bdinfo = bd5, func = getaaf)
+aaf_table <- data.frame(snpid = bd5$snps$snpid,
+                        aaf   = round(unlist(aaf_list), 4))
+
+knitr::kable(aaf_table, caption = "Alternate allele frequencies via bdapply")
+```
+
+For manual loops, `getbd5snp_buf` and `getbd5snp_con` are faster than
+`getbd5snp` because they avoid allocating a new list on every call.
+`getbd5snp_con` is the fastest option as it also keeps the file open across
+all iterations. See the
+[Reading SNPs from Format 5 Files](bd5snpreaders.html) vignette for details
+and a performance comparison.
+
+```{r apply_con, eval = TRUE, echo = T, message = F, warning = F}
 n_snps <- nrow(bd5$snps)
-aaf    <- numeric(n_snps)
+n_samp <- nrow(bd5$samples)
+dosage <- numeric(n_samp)
+p0     <- numeric(n_samp)
+p1     <- numeric(n_samp)
+p2     <- numeric(n_samp)
 
+con <- openbd5con(bd5)
+aaf <- numeric(n_snps)
 for (i in seq_len(n_snps)) {
-  dosage <- getbd5snp(bd5info = bd5, snp = i)$dosage
+  getbd5snp_con(bd5info = bd5, snp = i,
+                dosage = dosage, p0 = p0, p1 = p1, p2 = p2,
+                bd5con = con)
   aaf[i] <- mean(dosage, na.rm = TRUE) / 2
 }
+closebd5con(con)
 
-aaf_table <- data.frame(snpid = bd5$snps$snpid,
-                         aaf   = round(aaf, 4))
-
-knitr::kable(aaf_table, caption = "Alternate allele frequencies")
+knitr::kable(data.frame(snpid = bd5$snps$snpid, aaf = round(aaf, 4)),
+             caption = "Alternate allele frequencies via getbd5snp_con")
 ```
 
 ```{r cleanup, include = FALSE, eval = TRUE}
