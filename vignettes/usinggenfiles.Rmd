@@ -16,7 +16,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette documents the functions in the BinaryDosage package that convert GEN files to binary dosage files. 
+**Note:** GEN files are rarely used today. They have largely been replaced by
+BGEN files, a binary format that is more compact and faster to read. Support
+for BGEN files in the BinaryDosage package is currently in progress.
+
+This vignette documents the functions in the BinaryDosage package that convert GEN files to binary dosage files.
 
 **Note:** The examples below use functions to access information in binary dosage files. Information about these functions can be found in the vignette [Using Binary Dosage Files](usingbdfiles.html). Data returned by the function <span style="font-family:Courier">getbdinfo</span> contains information about a binary dosage file. Information on the data return by <span style="font-family:Courier">getbdinfo</span> can be found in the vignette [Genetic File Information](geneticfileinfo.html).
 
