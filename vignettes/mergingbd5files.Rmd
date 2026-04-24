@@ -52,10 +52,15 @@ The examples below use the bgzipped VCF file included with the package,
 1. All output files are written to a temporary directory.
 
 ```{r setup_files, message = FALSE, warning = FALSE}
-vcf_file   <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
 bdose_full <- file.path(tempdir(), "full.bdose")
 
-vcftobd(vcffile = vcf_file, bdose_file = bdose_full)
+if (requireNamespace("vcfppR", quietly = TRUE)) {
+  vcftobd(vcffile    = system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage"),
+          bdose_file = bdose_full)
+} else {
+  updatebd(bdfiles    = system.file("extdata", "vcf1a.bdose", package = "BinaryDosage"),
+           bdose_file = bdose_full)
+}
 bd_full <- getbdinfo(bdose_full)
 
 cat("Subjects:", nrow(bd_full$samples), "\n")

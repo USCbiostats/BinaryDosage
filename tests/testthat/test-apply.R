@@ -29,6 +29,7 @@ test_that("bdapply", {
 })
 
 test_that("bdapply format 5", {
+  skip_if_not_installed("vcfppR")
   vcfgzfile  <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
   bdose_file <- tempfile(fileext = ".bdose")
   expect_error(vcftobd(vcffile = vcfgzfile, bdose_file = bdose_file), NA)

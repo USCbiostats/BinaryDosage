@@ -59,8 +59,8 @@ The output files in each example are written to a temporary directory so that
 nothing is left behind after the vignette runs.
 
 ```{r files}
-vcf_file <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
-
+vcf_file   <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+bd4_file   <- system.file("extdata", "vcf1a.bdose",  package = "BinaryDosage")
 bdose_file <- file.path(tempdir(), "set1a.bdose")
 ```
 
@@ -81,9 +81,12 @@ The function takes the following parameters.
 
 The following code converts *set1a.vcf.gz* to a Format 5 file pair.
 
-```{r convert, eval = TRUE, echo = T, message = F, warning = F}
-vcftobd(vcffile    = vcf_file,
-         bdose_file = bdose_file)
+```{r convert, eval = TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+if (requireNamespace("vcfppR", quietly = TRUE)) {
+  vcftobd(vcffile = vcf_file, bdose_file = bdose_file)
+} else {
+  updatebd(bdfiles = bd4_file, bdose_file = bdose_file)
+}
 ```
 
 To convert only a specific region of the file, supply the `region` parameter.

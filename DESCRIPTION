@@ -1,6 +1,6 @@
 Package: BinaryDosage
 Title: Creates, Merges, and Reads Binary Dosage Files
-Version: 1.0.0.9028
+Version: 1.0.0.9029
 Authors@R:
     c(person(given = "John",
              family = "Morrison",
@@ -25,19 +25,18 @@ Description: Tools to create binary dosage files from either VCF
     in size compared to compressed VCF and GEN files.
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 Suggests:
     knitr,
     rmarkdown,
     testthat (>= 2.1.0),
-    covr
+    covr,
+    vcfppR
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
-LinkingTo: 
+LinkingTo:
     Rcpp
 Imports:
     Rcpp,
     digest,
-    prodlim,
-    vcfppR
+    prodlim

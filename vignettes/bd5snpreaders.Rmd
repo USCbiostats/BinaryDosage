@@ -41,10 +41,15 @@ The examples below use the small bgzipped VCF file included with the package.
 First, convert it to a Format 5 file pair and load the metadata.
 
 ```{r setup_files, message = FALSE, warning = FALSE}
-vcf_file   <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
 bdose_file <- file.path(tempdir(), "set1a.bdose")
 
-vcftobd(vcffile = vcf_file, bdose_file = bdose_file)
+if (requireNamespace("vcfppR", quietly = TRUE)) {
+  vcftobd(vcffile    = system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage"),
+          bdose_file = bdose_file)
+} else {
+  updatebd(bdfiles    = system.file("extdata", "vcf1a.bdose", package = "BinaryDosage"),
+           bdose_file = bdose_file)
+}
 bd5 <- getbdinfo(bdose_file)
 
 n_snps <- nrow(bd5$snps)
