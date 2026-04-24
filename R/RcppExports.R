@@ -33,6 +33,22 @@ ReadBDIndices4C <- function(filename, numSNPs, headersize) {
     .Call(`_BinaryDosage_ReadBDIndices4C`, filename, numSNPs, headersize)
 }
 
+DecodeFormat5BlockC <- function(raw_block, n_samp, dosage, p0, p1, p2) {
+    .Call(`_BinaryDosage_DecodeFormat5BlockC`, raw_block, n_samp, dosage, p0, p1, p2)
+}
+
+OpenFormat5FileC <- function(filename) {
+    .Call(`_BinaryDosage_OpenFormat5FileC`, filename)
+}
+
+CloseFormat5FileC <- function(xptr_sexp) {
+    invisible(.Call(`_BinaryDosage_CloseFormat5FileC`, xptr_sexp))
+}
+
+ReadFormat5SNPC <- function(xptr_sexp, start, nbytes, n_samp, dosage, p0, p1, p2) {
+    .Call(`_BinaryDosage_ReadFormat5SNPC`, xptr_sexp, start, nbytes, n_samp, dosage, p0, p1, p2)
+}
+
 ReadBinaryDosageDataC <- function(filename, headersize, numsub, snp, dosage, us, base) {
     .Call(`_BinaryDosage_ReadBinaryDosageDataC`, filename, headersize, numsub, snp, dosage, us, base)
 }

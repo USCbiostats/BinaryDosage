@@ -1,9 +1,14 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^README.Rmd
+^README\.Rmd$
+^README\.html$
 ^cran-comments.md
 ^appveyor\.yml$
 ^\.travis\.yml$
 ^codecov\.yml$
 ^doc$
 ^Meta$
+^scratch$
+^\.claude$
+^example_format5\.R$
+^\.github$

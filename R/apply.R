@@ -53,18 +53,35 @@ bdapply <- function(bdinfo, func, ...) {
     stop("func is not a function")
 
   retval <- vector("list", nrow(bdinfo$snps))
-  dosage <- numeric(nrow(bdinfo$samples))
-  p0 <- numeric(nrow(bdinfo$samples))
-  p1 <- numeric(nrow(bdinfo$samples))
-  p2 <- numeric(nrow(bdinfo$samples))
-  us <- integer(2 * nrow(bdinfo$samples))
-  for (i in 1:nrow(bdinfo$snps)) {
-    dosage[1:nrow(bdinfo$samples)] <- NA
-    p0[1:nrow(bdinfo$samples)] <- NA
-    p1[1:nrow(bdinfo$samples)] <- NA
-    p2[1:nrow(bdinfo$samples)] <- NA
-    ReadBinaryDosageData(bdinfo, i, dosage, p0, p1, p2, us)
-    retval[[i]] <- func(dosage, p0, p1, p2, ...)
+  n_samp <- nrow(bdinfo$samples)
+  dosage <- numeric(n_samp)
+  p0 <- numeric(n_samp)
+  p1 <- numeric(n_samp)
+  p2 <- numeric(n_samp)
+
+  if (bdinfo$additionalinfo$format == 5L) {
+    con <- openbd5con(bdinfo)
+    on.exit(closebd5con(con), add = TRUE)
+    for (i in 1:nrow(bdinfo$snps)) {
+      getbd5snp_con(bdinfo, i, dosage, p0, p1, p2, con)
+      retval[[i]] <- func(dosage, p0, p1, p2, ...)
+    }
+  } else {
+    us <- integer(2 * n_samp)
+    for (i in 1:nrow(bdinfo$snps)) {
+      dosage[1:n_samp] <- NA
+      p0[1:n_samp] <- NA
+      p1[1:n_samp] <- NA
+      p2[1:n_samp] <- NA
+      result <- ReadBinaryDosageData(bdinfo, i, dosage, p0, p1, p2, us)
+      if (!is.null(result)) {
+        dosage <- result$dosage
+        p0     <- result$p0
+        p1     <- result$p1
+        p2     <- result$p2
+      }
+      retval[[i]] <- func(dosage, p0, p1, p2, ...)
+    }
   }
   return (retval)
 }

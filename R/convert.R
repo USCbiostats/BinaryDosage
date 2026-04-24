@@ -111,8 +111,8 @@ validatebdinput <- function(bdfiles,
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' -1 SNP ID not written
 #' 0 - same as in the VCF file
-#' 1 - chromosome:location
-#' 2 - chromosome:location:reference_allele:alternate_allele
+#' 1 - chr:pos
+#' 2 - chr:pos:ref:alt
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containing any of the following
@@ -131,16 +131,19 @@ validatebdinput <- function(bdfiles,
 #' vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 #' bdfiles <- tempfile()
 #' # Convert the file
-#' vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
+#' vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfiles)
 #' # Verify the file was written correctly
 #' bdinfo <- getbdinfo(bdfiles)
-vcftobd <- function(vcffiles,
+vcftobdlegacy <- function(vcffiles,
                     gz = FALSE,
                     bdfiles,
                     format = 4L,
                     subformat = 0L,
                     snpidformat = 0,
                     bdoptions = character(0)) {
+  message("vcftobdlegacy() uses legacy formats 1-4. ",
+          "Consider using vcftobd() instead, which produces Format 5 files ",
+          "with faster conversion and smaller file sizes.")
   if (missing(vcffiles) == TRUE)
     stop("No VCF file specified")
 
@@ -193,6 +196,395 @@ vcftobd <- function(vcffiles,
   if (is.na(match("rsq", bdoptions)) == FALSE)
     updatersq(bdinfo)
   ##return (0)
+}
+
+###########################################################
+#          Binary Dosage Format 1 to Format 5            #
+###########################################################
+
+#' Convert a format 1 binary dosage file to Format 5
+#'
+#' Reads a format 1 binary dosage file (subformat 1 or 2) and converts it to
+#' a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformat 1), those values are stored as missing in the
+#' output.
+#'
+#' @param bdfiles Vector of three file names for the format 1 binary dosage
+#'   file: the binary dosage file, the family file, and the map file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
+#'
+#' @return NULL (invisibly)
+#'
+#' @keywords internal
+bd1tobd5 <- function(bdfiles, bdose_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 1L)
+    stop("bdfiles must be a format 1 binary dosage file")
+  if (!subfmt %in% c(1L, 2L))
+    stop("bdfiles must be format 1 subformat 1 or 2")
+
+  has_gp      <- subfmt == 2L
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0  # bytes written after 4-byte magic header
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
+
+  invisible(NULL)
+}
+
+###########################################################
+#          Binary Dosage Format 2 to Format 5            #
+###########################################################
+
+#' Convert a format 2 binary dosage file to Format 5
+#'
+#' Reads a format 2 binary dosage file (subformat 1 or 2) and converts it to
+#' a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformat 1), those values are stored as missing in the
+#' output.
+#'
+#' @param bdfiles Vector of three file names for the format 2 binary dosage
+#'   file: the binary dosage file, the family file, and the map file.
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
+#'
+#' @return NULL (invisibly)
+#'
+#' @keywords internal
+bd2tobd5 <- function(bdfiles, bdose_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 2L)
+    stop("bdfiles must be a format 2 binary dosage file")
+  if (!subfmt %in% c(1L, 2L))
+    stop("bdfiles must be format 2 subformat 1 or 2")
+
+  has_gp      <- subfmt == 2L
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
+
+  invisible(NULL)
+}
+
+###########################################################
+#          Binary Dosage Format 3 to Format 5            #
+###########################################################
+
+#' Convert a format 3 binary dosage file to Format 5
+#'
+#' Reads a format 3 binary dosage file (subformat 1, 2, 3, or 4) and converts
+#' it to a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformats 1 and 3), those values are stored as missing in
+#' the output.
+#'
+#' @param bdfiles Vector of three file names for the format 3 binary dosage
+#'   file: the binary dosage file, the family file, and the map file.
+#'
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
+#'
+#' @return NULL (invisibly)
+#'
+#' @keywords internal
+bd3tobd5 <- function(bdfiles, bdose_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 3L)
+    stop("bdfiles must be a format 3 binary dosage file")
+  if (!subfmt %in% c(1L, 2L, 3L, 4L))
+    stop("bdfiles must be format 3 subformat 1, 2, 3, or 4")
+
+  has_gp      <- subfmt %in% c(2L, 4L)
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
+
+  invisible(NULL)
+}
+
+###########################################################
+#          Binary Dosage Format 4 to Format 5            #
+###########################################################
+
+#' Convert a format 4 binary dosage file to Format 5
+#'
+#' Reads a format 4 binary dosage file (subformat 1, 2, 3, or 4) and converts
+#' it to a Format 5 file pair. If the source file does not contain genotype
+#' probabilities (subformats 1 and 3), those values are stored as missing in
+#' the output.
+#'
+#' @param bdfile File name of the format 4 binary dosage file. Format 4 stores
+#'   all data in a single file.
+#'
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
+#'
+#' @return NULL (invisibly)
+#'
+#' @keywords internal
+bd4tobd5 <- function(bdfile, bdose_file) {
+  if (missing(bdfile))
+    stop("No binary dosage file specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+
+  old_bdinfo <- getbdinfo(bdfile)
+
+  fmt    <- old_bdinfo$additionalinfo$format
+  subfmt <- old_bdinfo$additionalinfo$subformat
+
+  if (fmt != 4L)
+    stop("bdfile must be a format 4 binary dosage file")
+  if (!subfmt %in% c(1L, 2L, 3L, 4L))
+    stop("bdfile must be format 4 subformat 1, 2, 3, or 4")
+
+  has_gp      <- subfmt %in% c(2L, 4L)
+  n_samp      <- nrow(old_bdinfo$samples)
+  n_snps      <- nrow(old_bdinfo$snps)
+  indices     <- numeric(n_snps)
+  current_pos <- 4.0
+
+  bdose_con <- file(bdose_file, open = "wb")
+  on.exit(close(bdose_con), add = TRUE)
+  writeBin(.bdose5_magic, bdose_con)
+
+  for (i in seq_len(n_snps)) {
+    snp <- getsnp(old_bdinfo, i, dosageonly = FALSE)
+    if (has_gp) {
+      gp <- as.numeric(rbind(snp$p0, snp$p1, snp$p2))
+    } else {
+      gp <- rep(NA_real_, 3L * n_samp)
+    }
+    block      <- compress_snp_block(snp$dosage, gp)
+    indices[i] <- current_pos
+    writeBin(block, bdose_con)
+    current_pos <- current_pos + length(block)
+  }
+
+  new_bdinfo <- list(
+    filename       = normalizePath(bdose_file),
+    usesfid        = old_bdinfo$usesfid,
+    samples        = old_bdinfo$samples,
+    onechr         = old_bdinfo$onechr,
+    snpidformat    = old_bdinfo$snpidformat,
+    snps           = old_bdinfo$snps,
+    snpinfo        = old_bdinfo$snpinfo,
+    additionalinfo = structure(
+      list(format     = 5L,
+           subformat  = 1L,
+           headersize = 4L,
+           numgroups  = 1L,
+           groups     = n_samp),
+      class = "bdose-info"
+    ),
+    datasize       = integer(0),
+    indices        = indices
+  )
+  class(new_bdinfo) <- "genetic-info"
+  saveRDS(new_bdinfo, paste0(bdose_file, ".bdi"))
+
+  invisible(NULL)
+}
+
+###########################################################
+#        Update Binary Dosage Format 1-4 to Format 5     #
+###########################################################
+
+#' Update a binary dosage file to Format 5
+#'
+#' Reads a binary dosage file in format 1, 2, 3, or 4, detects the format
+#' automatically, and converts it to a Format 5 file pair by calling the
+#' appropriate conversion routine. If the source file does not contain genotype
+#' probabilities, those values are stored as missing in the output.
+#'
+#' @param bdfiles Vector of file names for the binary dosage file. Format 4
+#'   files require one file name. Formats 1, 2, and 3 require three file names:
+#'   the binary dosage file, the family file, and the map file.
+#'
+#' @param bdose_file Path for the output .bdose file. The companion .bdi
+#'   metadata file is written to \code{paste0(bdose_file, ".bdi")}.
+#'
+#' @return NULL (invisibly)
+#' @export
+#'
+#' @examples
+#' vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
+#' bdfile <- tempfile()
+#' suppressWarnings(
+#'   vcftobdlegacy(vcffiles = vcf1afile,
+#'                 bdfiles = bdfile,
+#'                 format = 4L)
+#' )
+#' bdose_file <- tempfile(fileext = ".bdose")
+#' updatebd(bdfiles    = bdfile,
+#'          bdose_file = bdose_file)
+updatebd <- function(bdfiles, bdose_file) {
+  if (missing(bdfiles))
+    stop("No binary dosage files specified")
+  if (missing(bdose_file))
+    stop("No output .bdose file specified")
+
+  old_bdinfo <- getbdinfo(bdfiles)
+  fmt        <- old_bdinfo$additionalinfo$format
+
+  if (fmt == 1L)
+    bd1tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
+  else if (fmt == 2L)
+    bd2tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
+  else if (fmt == 3L)
+    bd3tobd5(bdfiles = bdfiles, bdose_file = bdose_file)
+  else if (fmt == 4L)
+    bd4tobd5(bdfile = bdfiles[1L], bdose_file = bdose_file)
+  else
+    stop("bdfiles must be a format 1, 2, 3, or 4 binary dosage file")
+
+  invisible(NULL)
 }
 
 ###########################################################
@@ -258,8 +650,8 @@ vcftobd <- function(vcffiles,
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' -1 - SNP ID not written.
 #' 0 - same as in the VCF file.
-#' 1 - chromosome:location.
-#' 2 - chromosome:location:reference_allele:alternate_allele.
+#' 1 - chr:pos.
+#' 2 - chr:pos:ref:alt.
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #' @param bdoptions Character array containing any of the following

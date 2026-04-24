@@ -9,14 +9,11 @@
 #' allow for quicker extraction of values from the
 #' file.
 #'
-#' @param bdfiles Vector of file names. The first is the
-#' binary dosage data containing the dosages and genetic
-#' probabilities. The second file name is the family information
-#' file. The third file name is the SNP information file.
-#' The family and SNP information files are not used if the
-#' binary dosage file is in format 4. For this format the
-#' family and SNP information are in the file with the dosages
-#' and genetic probabilities.
+#' @param bdfiles Vector of file names. For Format 5 files, a single .bdose
+#' file name; the companion .bdi metadata file is read automatically from
+#' \code{paste0(bdfiles[1], ".bdi")}. For format 4, a single file name. For
+#' formats 1, 2, and 3, a vector of three file names: the binary dosage file,
+#' the family information file, and the SNP information file.
 #'
 #' @return List with information about the binary dosage file.
 #' This includes family and subject IDs along with
@@ -44,6 +41,16 @@ getbdinfo <- function(bdfiles) {
       stop("bdfiles contains empty strings")
     }
   }
+
+  # Check for Format 5: peek at the first 4 bytes and delegate if magic matches.
+  if (length(bdfiles) == 1L && file.exists(bdfiles[1L])) {
+    con <- file(bdfiles[1L], open = "rb")
+    magic <- readBin(con, what = raw(), n = 4L)
+    close(con)
+    if (identical(magic, .bdose5_magic))
+      return(getbd5info(bdfiles[1L]))
+  }
+
   headerinfo <- ReadBinaryDosageHeader(bdfiles)
   indices <- ReadBinaryDosageIndices(headerinfo)
   headerinfo$datasize <- indices$datasize
@@ -95,8 +102,8 @@ readminimacinfofile <- function(filename) {
 #' Default value is TRUE.
 #' @param snpidformat The format that the SNP ID will be saved as.
 #' 0 - same as in the VCF file
-#' 1 - chromosome:location
-#' 2 - chromosome:location:referenceallele:alternateallele
+#' 1 - chr:pos
+#' 2 - chr:pos:ref:alt
 #' If snpidformat is 1 and the VCF file uses format 2, an error is
 #' generated. Default value is 0.
 #'
@@ -352,9 +359,9 @@ getvcfinfo <- function(vcffiles,
 #' Default value is TRUE.
 #' @param snpidformat Format to change the snpid to.
 #' 0 indicates to use the snpid format in the file.
-#' 1 indicates to change the snpid into chromosome:location,
-#' 2 indicates to change the snpid into chromosome:location:referenceallele:alternateallele,
-#' 3 indicates to change the snpid into chromosome:location_referenceallele_alternateallele,
+#' 1 indicates to change the snpid into chr:pos,
+#' 2 indicates to change the snpid into chr:pos:ref:alt,
+#' 3 indicates to change the snpid into chr:pos_ref_alt,
 #' Default value is 0.
 #' @param sep Separators used in the gen file and sample files,
 #' respectively. If only value is provided it is used for both

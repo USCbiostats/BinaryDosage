@@ -18,6 +18,13 @@ knitr::opts_chunk$set(
 library(BinaryDosage)
 ```
 
+**Note:** `bdmerge` is a legacy function that operates on formats 1–4 only.
+For Format 5 files, use `mergebd` instead. See the
+[Merging Format 5 Binary Dosage Files](mergingbd5files.html) vignette for
+details.
+
+---
+
 Quite often subjects have their genotypes imputed in batches. The files returned by these imputation can be converted into binary dosage files. These binary files can be merged into a single file if they have the same SNPs and different subjects using the bdmerge routine.
 
 ## bdmerge

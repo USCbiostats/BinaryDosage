@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // GetLineLocations
 std::vector<double> GetLineLocations(std::string& filename);
 RcppExport SEXP _BinaryDosage_GetLineLocations(SEXP filenameSEXP) {
@@ -94,6 +99,61 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type numSNPs(numSNPsSEXP);
     Rcpp::traits::input_parameter< int >::type headersize(headersizeSEXP);
     rcpp_result_gen = Rcpp::wrap(ReadBDIndices4C(filename, numSNPs, headersize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// DecodeFormat5BlockC
+int DecodeFormat5BlockC(Rcpp::RawVector& raw_block, int n_samp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_DecodeFormat5BlockC(SEXP raw_blockSEXP, SEXP n_sampSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::RawVector& >::type raw_block(raw_blockSEXP);
+    Rcpp::traits::input_parameter< int >::type n_samp(n_sampSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    rcpp_result_gen = Rcpp::wrap(DecodeFormat5BlockC(raw_block, n_samp, dosage, p0, p1, p2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// OpenFormat5FileC
+SEXP OpenFormat5FileC(std::string& filename);
+RcppExport SEXP _BinaryDosage_OpenFormat5FileC(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(OpenFormat5FileC(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// CloseFormat5FileC
+void CloseFormat5FileC(SEXP xptr_sexp);
+RcppExport SEXP _BinaryDosage_CloseFormat5FileC(SEXP xptr_sexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type xptr_sexp(xptr_sexpSEXP);
+    CloseFormat5FileC(xptr_sexp);
+    return R_NilValue;
+END_RCPP
+}
+// ReadFormat5SNPC
+int ReadFormat5SNPC(SEXP xptr_sexp, double start, int nbytes, int n_samp, Rcpp::NumericVector& dosage, Rcpp::NumericVector& p0, Rcpp::NumericVector& p1, Rcpp::NumericVector& p2);
+RcppExport SEXP _BinaryDosage_ReadFormat5SNPC(SEXP xptr_sexpSEXP, SEXP startSEXP, SEXP nbytesSEXP, SEXP n_sampSEXP, SEXP dosageSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type xptr_sexp(xptr_sexpSEXP);
+    Rcpp::traits::input_parameter< double >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type nbytes(nbytesSEXP);
+    Rcpp::traits::input_parameter< int >::type n_samp(n_sampSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type dosage(dosageSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type p2(p2SEXP);
+    rcpp_result_gen = Rcpp::wrap(ReadFormat5SNPC(xptr_sexp, start, nbytes, n_samp, dosage, p0, p1, p2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -303,6 +363,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BinaryDosage_ReadBinaryDosageHeader4B", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageHeader4B, 1},
     {"_BinaryDosage_ReadBDIndices3C", (DL_FUNC) &_BinaryDosage_ReadBDIndices3C, 3},
     {"_BinaryDosage_ReadBDIndices4C", (DL_FUNC) &_BinaryDosage_ReadBDIndices4C, 3},
+    {"_BinaryDosage_DecodeFormat5BlockC", (DL_FUNC) &_BinaryDosage_DecodeFormat5BlockC, 6},
+    {"_BinaryDosage_OpenFormat5FileC", (DL_FUNC) &_BinaryDosage_OpenFormat5FileC, 1},
+    {"_BinaryDosage_CloseFormat5FileC", (DL_FUNC) &_BinaryDosage_CloseFormat5FileC, 1},
+    {"_BinaryDosage_ReadFormat5SNPC", (DL_FUNC) &_BinaryDosage_ReadFormat5SNPC, 8},
     {"_BinaryDosage_ReadBinaryDosageDataC", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataC, 7},
     {"_BinaryDosage_ReadBinaryDosageDataP1P2", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataP1P2, 10},
     {"_BinaryDosage_ReadBinaryDosageDataCompressed", (DL_FUNC) &_BinaryDosage_ReadBinaryDosageDataCompressed, 9},

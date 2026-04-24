@@ -1,0 +1,273 @@
+---
+title: "Using Format 5 Binary Dosage Files"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Using Format 5 Binary Dosage Files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = FALSE}
+library(BinaryDosage)
+```
+
+# Introduction
+
+Format 5 is a binary dosage file format designed for reading imputed genotype
+data from bgzipped, tabix-indexed VCF files — such as those returned by the
+[Michigan Imputation Server](https://imputationserver.sph.umich.edu) using
+[minimac](https://genome.sph.umich.edu/wiki/Minimac).
+
+Format 5 differs from earlier formats (1–4) in two important ways.
+
+First, it uses **per-SNP gzip compression**. Each SNP's dosage and genotype
+probability values are compressed independently and written as a contiguous
+block in the data file. This means any SNP can be decompressed in isolation
+without reading surrounding data.
+
+Second, the metadata — sample IDs, the SNP table, byte offsets, and file
+information — is stored in a companion **RDS file** rather than embedded in a
+binary header. This makes the metadata immediately accessible from R without
+reading the data file.
+
+A Format 5 dataset consists of two files.
+
+- **`.bdose`** — the data file. Begins with a 4-byte magic number followed by
+  one gzip-compressed block per SNP.
+- **`.bdose.bdi`** — an RDS file containing a list of class `"genetic-info"`
+  with the sample table, SNP table, byte offsets, and format metadata. The
+  name is always the `.bdose` filename with `.bdi` appended (e.g.
+  `set1a.bdose.bdi`). This structure is identical to the one returned by
+  `getbdinfo`, `getvcfinfo`, and `getgeninfo` for other file types.
+
+# Example files
+
+The BinaryDosage package includes a small bgzipped VCF file, *set1a.vcf.gz*,
+which contains dosage (DS) and genotype probability (GP) data for 60 subjects
+and 10 SNPs on chromosome 1. This file is used in all examples below.
+
+The output files in each example are written to a temporary directory so that
+nothing is left behind after the vignette runs.
+
+```{r files}
+vcf_file   <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+bd4_file   <- system.file("extdata", "vcf1a.bdose",  package = "BinaryDosage")
+bdose_file <- file.path(tempdir(), "set1a.bdose")
+```
+
+# Converting a VCF file to Format 5
+
+The `vcftobd` function converts a bgzipped VCF file to a Format 5 file pair.
+The VCF file must contain the FORMAT fields `DS` (dosage) and `GP` (genotype
+probabilities), as produced by minimac and the Michigan Imputation Server.
+
+The function takes the following parameters.
+
+- `vcffile` — path to the bgzipped VCF file.
+- `bdose_file` — path for the output `.bdose` file. The companion `.bdi`
+  metadata file is written automatically to `paste0(bdose_file, ".bdi")`.
+- `region` — optional genomic region string in bcftools format (e.g.
+  `"chr21"` or `"chr21:1-5000000"`). Requires a tabix index. Default `NULL`
+  processes the entire file.
+
+The following code converts *set1a.vcf.gz* to a Format 5 file pair.
+
+```{r convert, eval = TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+if (requireNamespace("vcfppR", quietly = TRUE)) {
+  vcftobd(vcffile = vcf_file, bdose_file = bdose_file)
+} else {
+  updatebd(bdfiles = bd4_file, bdose_file = bdose_file)
+}
+```
+
+To convert only a specific region of the file, supply the `region` parameter.
+The VCF file must have a tabix index (a `.tbi` file alongside it).
+
+```{r convert_region, eval = F, echo = T}
+vcftobd(vcffile    = vcf_file,
+         bdose_file = bdose_file,
+         region     = "1:10000-15000")
+```
+
+# Loading Format 5 file information
+
+The `getbdinfo` function reads and validates a Format 5 file pair, returning
+a list of class `"genetic-info"` that is used by `getbd5snp` to retrieve
+individual SNPs. It automatically detects the Format 5 magic header and
+delegates to the internal Format 5 reader.
+
+The function takes the following parameters.
+
+- `bdose_file` — path to the `.bdose` file. The companion `.bdi` file is
+  read automatically from `paste0(bdose_file, ".bdi")`.
+
+```{r load_info, eval = TRUE, echo = T, message = F, warning = F}
+bd5 <- getbdinfo(bdose_file)
+```
+
+The object returned has the same structure as the list returned by `getbdinfo`
+for older formats. For a full description of all fields see
+[Genetic File Information](geneticfileinfo.html). The key fields are described
+below.
+
+## File and format metadata
+
+```{r meta, eval = TRUE, echo = T}
+cat("Class:          ", class(bd5), "\n")
+cat("Uses family ID: ", bd5$usesfid, "\n")
+cat("One chromosome: ", bd5$onechr, "\n")
+cat("SNP ID format:  ", bd5$snpidformat, "\n")
+cat("Format:         ", bd5$additionalinfo$format, "\n")
+cat("Header size:    ", bd5$additionalinfo$headersize, "bytes\n")
+```
+
+## Sample information
+
+The `samples` element is a data frame with one row per subject. The `fid`
+column holds the family ID (empty for VCF files, which carry no family
+information) and the `sid` column holds the subject ID.
+
+```{r samples, eval = TRUE, echo = T}
+cat("Number of samples:", nrow(bd5$samples), "\n")
+knitr::kable(head(bd5$samples, 5), caption = "First 5 samples")
+```
+
+## SNP information
+
+The `snps` element is a data frame with one row per SNP.
+
+```{r snps, eval = TRUE, echo = T}
+cat("Number of SNPs:", nrow(bd5$snps), "\n")
+knitr::kable(bd5$snps, caption = "SNP table")
+```
+
+## Byte offsets
+
+The `indices` element is a numeric vector of byte offsets into the `.bdose`
+file, one per SNP, giving the start of that SNP's compressed block. These are
+used internally by `getbd5snp`.
+
+```{r indices, eval = TRUE, echo = T}
+cat("Indices (bytes):", bd5$indices, "\n")
+```
+
+# Reading SNP data
+
+The `getbd5snp` function decompresses and returns the dosage and genotype
+probability data for a single SNP. The general-purpose `getsnp` function also
+works with Format 5 files and can be used as an alternative.
+
+For details on all three Format 5 SNP reader functions — including
+`getbd5snp_buf` (pre-allocated output vectors) and `getbd5snp_con` (persistent
+file connection for high-throughput loops) — see the
+[Reading SNPs from Format 5 Files](bd5snpreaders.html) vignette.
+
+The function takes the following parameters.
+
+- `bd5info` — object returned by `getbdinfo`.
+- `snp` — the SNP to retrieve, either as a 1-based integer index or as a
+  character SNP ID matching a value in `bd5info$snps$snpid`.
+
+The function returns a list with four numeric vectors, each of length equal
+to the number of samples.
+
+- `dosage` — DS values in \[0, 2\]; `NA` = missing.
+- `p0` — $\Pr(g=0)$ values in \[0, 1\]; `NA` = missing.
+- `p1` — $\Pr(g=1)$ values in \[0, 1\]; `NA` = missing.
+- `p2` — $\Pr(g=2)$ values in \[0, 1\]; `NA` = missing.
+
+## Reading a SNP by index
+
+The following code retrieves the first SNP by its 1-based index.
+
+```{r snp_by_index, eval = TRUE, echo = T, message = F, warning = F}
+snp1 <- getbd5snp(bd5info = bd5, snp = 1L)
+
+snp1_df <- data.frame(
+  SampleID = bd5$samples$sid,
+  Dosage   = round(snp1$dosage, 4),
+  P_00     = round(snp1$p0,     4),
+  P_01     = round(snp1$p1,     4),
+  P_11     = round(snp1$p2,     4)
+)
+
+knitr::kable(head(snp1_df, 10),
+             caption = paste("SNP", bd5$snps$snpid[1], "— first 10 subjects"))
+```
+
+## Reading a SNP by ID
+
+A SNP can also be retrieved by passing its SNP ID as a character string.
+
+```{r snp_by_id, eval = TRUE, echo = T, message = F, warning = F}
+snp_id <- "1:12000:T:C"
+snp3   <- getbd5snp(bd5info = bd5, snp = snp_id)
+
+snp3_df <- data.frame(
+  SampleID = bd5$samples$sid,
+  Dosage   = round(snp3$dosage, 4),
+  P_00     = round(snp3$p0,     4),
+  P_01     = round(snp3$p1,     4),
+  P_11     = round(snp3$p2,     4)
+)
+
+knitr::kable(head(snp3_df, 10),
+             caption = paste("SNP", snp_id, "— first 10 subjects"))
+```
+
+# Applying a function to all SNPs
+
+The simplest option is `bdapply`, which handles the loop internally and uses
+`getbd5snp_con` automatically for Format 5 files.
+
+```{r apply_bdapply, eval = TRUE, echo = T, message = F, warning = F}
+getaaf <- function(dosage, p0, p1, p2) mean(dosage, na.rm = TRUE) / 2
+
+aaf_list  <- bdapply(bdinfo = bd5, func = getaaf)
+aaf_table <- data.frame(snpid = bd5$snps$snpid,
+                        aaf   = round(unlist(aaf_list), 4))
+
+knitr::kable(aaf_table, caption = "Alternate allele frequencies via bdapply")
+```
+
+For manual loops, `getbd5snp_buf` and `getbd5snp_con` are faster than
+`getbd5snp` because they avoid allocating a new list on every call.
+`getbd5snp_con` is the fastest option as it also keeps the file open across
+all iterations. See the
+[Reading SNPs from Format 5 Files](bd5snpreaders.html) vignette for details
+and a performance comparison.
+
+```{r apply_con, eval = TRUE, echo = T, message = F, warning = F}
+n_snps <- nrow(bd5$snps)
+n_samp <- nrow(bd5$samples)
+dosage <- numeric(n_samp)
+p0     <- numeric(n_samp)
+p1     <- numeric(n_samp)
+p2     <- numeric(n_samp)
+
+con <- openbd5con(bd5)
+aaf <- numeric(n_snps)
+for (i in seq_len(n_snps)) {
+  getbd5snp_con(bd5info = bd5, snp = i,
+                dosage = dosage, p0 = p0, p1 = p1, p2 = p2,
+                bd5con = con)
+  aaf[i] <- mean(dosage, na.rm = TRUE) / 2
+}
+closebd5con(con)
+
+knitr::kable(data.frame(snpid = bd5$snps$snpid, aaf = round(aaf, 4)),
+             caption = "Alternate allele frequencies via getbd5snp_con")
+```
+
+```{r cleanup, include = FALSE, eval = TRUE}
+unlink(c(bdose_file, paste0(bdose_file, ".bdi")))
+```

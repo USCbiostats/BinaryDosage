@@ -18,5 +18,7 @@ vignettes/*.pdf
 .Rproj.user
 *.dll
 /Test/
+/scratch/
 doc
 Meta
+tests/testthat/x.*

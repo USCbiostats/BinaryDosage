@@ -40,3 +40,30 @@ test_that("getsnp", {
                       TRUE),
                NA)
 })
+
+test_that("getsnp format5", {
+  skip_if_not_installed("vcfppR")
+
+  vcfgzfile  <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
+  bdose_file <- tempfile(fileext = ".bdose")
+
+  expect_error(vcftobd(vcffile = vcfgzfile, bdose_file = bdose_file), NA)
+
+  bd5info <- getbdinfo(bdose_file)
+  n_snps <- nrow(bd5info$snps)
+  expect_equal(n_snps, 10L)
+
+  for (i in seq_len(n_snps)) {
+    ref    <- getbd5snp(bd5info, i)
+    result <- getsnp(bdinfo = bd5info, snp = i, dosageonly = FALSE)
+
+    expect_equal(result$dosage, ref$dosage, tolerance = 5e-5,
+                 label = paste0("dosage SNP ", i))
+    expect_equal(result$p0, ref$p0, tolerance = 5e-5,
+                 label = paste0("p0 SNP ", i))
+    expect_equal(result$p1, ref$p1, tolerance = 5e-5,
+                 label = paste0("p1 SNP ", i))
+    expect_equal(result$p2, ref$p2, tolerance = 5e-5,
+                 label = paste0("p2 SNP ", i))
+  }
+})

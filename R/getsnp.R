@@ -60,7 +60,13 @@ getsnp <- function(bdinfo, snp, dosageonly = TRUE) {
   p0[1:nrow(bdinfo$samples)] <- NA
   p1[1:nrow(bdinfo$samples)] <- NA
   p2[1:nrow(bdinfo$samples)] <- NA
-  ReadBinaryDosageData(bdinfo, snp, dosage, p0, p1, p2, us)
+  result <- ReadBinaryDosageData(bdinfo, snp, dosage, p0, p1, p2, us)
+  if (!is.null(result)) {
+    dosage <- result$dosage
+    p0     <- result$p0
+    p1     <- result$p1
+    p2     <- result$p2
+  }
   if (dosageonly == TRUE)
     return(list(dosage = dosage))
   return(list(dosage = dosage,

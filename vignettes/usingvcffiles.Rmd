@@ -43,7 +43,7 @@ The binary dosage files created will be temporary files. They will be created us
 
 # Converting a VCF file to the Binary Dosage format
 
-The <span style="font-family:Courier">vcftobd</span> routine converts VCF files to the binary dosage format. Many different formats of VCF files by the BinaryDosage package. The following sections show how to convert VCF files in various formats to the binary dosage format.
+The <span style="font-family:Courier">vcftobdlegacy</span> routine converts VCF files to the binary dosage format. Many different formats of VCF files by the BinaryDosage package. The following sections show how to convert VCF files in various formats to the binary dosage format.
 
 ## Minimac files
 
@@ -51,7 +51,7 @@ Since the binary dosage format was initially created for use with files produced
 
 ### Uncompressed VCF files
 
-Uncompressed VCF files are the easiest to convert to the binary dosage format since the default values for <span style="font-family:Courier">vcftobd</span> are set for this format.
+Uncompressed VCF files are the easiest to convert to the binary dosage format since the default values for <span style="font-family:Courier">vcftobdlegacy</span> are set for this format.
 
 #### No imputation information file
 
@@ -62,13 +62,13 @@ The following commands convert the VCF file *set1a.vcf* into the binary dosage f
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 bdfile1a_woinfo <- tempfile()
-vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_woinfo)
+vcftobdlegacy(vcffiles = vcf1afile, bdfiles = bdfile1a_woinfo)
 
 ```
 
 #### Using the imputation information file
 
-The minimac program returns an imputation information file that can be passed to the <span style="font-family:Courier">vcftobd</span> routine. This is done by setting the parameter <span style="font-family:Courier">vcffiles</span> to a vector of characters containing the VCF and the imputation information file names.
+The minimac program returns an imputation information file that can be passed to the <span style="font-family:Courier">vcftobdlegacy</span> routine. This is done by setting the parameter <span style="font-family:Courier">vcffiles</span> to a vector of characters containing the VCF and the imputation information file names.
 
 The following commands convert the VCF file *set1a.vcf* into the binary dosage format using the information file *set1a.info*.
 
@@ -76,7 +76,7 @@ The following commands convert the VCF file *set1a.vcf* into the binary dosage f
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 bdfile1a_winfo <- tempfile()
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a_winfo)
+vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a_winfo)
 
 ```
 
@@ -94,7 +94,7 @@ knitr::kable(data.frame(bdinfo1a_winfo$snpinfo), caption = "bdinfo1a_winfo$snpin
 
 ### Compressed VCF files
 
-VCF files can be quite large, 100s of GB. Because of this they are often compressed. The funciton <span style="font-family:Courier">vcftobd</span> supports VCF files compressed using gunzip by adding the option <span style="font-family:Courier">gz = TRUE</span> to the function call. The compressed file can be converted using an imputation information. The imputation file must **NOT** be compressed.
+VCF files can be quite large, 100s of GB. Because of this they are often compressed. The funciton <span style="font-family:Courier">vcftobdlegacy</span> supports VCF files compressed using gunzip by adding the option <span style="font-family:Courier">gz = TRUE</span> to the function call. The compressed file can be converted using an imputation information. The imputation file must **NOT** be compressed.
 
 The following code reads in the data from the compressed VCF file *set1a.vcf.gz*. This the *set1a.vcf* file after it has been compressed using gunzip. The file will be read in twice, once without the imputation information file and once with the imputation information fie.
 
@@ -103,10 +103,10 @@ vcf1afile_gz <- system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage")
 vcf1ainfo <- system.file("extdata", "set1a.info", package = "BinaryDosage")
 
 bdfile1a_woinfo_gz <- tempfile()
-vcftobd(vcffiles = vcf1afile_gz, bdfiles = bdfile1a_woinfo_gz)
+vcftobdlegacy(vcffiles = vcf1afile_gz, bdfiles = bdfile1a_woinfo_gz)
 
 bdfile1a_winfo_gz <- tempfile()
-vcftobd(vcffiles = c(vcf1afile_gz, vcf1ainfo), bdfiles = bdfile1a_winfo_gz)
+vcftobdlegacy(vcffiles = c(vcf1afile_gz, vcf1ainfo), bdfiles = bdfile1a_winfo_gz)
 
 ```
 
@@ -136,7 +136,7 @@ knitr::kable(aaf1a, caption = "Alternate Allele Frequencies", digits = 4)
 
 ## Other VCF file formats
 
-The <span style="font-family:Courier">vcftobd</span> function can support VCF files in formats other than those returned from minimac. This is done by examining the value of FORMAT for each SNP in the VCF file. The routine looks for the values "DS" and "GP", dosage and genotype probabilities, in the FORMAT column. If one or both of these values are found, the appropriate information is written to the binary dosage file.
+The <span style="font-family:Courier">vcftobdlegacy</span> function can support VCF files in formats other than those returned from minimac. This is done by examining the value of FORMAT for each SNP in the VCF file. The routine looks for the values "DS" and "GP", dosage and genotype probabilities, in the FORMAT column. If one or both of these values are found, the appropriate information is written to the binary dosage file.
 
 The file *set2a.vcf* contains only the dosage values. The following code converts it to a binary dosage file. The <span style="font-family:Courier">getsnp</span> function is then used to extract the first SNP and display the values for the first 10 subjects.
 
@@ -144,7 +144,7 @@ The file *set2a.vcf* contains only the dosage values. The following code convert
 vcf2afile <- system.file("extdata", "set2a.vcf", package = "BinaryDosage")
 bdfile2a <- tempfile()
 
-vcftobd(vcffiles = vcf2afile, bdfiles = bdfile2a)
+vcftobdlegacy(vcffiles = vcf2afile, bdfiles = bdfile2a)
 
 bdinfo2a <- getbdinfo(bdfiles = bdfile2a)
 snp1_2a <- data.frame(getsnp(bdinfo = bdinfo2a, snp = 1L, dosageonly = FALSE))
@@ -154,9 +154,9 @@ snp1 <- cbind(SubjectID = bdinfo2a$samples$sid, snp1_2a)
 knitr::kable(snp1[1:10,], caption = "Dosage and Genotype Probabilities")
 ```
 
-## Other vcftobd options
+## Other vcftobdlegacy options
 
-There are other options for <span style="font-family:Courier">vcftobd</span>. These options effect how the information is written to the binary dosage file.
+There are other options for <span style="font-family:Courier">vcftobdlegacy</span>. These options effect how the information is written to the binary dosage file.
 
 ### format and subformat options
 
@@ -187,10 +187,10 @@ bdfile1b.snpid1 <- tempfile()
 bdfile1b.snpid2 <- tempfile()
 bdfile1b.snpidm1 <- tempfile()
 
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid0)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid1, snpidformat = 1)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid2, snpidformat = 2)
-vcftobd(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpidm1, snpidformat = -1)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid0)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid1, snpidformat = 1)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpid2, snpidformat = 2)
+vcftobdlegacy(vcffiles = vcf1brsfile, bdfiles = bdfile1b.snpidm1, snpidformat = -1)
 
 bdinfo1b.snpid0 <- getbdinfo(bdfiles = bdfile1b.snpid0)
 bdinfo1b.snpid1 <- getbdinfo(bdfiles = bdfile1b.snpid1)
@@ -224,7 +224,7 @@ The following code converts the *set1a.vcf* file into a binary dosage file and c
 ``` {r, eval = T, echo = T, message = F, warning = F, tidy = T}
 vcf1afile <- system.file("extdata", "set1a.vcf", package = "BinaryDosage")
 bdfile1a_calcinfo <- tempfile()
-vcftobd(vcffiles = vcf1afile, bdfiles = bdfile1a_calcinfo, bdoptions = c("aaf", "maf", "rsq"))
+vcftobdlegacy(vcffiles = vcf1afile, bdfiles = bdfile1a_calcinfo, bdoptions = c("aaf", "maf", "rsq"))
 
 bdcalcinfo <- getbdinfo(bdfile1a_calcinfo)
 

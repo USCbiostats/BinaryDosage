@@ -217,8 +217,16 @@ bdmerge <- function(mergefiles,
       p0[1:nrow(mergedgeneticinfo$samples)] <- NA
       p1[1:nrow(mergedgeneticinfo$samples)] <- NA
       p2[1:nrow(mergedgeneticinfo$samples)] <- NA
-      if (is.na(snpsmtobNA[[j]][i]) == FALSE)
-        ReadBinaryDosageData(bdinfo[[j]], snpsmtobNA[[j]][i], dosage, p0, p1, p2, us)
+      if (is.na(snpsmtobNA[[j]][i]) == FALSE) {
+        result <- ReadBinaryDosageData(bdinfo[[j]], snpsmtobNA[[j]][i], dosage, p0, p1, p2, us)
+        if (!is.null(result)) {
+          n <- nrow(bdinfo[[j]]$samples)
+          dosage[1:n] <- result$dosage
+          p0[1:n]     <- result$p0
+          p1[1:n]     <- result$p1
+          p2[1:n]     <- result$p2
+        }
+      }
       dosaget[startgroup[j]:endgroup[j]] <- dosage[1:nrow(bdinfo[[j]]$samples)]
       p0t[startgroup[j]:endgroup[j]] <- p0[1:nrow(bdinfo[[j]]$samples)]
       p1t[startgroup[j]:endgroup[j]] <- p1[1:nrow(bdinfo[[j]]$samples)]
@@ -297,7 +305,7 @@ mergesnpinfo <- function (mergedinfo,
     currentgroup <- 1L
     for (i in 1:length(geneticinfo)) {
       setgroups <- 1L
-      if (class(geneticinfo[[i]]$additionalinfo) == "bdose-info")
+      if (inherits(geneticinfo[[i]]$additionalinfo, "bdose-info"))
         setgroups <- geneticinfo[[i]]$additionalinfo$numgroups
       for (j in 1:numsnpinfo) {
         if (is.na(match(names(snpinfo)[j], names(geneticinfo[[i]]$snpinfo))) == FALSE) {

@@ -1,0 +1,172 @@
+---
+title: "Merging Format 5 Binary Dosage Files"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Merging Format 5 Binary Dosage Files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = FALSE}
+library(BinaryDosage)
+```
+
+# Introduction
+
+The `mergebd` function merges two or more Format 5 binary dosage files into a
+single Format 5 output file. The merge type is detected automatically from the
+input files.
+
+- **Subject merge** — subject IDs do not overlap across files. The output
+  contains all subjects from every input file and the SNPs common to all files.
+- **SNP merge** — SNP IDs do not overlap across files. The output contains all
+  SNPs from every input file and the subjects common to all files.
+
+If both subject IDs and SNP IDs overlap across files an error is returned,
+since the merge type is ambiguous.
+
+SNPs are identified by chromosome, position, reference allele, and alternate
+allele, regardless of the SNP ID format stored in each file.
+
+The function takes the following parameters.
+
+- `bdose_files` — character vector of paths to the input `.bdose` files (at
+  least two). The companion `.bdi` file for each is expected at
+  `paste0(bdose_files[i], ".bdi")`.
+- `bdose_file` — path for the output `.bdose` file. The companion `.bdi` file
+  is written automatically to `paste0(bdose_file, ".bdi")`.
+
+# Setup
+
+The examples below use the bgzipped VCF file included with the package,
+*set1a.vcf.gz*, which contains data for 60 subjects and 10 SNPs on chromosome
+1. All output files are written to a temporary directory.
+
+```{r setup_files, message = FALSE, warning = FALSE}
+bdose_full <- file.path(tempdir(), "full.bdose")
+
+if (requireNamespace("vcfppR", quietly = TRUE)) {
+  vcftobd(vcffile    = system.file("extdata", "set1a.vcf.gz", package = "BinaryDosage"),
+          bdose_file = bdose_full)
+} else {
+  updatebd(bdfiles    = system.file("extdata", "vcf1a.bdose", package = "BinaryDosage"),
+           bdose_file = bdose_full)
+}
+bd_full <- getbdinfo(bdose_full)
+
+cat("Subjects:", nrow(bd_full$samples), "\n")
+cat("SNPs:    ", nrow(bd_full$snps),    "\n")
+```
+
+# Subject merge
+
+A subject merge combines files that cover different subjects but the same (or
+overlapping) set of SNPs. The output contains all subjects and the SNPs common
+to every input file.
+
+The example splits the 60-subject file into two 30-subject files using
+`subsetbd`, then merges them back together.
+
+```{r subject_merge, message = FALSE, warning = FALSE}
+bdose_a   <- file.path(tempdir(), "set_a.bdose")
+bdose_b   <- file.path(tempdir(), "set_b.bdose")
+bdose_out <- file.path(tempdir(), "merged_subjects.bdose")
+
+sids <- bd_full$samples$sid
+
+subsetbd(bdfiles    = bdose_full,
+         bdose_file = bdose_a,
+         subjectids = sids[1:30])
+
+subsetbd(bdfiles    = bdose_full,
+         bdose_file = bdose_b,
+         subjectids = sids[31:60])
+
+mergebd(bdose_files = c(bdose_a, bdose_b),
+        bdose_file  = bdose_out)
+
+bd_a   <- getbdinfo(bdose_a)
+bd_b   <- getbdinfo(bdose_b)
+bd_out <- getbdinfo(bdose_out)
+
+cat("File A subjects:", nrow(bd_a$samples),   "\n")
+cat("File B subjects:", nrow(bd_b$samples),   "\n")
+cat("Merged subjects:", nrow(bd_out$samples), "\n")
+cat("Merged SNPs:    ", nrow(bd_out$snps),    "\n")
+```
+
+The merged file contains all 60 subjects and all 10 SNPs.
+
+## Verifying subject order
+
+The subjects in the merged file appear in input-file order: all subjects from
+the first file followed by all subjects from the second file.
+
+```{r subject_order}
+knitr::kable(bd_out$samples, caption = "Subjects in merged file")
+```
+
+# SNP merge
+
+A SNP merge combines files that cover different SNPs but the same (or
+overlapping) set of subjects. The output contains all SNPs and the subjects
+common to every input file.
+
+The example splits the 10-SNP file into two 5-SNP files using `subsetbd`, then
+merges them back together.
+
+```{r snp_merge, message = FALSE, warning = FALSE}
+bdose_snp_a   <- file.path(tempdir(), "snp_a.bdose")
+bdose_snp_b   <- file.path(tempdir(), "snp_b.bdose")
+bdose_snp_out <- file.path(tempdir(), "merged_snps.bdose")
+
+locs <- bd_full$snps$location
+
+subsetbd(bdfiles    = bdose_full,
+         bdose_file = bdose_snp_a,
+         locations  = locs[1:5])
+
+subsetbd(bdfiles    = bdose_full,
+         bdose_file = bdose_snp_b,
+         locations  = locs[6:10])
+
+mergebd(bdose_files = c(bdose_snp_a, bdose_snp_b),
+        bdose_file  = bdose_snp_out)
+
+bd_snp_a   <- getbdinfo(bdose_snp_a)
+bd_snp_b   <- getbdinfo(bdose_snp_b)
+bd_snp_out <- getbdinfo(bdose_snp_out)
+
+cat("File A SNPs:    ", nrow(bd_snp_a$snps),   "\n")
+cat("File B SNPs:    ", nrow(bd_snp_b$snps),   "\n")
+cat("Merged SNPs:    ", nrow(bd_snp_out$snps),  "\n")
+cat("Merged subjects:", nrow(bd_snp_out$samples), "\n")
+```
+
+## Verifying SNP order
+
+SNPs appear in input-file order: all SNPs from the first file followed by all
+SNPs from the second file.
+
+```{r snp_order}
+knitr::kable(bd_snp_out$snps, caption = "SNPs in merged file")
+```
+
+```{r cleanup, include = FALSE}
+unlink(c(bdose_full,    paste0(bdose_full,    ".bdi"),
+         bdose_a,       paste0(bdose_a,       ".bdi"),
+         bdose_b,       paste0(bdose_b,       ".bdi"),
+         bdose_out,     paste0(bdose_out,     ".bdi"),
+         bdose_snp_a,   paste0(bdose_snp_a,   ".bdi"),
+         bdose_snp_b,   paste0(bdose_snp_b,   ".bdi"),
+         bdose_snp_out, paste0(bdose_snp_out, ".bdi")))
+```

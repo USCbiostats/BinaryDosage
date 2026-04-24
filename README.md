@@ -5,72 +5,11 @@ BinaryDosage: Creates, Merges, and Reads Binary Dosage Files
 
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/USCbiostats/BinaryDosage?branch=master&svg=true)](https://ci.appveyor.com/project/USCbiostats/BinaryDosage)
-[![Travis build
-status](https://travis-ci.org/USCbiostats/BinaryDosage.svg?branch=master)](https://travis-ci.org/USCbiostats/BinaryDosage)
 [![Codecov test
-coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://codecov.io/gh/USCbiostats/BinaryDosage?branch=master)
+coverage](https://codecov.io/gh/USCbiostats/BinaryDosage/branch/master/graph/badge.svg)](https://app.codecov.io/gh/USCbiostats/BinaryDosage?branch=master)
 <!-- badges: end -->
 
 # Binary Dosage Files
-
-### Important News
-
-A new version of BinaryDosage has been developed that significantly
-reduces data read times by a factor of more than 10 times. This new
-version uses the hstlib libraries which greatly improves the read speed
-of VCF files. To compile this new version requires the installation of
-the
-[Rhtslib](https://bioconductor.org/packages/release/bioc/html/Rhtslib.html)
-library from Bioconductor.
-
-Data compression of the BinaryDosage formatted files has also been
-improved. We have had reports that the BinaryDosage formatted files were
-over 3 times larger than the gzipped VCF file. This was due to the
-compression routine not compressing SNPs with low minor allele
-frequencies (\<0.01) well. When BinaryDosage was first written,
-imputation servers did not include many rare SNPs. This has changed
-since BinaryDosage was first written.
-
-To install the latest version of BinaryDosage, it is recommended the
-user have R 4.3.x or higher. If the user is using Windows, they will
-need to verify that the current version of [R
-tools](https://cran.r-project.org/bin/windows/Rtools/) is installed. If
-the user is using Linux or Mac OS X, the zlib development tools need to
-be installed, often named zlib1g-dev. For most systems, these tools are
-usually already loaded.
-
-The package
-[Rhtslib](https://bioconductor.org/packages/release/bioc/html/Rhtslib.html)
-from BioConductor needs to be installed using the following code.
-
-``` r
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("Rhtslib")
-```
-
-Once the preceding prerequisites are met the follow code will install
-the latest version of BinaryDosage.
-
-``` r
-remove.packages("BinaryDosage")
-devtools::install_github("https://github.com/USCbiostats/BinaryDosage@htslib")
-
-library(BinaryDosage)
-```
-
-#### Important
-
-All BinaryDosage formatted files created with older versions are fully
-compatible with this new version of BinaryDosage.
-[GxEScanR](https://github.com/USCbiostats/GxEScanR) works with files
-created by all versions of BinaryDosage, including this new one.
-
-The information below is for the current release version of
-BinaryDosage. Visit the [htslib
-branch](https://github.com/USCbiostats/BinaryDosage/tree/htslib) or
-BinaryDosage for more information about the new version.
 
 ### Introduction
 
@@ -109,23 +48,23 @@ For GWAS/GWIS analysis of BinaryDosage files, please refer to the
   - Family ID
   - Subject ID
 - SNP information
-  - Chromosome number  
-  - SNP ID  
-  - Location in base pairs  
-  - Reference allele  
-  - Alternate allele  
+  - Chromosome number\
+  - SNP ID\
+  - Location in base pairs\
+  - Reference allele\
+  - Alternate allele\
 - Genetic information
   - Dosage values
   - Genotype probabilities, Pr(*g=0*), Pr(*g=1*), Pr(*g=2*)
 
-There are 4 formats for a binary dosage data set. Data sets in formats
+There are 5 formats for a binary dosage data set. Data sets in formats
 1, 2, and 3 have 3 files, a sample information file, a SNP information
 file, and a genetic information file. Data sets in format 4 have just 1
-file. This file contains all the information listed above and may
-contain the following information.
+file. Format 5 uses per-SNP gzip compression and stores metadata in a
+companion RDS file (`.bdinfo`). This file contains all the information
+listed above and may contain the following information.
 
-**Note:** Format 4 is recommended and is the default value for all
-functions.
+**Note:** Format 5 is the recommended format for new data sets.
 
 - Additional SNP information
   - Alternate allele frequency
@@ -138,16 +77,40 @@ functions.
 
 ### Functions
 
-- **vcftobd** - Converts a VCF file to a binary dosage data set
+#### Format 5 (recommended)
+
+- **vcftobd** - Converts a bgzipped VCF file to a Format 5 binary dosage
+  data set (requires vcfppR)
+- **getbd5snp** - Reads a single SNP from a Format 5 file by index or
+  ID; returns a list with dosage and genotype probabilities
+- **getbd5snp_buf** - Like **getbd5snp** but writes results into
+  pre-allocated vectors, avoiding repeated memory allocation in loops
+- **openbd5con** - Opens a persistent connection to a Format 5 file for
+  use with **getbd5snp_con**
+- **closebd5con** - Explicitly closes a connection opened by
+  **openbd5con**
+- **getbd5snp_con** - Like **getbd5snp_buf** but reuses an open
+  connection, eliminating file open/close overhead per SNP
+- **updatebd** - Converts a legacy format (1–4) binary dosage file to
+  Format 5
+- **subsetbd** - Creates a new Format 5 file containing a subset of SNPs
+  and/or subjects from any binary dosage file (formats 1–5)
+- **mergebd** - Merges two or more Format 5 files into a single Format 5
+  file
+
+#### Legacy formats (1–4)
+
+- **vcftobdlegacy** - Converts a VCF file to a legacy format (1–4)
+  binary dosage data set (deprecated; use **vcftobd** instead)
 - **gentobd** - Converts a GEN (impute2) file to a binary dosage data
   set
-- **bdmerge** - Merges multiple binary dosage data sets into a single
-  data set
-- **getbdinfo** - Creates an R List containing information about a
+- **bdmerge** - Merges multiple legacy binary dosage data sets into a
+  single data set
+- **getbdinfo** - Creates an R list containing information about a
   binary dosage data set (required for **getsnp** and **bdapply**)
-- **getvcfinfo** - Creates an R List containing information about a VCF
+- **getvcfinfo** - Creates an R list containing information about a VCF
   file (required for **vcfapply**)
-- **getgeninfo** - Creates an R List containing information about a GEN
+- **getgeninfo** - Creates an R list containing information about a GEN
   file (required for **genapply**)
 - **bdapply** - Applies a function to the data for each SNP in a binary
   dosage file (requires list returned by **getbdinfo**)
@@ -155,12 +118,12 @@ functions.
   file (requires list returned by **getvcfinfo**)
 - **genapply** - Applies a function to the data for each SNP in a GEN
   file (requires list returned by **getgeninfo**)
-- **getsnp** - Obtain genotype Dosages/Genotype Probabilities from a
-  binary dosage file, outputs results to an R list
+- **getsnp** - Returns dosage and genotype probabilities for a single
+  SNP from a binary dosage file
 
 # Installation
 
-1.  Install the [devtools](https://github.com/hadley/devtools) package
+1.  Install the [devtools](https://github.com/r-lib/devtools) package
 2.  Install the
     [BinaryDosage](https://github.com/USCbiostats/BinaryDosage) package
     directly from the USCbiostats repository on GitHub:
@@ -168,6 +131,15 @@ functions.
 ``` r
 remove.packages("BinaryDosage")
 devtools::install_github("https://github.com/USCbiostats/BinaryDosage")
+
+library(BinaryDosage)
+```
+
+To install the package with vignettes built, use the `build_vignettes`
+option:
+
+``` r
+devtools::install_github("https://github.com/USCbiostats/BinaryDosage", build_vignettes = TRUE)
 
 library(BinaryDosage)
 ```
@@ -268,19 +240,19 @@ mergebd3 <- tempfile()
 Converting a VCF file into a binary dosage file is simple. The user
 passes the names of the VCF and information files along with the name
 for the binary dosage file to the
-<span style="font-family:Courier">vcftobd</span> function. There are
-some options available for the
-<span style="font-family:Courier">vcftobd</span> functions such as using
-gz compressed files vcf files. More information about these options can
-be found using the help files or reading the vignette
+<span style="font-family:Courier">vcftobdlegacy</span> function. There
+are some options available for the
+<span style="font-family:Courier">vcftobdlegacy</span> functions such as
+using gz compressed files vcf files. More information about these
+options can be found using the help files or reading the vignette
 <span style="font-family:Courier">usingvcffiles</span>.
 
 The following commands convert VCF data sets 1a and 1b into the binary
 dosage format.
 
 ``` r
-vcftobd(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
-vcftobd(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
+vcftobdlegacy(vcffiles = c(vcf1afile, vcf1ainfo), bdfiles = bdfile1a, format = 4)
+vcftobdlegacy(vcffiles = c(vcf1bfile, vcf1binfo), bdfiles = bdfile1b, format = 4)
 ```
 
 ##### Converting GEN files to the Binary Dosage Format and Merging into one data set

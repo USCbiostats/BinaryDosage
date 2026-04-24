@@ -7,7 +7,7 @@ test_that("subformat2", {
   bdfile12 <- tempfile()
   famfile12 <- tempfile()
   mapfile12 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = c(bdfile12, famfile12, mapfile12),
                        format = 1L,
                        subformat = 2L),
@@ -23,7 +23,7 @@ test_that("subformat2", {
   bdfile22 <- tempfile()
   famfile22 <- tempfile()
   mapfile22 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = c(bdfile22, famfile22, mapfile22),
                        format = 2L,
                        subformat = 2L),
@@ -37,7 +37,7 @@ test_that("subformat2", {
   bdfile32 <- tempfile()
   famfile32 <- tempfile()
   mapfile32 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = c(bdfile32, famfile32, mapfile32),
                        format = 3L,
                        subformat = 2L),
@@ -51,7 +51,7 @@ test_that("subformat2", {
   bdfile34 <- tempfile()
   famfile34 <- tempfile()
   mapfile34 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = c(bdfile34, famfile34, mapfile34),
                        format = 3L,
                        subformat = 4L),
@@ -63,7 +63,7 @@ test_that("subformat2", {
                tolerance = 4e-5)
 
   bdfile42 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = bdfile42,
                        format = 4L,
                        subformat = 2L),
@@ -75,7 +75,7 @@ test_that("subformat2", {
                tolerance = 4e-5)
 
   bdfile44 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf1afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf1afile,
                        bdfiles = bdfile44,
                        format = 4L,
                        subformat = 4L,
@@ -98,7 +98,7 @@ test_that("subformat1", {
   bdfile11 <- tempfile()
   famfile11 <- tempfile()
   mapfile11 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = c(bdfile11, famfile11, mapfile11),
                        format = 1L,
                        subformat = 1L),
@@ -112,7 +112,7 @@ test_that("subformat1", {
   bdfile21 <- tempfile()
   famfile21 <- tempfile()
   mapfile21 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = c(bdfile21, famfile21, mapfile21),
                        format = 2L,
                        subformat = 1L),
@@ -126,7 +126,7 @@ test_that("subformat1", {
   bdfile31 <- tempfile()
   famfile31 <- tempfile()
   mapfile31 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = c(bdfile31, famfile31, mapfile31),
                        format = 3L,
                        subformat = 1L),
@@ -140,7 +140,7 @@ test_that("subformat1", {
   bdfile33 <- tempfile()
   famfile33 <- tempfile()
   mapfile33 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = c(bdfile33, famfile33, mapfile33),
                        format = 3L,
                        subformat = 3L),
@@ -152,7 +152,7 @@ test_that("subformat1", {
                tolerance = 4e-5)
 
   bdfile41 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = bdfile41),
                NA)
   expect_error(bdinfo41 <- getbdinfo(bdfiles = bdfile41),
@@ -162,7 +162,7 @@ test_that("subformat1", {
                tolerance = 4e-5)
 
   bdfile43 <- tempfile()
-  expect_error(vcftobd(vcffiles = vcf2afile,
+  expect_error(vcftobdlegacy(vcffiles = vcf2afile,
                        bdfiles = bdfile43,
                        format = 4L,
                        subformat = 3L),
